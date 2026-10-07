@@ -167,3 +167,11 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 
 .piece.static{cursor:default}
 .piece.static:hover{border-color:var(--border)}
+
+/* a closed value set is a picker, not a text box */
+.slot select{width:100%;background:var(--bg-input);border:1px solid var(--border-2);border-radius:6px;
+  padding:7px 10px;color:var(--text);font-family:var(--mono);font-size:12.5px;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--text-dim) 50%),linear-gradient(135deg,var(--text-dim) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;cursor:pointer}
+.slot select:hover{border-color:var(--accent-dim)}

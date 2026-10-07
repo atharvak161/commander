@@ -6,7 +6,7 @@ piece explained.**
 A static, client-side reference and command builder for tools that run in a
 terminal — offensive, defensive, and plain system administration.
 
-Live at <https://atharvaxsecurity.com/commander/> *(not yet deployed)*
+Live at <https://atharvaxsecurity.com/commander/>
 
 ## What it does
 
@@ -24,31 +24,57 @@ security model.
 
 ## Status
 
-Phase 1a, in progress. Three tools: nmap, gobuster, ffuf.
+Phase 1a. **ffuf is live and complete.** nmap and gobuster are next.
 
 | Piece | State |
 |---|---|
 | Schema | done — `data/SCHEMA.md` |
 | Checker | done — `tools/check.mjs` |
-| Verifier | done — `tools/verify.mjs` |
-| ffuf data | done — 77 flags, verified against the binary |
+| Verifier | done — `tools/verify.mjs`, three passes |
+| Quoting round-trip | done — `test/quoting.mjs` |
+| Enum proof | done — `test/enums.mjs` |
+| ffuf | done — 77 flags, 4 enums, 5 repeatables, verified |
+| Interface | done — picker, slots, command bar, explainer |
 | nmap, gobuster | not started |
-| Interface | not started |
 
 ## How the data is trusted
 
 Every flag is read from a real binary's `man` or `--help` output, never from a
-blog or from memory, and records which. `tools/verify.mjs` then runs the actual
-tool with every flag to confirm it is accepted — no packets are sent, because a
-tool rejects an unknown flag long before it opens a socket.
+blog or from memory, and records which. Relationships between flags are parsed
+from the tool's own sentences — "Implies -ac", "Overrides -w" — rather than
+assumed, so they stay correct when the tool changes. Nothing is invented: a
+relationship the tool does not state is left empty.
+
+Then it is proved against the binary, four ways:
 
 ```
-node tools/check.mjs          # schema, references, symmetry, freshness
-node tools/verify.mjs ffuf    # every flag, against the real binary
+node tools/check.mjs          # schema, references, conflict symmetry, freshness, repo hygiene
+node tools/verify.mjs ffuf    # every flag and every valid pair, against the real binary
+node tools/verify.mjs ffuf --pairs
+node test/quoting.mjs         # the copied text, parsed by a real shell
+node test/enums.mjs           # every enum value, and that the set is really closed
 ```
 
-`check.mjs` runs on pre-commit. A tool only appears in the interface once its
-data passes both.
+**`verify.mjs`** runs the actual tool. Singles, awkward values (spaces, quotes,
+`$`, backslashes, semicolons), and every valid pair — 2,992 real commands for
+ffuf, all accepted. No packets are sent: a tool rejects an unknown flag long
+before it opens a socket.
+
+**`test/quoting.mjs`** closes the gap that matters most. The verifier runs an
+argument *array*; you copy a *string* a shell parses. If the quoting were wrong
+those two would differ and the verified command would not be the one that runs.
+So it hands the text to `/bin/sh` and asserts the arguments come back
+byte-identical — 1,535 cases, including `a;rm -rf /` staying a single harmless
+argument.
+
+**`test/enums.mjs`** asks the binary whether a closed value set is really
+closed: every declared value must be accepted, and a value outside the list must
+be rejected. This is what caught that ffuf ignores `-of` entirely unless `-o` is
+also set.
+
+The browser and the verifier import the **same** `assets/js/command.js`, so a
+verified command is byte-for-byte the one the page gives you. `check.mjs` runs on
+pre-commit. A tool only appears in the interface once its data passes all of it.
 
 ## Ethics
 

@@ -1,5 +1,11 @@
 /* commander — client-side only. Nothing here sends anything anywhere.
-   No framework, no build. What is committed is what runs. */
+   No framework, no build. What is committed is what runs.
+
+   Command building lives in command.js and is imported, not reimplemented:
+   the verifier imports the same module, so the command the tests prove valid
+   is byte-for-byte the command shown here. */
+import { buildCommand as build, blockedBy as blocked, shellQuote } from './command.js';
+
 (function () {
   'use strict';
 
@@ -206,24 +212,11 @@
         renderBuild();
       });
     });
-    $('copy').addEventListener('click', function () { copy(buildCommand().text, this, 'Copy'); });
+    $('copy').addEventListener('click', function () { copy(build(tool, mode, picked, slots, adhoc).text, this, 'Copy'); });
 
     renderPicker();
     renderSlots();
     renderCommand();
-  }
-
-  /* A flag is blocked when something already picked conflicts with it. The
-     reason is shown rather than the button just going dead. */
-  function blockedBy(f) {
-    for (var id in picked) {
-      if (!picked[id]) continue;
-      var other = flagById(id);
-      if (!other) continue;
-      if ((other.conflicts || []).indexOf(f.id) >= 0) return other;
-      if ((f.conflicts || []).indexOf(id) >= 0) return other;
-    }
-    return null;
   }
 
   function renderPicker() {
@@ -232,7 +225,7 @@
     $('picker').innerHTML = Object.keys(groups).map(function (g) {
       return '<div class="fg"><div class="fg-h">' + esc(g) + '</div><div class="flags">' +
         groups[g].map(function (f) {
-          var b = blockedBy(f);
+          var b = blocked(tool, picked, f);
           var on = !!picked[f.id];
           var warn = f.warn ? '<span class="wn" title="' + esc(f.warn) + '">' + ({root:'&#9888;',slow:'&#9203;',noisy:'&#128226;',destructive:'&#9888;'}[f.warn] || '') + '</span>' : '';
           return '<button class="flag" data-id="' + esc(f.id) + '" aria-pressed="' + on + '"' +
@@ -305,7 +298,18 @@
     return (tool.inputs || []).filter(function (i) { return need[i.id]; });
   }
 
+  /* A picked enum flag with no value would emit a bare "-mode" and break the
+     command. Seed it with the tool's own default when that default is one of
+     the legal values, otherwise the first one. */
+  function seedEnums() {
+    modeFlags().forEach(function (f) {
+      if (f.takes !== 'enum' || !picked[f.id] || adhoc[f.id]) return;
+      adhoc[f.id] = (f.default && f.enum.indexOf(f.default) !== -1) ? f.default : f.enum[0];
+    });
+  }
+
   function renderSlots() {
+    seedEnums();
     var act = activeSlots();
     var loose = unboundPicked();
 
@@ -324,9 +328,22 @@
 
     html += loose.map(function (f) {
       var tok = f.short || f.long;
+      var field;
+      if (f.takes === 'enum') {
+        /* A closed set gets a picker. Typing into a free-text box is how you
+           produce "Unknown output file format" — the tool states the legal
+           values, so offer exactly those. */
+        field = '<select id="adhoc-' + esc(f.id) + '">' + f.enum.map(function (v) {
+          return '<option value="' + esc(v) + '"' + (adhoc[f.id] === v ? ' selected' : '') +
+                 '>' + esc(v) + (v === f.default ? ' (default)' : '') + '</option>';
+        }).join('') + '</select>';
+      } else {
+        field = '<input id="adhoc-' + esc(f.id) + '" value="' + esc(adhoc[f.id] || '') +
+                '" placeholder="' + esc(f.takes) + '">';
+      }
       return '<div class="slot"><label for="adhoc-' + esc(f.id) + '">' + esc(tok) +
         ' <span style="color:var(--text-faint)">&lt;' + esc(f.takes) + '&gt;</span></label>' +
-        '<input id="adhoc-' + esc(f.id) + '" value="' + esc(adhoc[f.id] || '') + '" placeholder="' + esc(f.takes) + '">' +
+        field +
         '<div class="used">' + esc(f.desc.slice(0, 54)) + '</div></div>';
     }).join('');
 
@@ -338,74 +355,15 @@
       });
     });
     loose.forEach(function (f) {
-      $('adhoc-' + f.id).addEventListener('input', function () {
+      var el = $('adhoc-' + f.id);
+      el.addEventListener(f.takes === 'enum' ? 'change' : 'input', function () {
         adhoc[f.id] = this.value; renderCommand();
       });
     });
   }
 
-  /* Quote only when the shell would need it. Over-quoting is as wrong as
-     under-quoting: it changes what the tool receives. */
-  function q(v) {
-    if (v === '' || v == null) return v;
-    return /[\s"'$`\\<>|&;()*?!#~\[\]{}]/.test(v) ? "'" + String(v).replace(/'/g, "'\\''") + "'" : v;
-  }
-
-  /* One place builds the command, and the explainer reads the same pieces, so
-     the two can never disagree. */
-  function buildCommand() {
-    var pieces = [];
-    var issues = [];
-    var m = currentMode();
-
-    pieces.push({ tok: tool.name, label: 'the tool', help: tool.summary, kind: 'bin' });
-    if (tool.modes.length > 1) pieces.push({ tok: m.name, label: 'mode: ' + m.summary.replace(/\.$/, ''), help: m.summary, kind: 'mode' });
-
-    /* Required flags lead. They are the subject of the command - the target and
-       the wordlist - and burying them behind optional ones makes it harder to
-       read, which defeats the point of the explainer below. */
-    var ordered = modeFlags().slice().sort(function (a, b) {
-      return (b.required ? 1 : 0) - (a.required ? 1 : 0);
-    });
-
-    ordered.forEach(function (f) {
-      if (!picked[f.id]) return;
-      var tok = f.short || f.long;
-      var val = '';
-      if (f.takes !== 'none') {
-        val = f.binds ? (slots[f.binds] || '') : (adhoc[f.id] || '');
-        if (!val) {
-          var label = f.binds
-            ? ((tool.inputs.find(function (i) { return i.id === f.binds; }) || {}).label || f.binds)
-            : 'a value';
-          issues.push({ err: true, text: tok + ' needs ' + label + ' — fill it in on the right.' });
-        }
-      }
-      pieces.push({
-        tok: tok + (val ? ' ' + q(val) : ''),
-        label: f.desc,
-        help: f.help || '',
-        warn: f.warn,
-        kind: 'flag',
-      });
-    });
-
-    modeFlags().forEach(function (f) {
-      if (f.required && !picked[f.id]) {
-        issues.push({ err: true, text: (f.short || f.long) + ' is required by ' + tool.name + (tool.modes.length > 1 ? ' ' + m.name : '') + '.' });
-      }
-      if (!picked[f.id]) return;
-      (f.requires || []).forEach(function (r) {
-        var o = flagById(r);
-        if (o && !picked[r]) issues.push({ err: false, text: (f.short || f.long) + ' needs ' + (o.short || o.long) + '.' });
-      });
-    });
-
-    return { text: pieces.map(function (p) { return p.tok; }).join(' '), pieces: pieces, issues: issues };
-  }
-
   function renderCommand() {
-    var b = buildCommand();
+    var b = build(tool, mode, picked, slots, adhoc);
     $('cmd').textContent = b.text;
     $('issues').innerHTML = b.issues.map(function (i) {
       return '<div class="issue' + (i.err ? ' err' : '') + '">' + esc(i.text) + '</div>';

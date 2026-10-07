@@ -36,9 +36,45 @@ const GROUPS = {
 /* Value type inferred from the description, not guessed from the flag name.
    Conservative: anything unrecognised becomes "string", which is safe because
    the UI renders a free text box. */
+/* A closed value set, taken from the tool's OWN words.
+   ffuf states them in the help text: "Available modes: clusterbomb, pitchfork,
+   sniper" and "Available formats: json, ejson, html, md, csv, ecsv (or, 'all'
+   for all formats)". Without this the UI offers a free-text box for a field
+   that has exactly three legal answers, and the path heuristic below mistypes
+   both ("Multi-wordlist operation mode" matches /wordlist/, "Output file
+   format" matches /file/). Enum wins over every heuristic. */
+function inferEnum(desc) {
+  const m = /\bAvailable\s+\w+:\s*([^.]+)/i.exec(desc);
+  if (!m) return null;
+  let tail = m[1];
+  const vals = [];
+
+  /* "(or, 'all' for all formats)" — a quoted extra value, legal but outside the list. */
+  const paren = /\(or,?\s*'([^']+)'/i.exec(tail);
+  if (paren) tail = tail.slice(0, paren.index);
+
+  for (const part of tail.split(',')) {
+    const v = part.trim().replace(/^'|'$/g, '');
+    if (/^[a-z0-9][a-z0-9_.-]*$/i.test(v)) vals.push(v);
+  }
+  if (paren) vals.push(paren[1]);
+  return vals.length >= 2 ? vals : null;
+}
+
+/* Second shape ffuf uses for a closed set: quoted alternatives joined by "or".
+     -preflight-error  Preflight error handling: "abort" or "ignore"
+   Two flags carried this and both were typed as free text. */
+function inferQuotedEnum(desc) {
+  const m = /:\s*("[a-z0-9_.-]+"(?:\s*(?:,|or)\s*"[a-z0-9_.-]+")+)/i.exec(desc);
+  if (!m) return null;
+  const vals = [...m[1].matchAll(/"([a-z0-9_.-]+)"/gi)].map(x => x[1]);
+  return vals.length >= 2 ? vals : null;
+}
+
 function inferTakes(flag, desc) {
   const d = desc.toLowerCase();
   if (/^\(default:\s*(true|false)\)/.test(d) || /\(default: false\)/.test(d)) return 'none';
+  if (inferEnum(desc) || inferQuotedEnum(desc)) return 'enum';
   if (/\bwordlist\b|\bfile\b|\bpath\b|\bdirectory\b/.test(d)) return 'path';
   if (/\burl\b/.test(d)) return 'url';
   if (/number of|\bseconds\b|\brate\b|\bamount\b|\bdelay\b|\bthreads\b|\bdepth\b|\bcount\b/.test(d)) return 'int';
@@ -74,17 +110,23 @@ for (const raw of lines) {
   const dm = desc.match(/\(default:\s*([^)]*)\)\s*$/i);
   if (dm) { def = dm[1].trim(); desc = desc.replace(/\s*\(default:\s*[^)]*\)\s*$/i, '').trim(); }
 
-  const takes = (def === 'false' || def === 'true') ? 'none' : inferTakes(flag, m[2]);
+  /* Classify from the CLEANED desc, never the raw line. Passing m[2] left
+     "(default: clusterbomb)" glued to the last enum value, so -mode came out
+     with clusterbomb and pitchfork and silently lost sniper. */
+  const takes = (def === 'false' || def === 'true') ? 'none' : inferTakes(flag, desc);
+  const enumVals = takes === 'enum' ? (inferEnum(desc) || inferQuotedEnum(desc)) : null;
 
   flags.push({
     id: slug(flag),
     short: flag,
     long: null,
     takes,
-    enum: null,
+    enum: enumVals,
     binds: null,
     required: false,
-    repeatable: /multiple .* are accepted/i.test(desc),
+    /* Two wordings: "multiple -H flags are accepted" and a bare "(repeatable"
+       (-preflight, -postflight and their -var partners). The second was missed. */
+    repeatable: /multiple .* are accepted/i.test(desc) || /\(repeatable/i.test(desc),
     default: def,
     group,
     desc,
@@ -132,6 +174,12 @@ const NAMED = [
   ['cc', 'requires', 'ck', 'Client key needs to be defined as well for this to work'],
   ['ck', 'requires', 'cc', 'Client certificate needs to be defined as well for this to work'],
   ['input-cmd', 'requires', 'input-num', '--input-num is required when using this input method'],
+  /* Not from the help text — from the binary. ffuf only reads -of when -o is
+     set, and otherwise ignores it silently: "ffuf -of bogus" runs happily,
+     "ffuf -of bogus -o f" errors with "Unknown output file format (-of)".
+     So picking a format with nowhere to write it does nothing, and the enum
+     test could never reach the validation path. Found by test/enums.mjs. */
+  ['of', 'requires', 'o', 'observed: -of is only read when -o is set (ffuf 2.1.0-dev)'],
 ];
 for (const [from, kind, to, quote] of NAMED) {
   const f = flags.find(x => x.id === from);

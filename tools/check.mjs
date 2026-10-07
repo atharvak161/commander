@@ -122,6 +122,22 @@ if (warn.length) {
   console.warn(`\nWARN — ${warn.length}:`);
   warn.forEach(w => console.warn(`  ! ${w}`));
 }
+/* Nothing unexpected at the repo root.
+   A tool under test writes where IT chooses, relative to the current directory.
+   Verifying "-o x" left a 195KB ffuf audit log called `x` at the root and it was
+   committed twice before anyone noticed. verify.mjs now runs probes in a scratch
+   directory, and this check is the backstop: an unrecognised root file fails the
+   commit instead of shipping. Add deliberate new root files to the list. */
+const ROOT_ALLOWED = new Set([
+  '.gitignore', '.nojekyll', 'README.md', 'index.html', 'LICENSE',
+  'CNAME', '.github', '.githooks', '.gstack', 'assets', 'data', 'tools', 'test', '.git',
+]);
+for (const entry of readdirSync('.')) {
+  if (!ROOT_ALLOWED.has(entry)) {
+    fail.push(`repo root: unexpected entry "${entry}". If it is deliberate add it to ROOT_ALLOWED in tools/check.mjs; if a tool probe wrote it, quarantine it with bin/safe-delete.`);
+  }
+}
+
 if (fail.length) {
   console.error(`\nFAIL — ${fail.length} problem(s):`);
   fail.forEach(f => console.error(`  x ${f}`));

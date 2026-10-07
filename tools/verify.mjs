@@ -2,90 +2,142 @@
 /**
  * Command verifier.
  *
- * Proves every flag in the data is one the real binary accepts, by running it
- * and checking the tool did not reject the SYNTAX. No packets are sent: the
- * target is a non-routable placeholder and the tool errors on an unknown flag
- * long before it opens a socket.
+ * Builds commands through assets/js/command.js — the exact module the browser
+ * uses — then runs each one and asserts the tool did not reject the SYNTAX.
+ * Because it imports the real builder, a command proved here is byte-for-byte
+ * the command a user copies.
  *
- * What this proves: the flag exists, is spelled correctly, and takes the kind of
- * value we think it does.
- * What it cannot prove: that the flag does what the description claims. That is
- * a writing problem, not a testing one, and the plan says so.
+ * No packets are sent. Targets are non-routable and every tool errors on a bad
+ * flag long before it opens a socket.
  *
- *   node tools/verify.mjs ffuf
+ * Three passes:
+ *   1. each flag alone, with a value of the right type
+ *   2. every valid PAIR of flags, to catch combinations the UI permits
+ *   3. awkward values — spaces, quotes, $, backslashes
+ *
+ *   node tools/verify.mjs ffuf [--pairs]
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { mkdtempSync as _mkdtemp } from 'node:fs';
+import { tmpdir as _tmpdir } from 'node:os';
+import { join as _join } from 'node:path';
+
+/* Probes run in a scratch directory, never the repo.
+   Several flags write files relative to the CURRENT directory, so verifying
+   "-o 'a b'" created a file literally named `a b` in the working tree — and an
+   earlier run committed a 195KB ffuf audit log called `x`. The tool under test
+   decides where it writes; the only reliable fix is to not be standing in the
+   repo when it runs. */
+const PROBE_DIR = _mkdtemp(_join(_tmpdir(), 'commander-probe-'));
+import { buildCommand, blockedBy } from '../assets/js/command.js';
 
 const id = process.argv[2];
-if (!id) { console.error('usage: verify.mjs <toolId>'); process.exit(2); }
+const doPairs = process.argv.includes('--pairs');
+if (!id) { console.error('usage: verify.mjs <toolId> [--pairs]'); process.exit(2); }
 
 const path = `data/tools/${id}.json`;
-if (!existsSync(path)) { console.error(`no such tool file: ${path}`); process.exit(2); }
-const t = JSON.parse(readFileSync(path, 'utf8'));
+if (!existsSync(path)) { console.error(`no such tool: ${path}`); process.exit(2); }
+const tool = JSON.parse(readFileSync(path, 'utf8'));
 
-const bin = t.id;
-try { execFileSync('which', [bin], { stdio: 'pipe' }); }
-catch { console.error(`${bin} is not installed locally. Container path (P2) not wired yet.`); process.exit(2); }
+try { execFileSync('which', [tool.id], { stdio: 'pipe' }); }
+catch { console.error(`${tool.id} is not installed locally; container path (P2) not wired yet.`); process.exit(2); }
 
-/* Placeholder values by type. Deliberately non-routable and non-existent: the
-   point is to reach the argument parser, never the network. */
 const SAMPLE = {
-  none:   null,
-  string: 'x',
-  int:    '1',
-  path:   '/dev/null',
-  url:    'http://127.0.0.1:1/FUZZ',
-  port:   '80',
-  host:   '127.0.0.1',
-  enum:   null,
+  none: null, string: 'x', int: '1', path: '/dev/null',
+  url: 'http://127.0.0.1:1/FUZZ', port: '80', host: '127.0.0.1', enum: null,
 };
+const AWKWARD = ['a b', "it's", 'a$b', 'a\\b', 'a"b', 'a;b'];
 
-/* An unknown-flag rejection looks like this. Anything else (a connection error,
-   a usage dump triggered by missing required args) is not our concern here. */
+/* A rejection of the SYNTAX. A connection error or a usage dump from missing
+   required args is not a failure of our data. */
 const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|unrecognized option|invalid option|not defined:/i;
 
-const required = t.flags.filter(f => f.required);
-function baseArgs(exclude) {
-  const out = [];
-  for (const f of required) {
-    if (exclude && f.id === exclude) continue;
-    out.push(f.short || f.long);
-    if (f.takes !== 'none') out.push(f.takes === 'enum' ? (f.enum[0] ?? 'x') : SAMPLE[f.takes]);
-  }
-  return out;
+function valueFor(f) {
+  if (f.takes === 'none') return null;
+  if (f.takes === 'enum') return (f.enum && f.enum[0]) || 'x';
+  return SAMPLE[f.takes] ?? 'x';
 }
 
-let pass = 0;
+function slotsAndAdhoc(flags, override) {
+  const slots = {}, adhoc = {};
+  for (const f of flags) {
+    const v = override !== undefined && f.takes === 'path' ? override : valueFor(f);
+    if (v === null) continue;
+    if (f.binds) slots[f.binds] = v; else adhoc[f.id] = v;
+  }
+  return { slots, adhoc };
+}
+
+function run(argv) {
+  try { return execFileSync(tool.id, argv, { stdio: 'pipe', timeout: 5000, encoding: 'utf8', cwd: PROBE_DIR }); }
+  catch (e) { return `${e.stdout || ''}${e.stderr || ''}`; }
+}
+
+const required = tool.flags.filter(f => f.required);
 const bad = [];
+let ran = 0;
 
-for (const f of t.flags) {
-  const token = f.short || f.long;
-  const args = baseArgs(f.id);
-  args.push(token);
-  if (f.takes !== 'none') {
-    const v = f.takes === 'enum' ? (f.enum[0] ?? 'x') : SAMPLE[f.takes];
-    if (v !== null) args.push(v);
-  }
-
-  let out = '';
-  try {
-    out = execFileSync(bin, args, { stdio: 'pipe', timeout: 4000, encoding: 'utf8' });
-  } catch (e) {
-    out = `${e.stdout || ''}${e.stderr || ''}`;
-  }
-
+function check(label, picked, override) {
+  const flags = tool.flags.filter(f => picked[f.id]);
+  const { slots, adhoc } = slotsAndAdhoc(flags, override);
+  const built = buildCommand(tool, tool.modes[0].id, picked, slots, adhoc);
+  const out = run(built.argv);
+  ran++;
   if (REJECT.test(out)) {
-    bad.push({ flag: token, why: (out.match(REJECT) ? out.split('\n').find(l => REJECT.test(l)) : '').trim() });
-  } else {
-    pass++;
+    const line = out.split('\n').find(l => REJECT.test(l)) || '';
+    bad.push({ label, cmd: built.text, why: line.trim() });
   }
 }
 
-console.log(`\nverify ${bin} ${t.provenance.toolVersion}: ${pass}/${t.flags.length} flags accepted`);
+/* pass 1 — each flag alone, alongside whatever is required */
+for (const f of tool.flags) {
+  const picked = {};
+  required.forEach(r => { picked[r.id] = true; });
+  picked[f.id] = true;
+  check(f.short || f.long, picked);
+}
+const afterSingles = bad.length;
+
+/* pass 3 — awkward values on every flag that takes a path */
+for (const f of tool.flags.filter(f => f.takes === 'path')) {
+  for (const v of AWKWARD) {
+    const picked = {};
+    required.forEach(r => { picked[r.id] = true; });
+    picked[f.id] = true;
+    check(`${f.short || f.long} = ${JSON.stringify(v)}`, picked, v);
+  }
+}
+const afterAwkward = bad.length;
+
+/* pass 2 — every valid pair the UI would allow */
+let pairs = 0;
+if (doPairs) {
+  const list = tool.flags;
+  for (let i = 0; i < list.length; i++) {
+    for (let j = i + 1; j < list.length; j++) {
+      const a = list[i], b = list[j];
+      const picked = {};
+      required.forEach(r => { picked[r.id] = true; });
+      picked[a.id] = true;
+      if (blockedBy(tool, picked, b)) continue;   // the UI would not permit it
+      picked[b.id] = true;
+      check(`${a.short || a.long} + ${b.short || b.long}`, picked);
+      pairs++;
+    }
+  }
+}
+
+console.log(`\nverify ${tool.id} ${tool.provenance.toolVersion}`);
+console.log(`  singles   ${tool.flags.length}  (${afterSingles} rejected)`);
+console.log(`  awkward   ${tool.flags.filter(f => f.takes === 'path').length * AWKWARD.length}  (${afterAwkward - afterSingles} rejected)`);
+if (doPairs) console.log(`  pairs     ${pairs}  (${bad.length - afterAwkward} rejected)`);
+console.log(`  commands run: ${ran}`);
+
 if (bad.length) {
   console.error(`\nREJECTED — ${bad.length}:`);
-  bad.forEach(b => console.error(`  x ${b.flag.padEnd(16)} ${b.why}`));
+  bad.slice(0, 25).forEach(b => console.error(`  x ${b.label}\n      ${b.cmd}\n      ${b.why}`));
+  if (bad.length > 25) console.error(`  ... and ${bad.length - 25} more`);
   process.exit(1);
 }
-console.log('all flags accepted by the real binary.');
+console.log('\nevery generated command was accepted by the real binary.');
