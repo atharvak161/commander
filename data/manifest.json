@@ -1,0 +1,5 @@
+{
+  "tools": [
+    { "id": "ffuf", "name": "ffuf", "category": "recon", "summary": "Fast web fuzzer for content discovery." }
+  ]
+}

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Data integrity gate. A broken tool file cannot be committed.
+# Installed by: git config core.hooksPath .githooks
+node tools/check.mjs || exit 1
