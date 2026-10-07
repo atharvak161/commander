@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>commander &mdash; build terminal commands and understand them</title>
+<meta name="description" content="Pick flags from buttons, get a command you can paste, and read it back with every piece explained. Static, client-side, executes nothing.">
+<link rel="canonical" href="https://atharvaxsecurity.com/commander/">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <span class="brand">&gt;_ <b>commander</b></span>
+  <input id="q" type="search" placeholder="Search tools and flags&hellip;" aria-label="Search tools and flags">
+  <span class="sp"></span>
+  <a class="ext" href="https://atharvaxsecurity.com/" rel="noopener">&larr; atharvaxsecurity.com</a>
+</header>
+
+<main class="wrap" id="main" tabindex="-1">
+  <div id="home">
+    <div class="hero">
+      <h1>Build a command. Understand it.</h1>
+      <p>Pick a tool, choose flags from buttons that explain themselves, fill in your target and wordlist
+         once, and copy the result. Then read it back, piece by piece, so you know what you just ran.
+         Everything happens in your browser &mdash; nothing is sent anywhere, and nothing is executed.</p>
+    </div>
+    <div id="cats"></div>
+    <div id="results" class="res" hidden></div>
+  </div>
+  <div id="toolview" hidden></div>
+</main>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>

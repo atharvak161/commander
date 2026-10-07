@@ -1,5 +1,398 @@
 {
   "tools": [
-    { "id": "ffuf", "name": "ffuf", "category": "recon", "summary": "Fast web fuzzer for content discovery." }
+    {
+      "id": "ffuf",
+      "name": "ffuf",
+      "category": "recon",
+      "summary": "Fast web fuzzer for content discovery, parameters, vhosts and more.",
+      "flagCount": 77
+    }
+  ],
+  "flagIndex": [
+    {
+      "t": "ffuf",
+      "f": "-H",
+      "d": "Header \"Name: Value\", separated by colon. Multiple -H flags are accepted."
+    },
+    {
+      "t": "ffuf",
+      "f": "-X",
+      "d": "HTTP method to use"
+    },
+    {
+      "t": "ffuf",
+      "f": "-b",
+      "d": "Cookie data \"NAME1=VALUE1; NAME2=VALUE2\" for copy as curl functionality."
+    },
+    {
+      "t": "ffuf",
+      "f": "-cc",
+      "d": "Client cert for authentication. Client key needs to be defined as well for this to work"
+    },
+    {
+      "t": "ffuf",
+      "f": "-ck",
+      "d": "Client key for authentication. Client certificate needs to be defined as well for this to work"
+    },
+    {
+      "t": "ffuf",
+      "f": "-d",
+      "d": "POST data"
+    },
+    {
+      "t": "ffuf",
+      "f": "-http2",
+      "d": "Use HTTP2 protocol"
+    },
+    {
+      "t": "ffuf",
+      "f": "-ignore-body",
+      "d": "Do not fetch the response content."
+    },
+    {
+      "t": "ffuf",
+      "f": "-postflight",
+      "d": "Raw HTTP request file to run after each fuzzing request (repeatable, order matters)"
+    },
+    {
+      "t": "ffuf",
+      "f": "-postflight-var",
+      "d": "Extract a variable from the preceding -postflight response: \"NAME:regex\" (repeatable)"
+    },
+    {
+      "t": "ffuf",
+      "f": "-preflight",
+      "d": "Raw HTTP request file to run before each fuzzing request (repeatable, order matters)"
+    },
+    {
+      "t": "ffuf",
+      "f": "-preflight-error",
+      "d": "Preflight error handling: \"abort\" or \"ignore\""
+    },
+    {
+      "t": "ffuf",
+      "f": "-preflight-mode",
+      "d": "Preflight execution mode: \"per-request\" or \"per-thread\""
+    },
+    {
+      "t": "ffuf",
+      "f": "-preflight-var",
+      "d": "Extract a variable from the preceding -preflight response: \"NAME:regex\" (repeatable)"
+    },
+    {
+      "t": "ffuf",
+      "f": "-r",
+      "d": "Follow redirects"
+    },
+    {
+      "t": "ffuf",
+      "f": "-raw",
+      "d": "Do not encode URI"
+    },
+    {
+      "t": "ffuf",
+      "f": "-recursion",
+      "d": "Scan recursively. Only FUZZ keyword is supported, and URL (-u) has to end in it."
+    },
+    {
+      "t": "ffuf",
+      "f": "-recursion-depth",
+      "d": "Maximum recursion depth."
+    },
+    {
+      "t": "ffuf",
+      "f": "-replay-proxy",
+      "d": "Replay matched requests using this proxy."
+    },
+    {
+      "t": "ffuf",
+      "f": "-sni",
+      "d": "Target TLS SNI, does not support FUZZ keyword"
+    },
+    {
+      "t": "ffuf",
+      "f": "-timeout",
+      "d": "HTTP request timeout in seconds."
+    },
+    {
+      "t": "ffuf",
+      "f": "-u",
+      "d": "Target URL"
+    },
+    {
+      "t": "ffuf",
+      "f": "-x",
+      "d": "Proxy URL (SOCKS5 or HTTP). For example: http://127.0.0.1:8080 or socks5://127.0.0.1:8080"
+    },
+    {
+      "t": "ffuf",
+      "f": "-V",
+      "d": "Show version information."
+    },
+    {
+      "t": "ffuf",
+      "f": "-ac",
+      "d": "Automatically calibrate filtering options"
+    },
+    {
+      "t": "ffuf",
+      "f": "-acc",
+      "d": "Custom auto-calibration string. Can be used multiple times. Implies -ac"
+    },
+    {
+      "t": "ffuf",
+      "f": "-ach",
+      "d": "Per host autocalibration"
+    },
+    {
+      "t": "ffuf",
+      "f": "-ack",
+      "d": "Autocalibration keyword"
+    },
+    {
+      "t": "ffuf",
+      "f": "-acs",
+      "d": "Custom auto-calibration strategies. Can be used multiple times. Implies -ac"
+    },
+    {
+      "t": "ffuf",
+      "f": "-c",
+      "d": "Colorize output."
+    },
+    {
+      "t": "ffuf",
+      "f": "-config",
+      "d": "Load configuration from a file"
+    },
+    {
+      "t": "ffuf",
+      "f": "-json",
+      "d": "JSON output, printing newline-delimited JSON records"
+    },
+    {
+      "t": "ffuf",
+      "f": "-maxtime",
+      "d": "Maximum running time in seconds for entire process."
+    },
+    {
+      "t": "ffuf",
+      "f": "-maxtime-job",
+      "d": "Maximum running time in seconds per job."
+    },
+    {
+      "t": "ffuf",
+      "f": "-noninteractive",
+      "d": "Disable the interactive console functionality"
+    },
+    {
+      "t": "ffuf",
+      "f": "-p",
+      "d": "Seconds of delay between requests, or a range of random delay. For example \"0.1\" or \"0.1-2.0\""
+    },
+    {
+      "t": "ffuf",
+      "f": "-rate",
+      "d": "Rate of requests per second"
+    },
+    {
+      "t": "ffuf",
+      "f": "-s",
+      "d": "Do not print additional information (silent mode)"
+    },
+    {
+      "t": "ffuf",
+      "f": "-sa",
+      "d": "Stop on all error cases. Implies -sf and -se."
+    },
+    {
+      "t": "ffuf",
+      "f": "-scraperfile",
+      "d": "Custom scraper file path"
+    },
+    {
+      "t": "ffuf",
+      "f": "-scrapers",
+      "d": "Active scraper groups"
+    },
+    {
+      "t": "ffuf",
+      "f": "-se",
+      "d": "Stop on spurious errors"
+    },
+    {
+      "t": "ffuf",
+      "f": "-search",
+      "d": "Search for a FFUFHASH payload from ffuf history"
+    },
+    {
+      "t": "ffuf",
+      "f": "-sf",
+      "d": "Stop when > 95% of responses return 403 Forbidden"
+    },
+    {
+      "t": "ffuf",
+      "f": "-t",
+      "d": "Number of concurrent threads."
+    },
+    {
+      "t": "ffuf",
+      "f": "-v",
+      "d": "Verbose output, printing full URL and redirect location (if any) with the results."
+    },
+    {
+      "t": "ffuf",
+      "f": "-mc",
+      "d": "Match HTTP status codes, or \"all\" for everything."
+    },
+    {
+      "t": "ffuf",
+      "f": "-ml",
+      "d": "Match amount of lines in response"
+    },
+    {
+      "t": "ffuf",
+      "f": "-mmode",
+      "d": "Matcher set operator. Either of: and, or"
+    },
+    {
+      "t": "ffuf",
+      "f": "-mr",
+      "d": "Match regexp"
+    },
+    {
+      "t": "ffuf",
+      "f": "-ms",
+      "d": "Match HTTP response size"
+    },
+    {
+      "t": "ffuf",
+      "f": "-mt",
+      "d": "Match how many milliseconds to the first response byte, either greater or less than. EG: >100 or <100"
+    },
+    {
+      "t": "ffuf",
+      "f": "-mw",
+      "d": "Match amount of words in response"
+    },
+    {
+      "t": "ffuf",
+      "f": "-fc",
+      "d": "Filter HTTP status codes from response. Comma separated list of codes and ranges"
+    },
+    {
+      "t": "ffuf",
+      "f": "-fl",
+      "d": "Filter by amount of lines in response. Comma separated list of line counts and ranges"
+    },
+    {
+      "t": "ffuf",
+      "f": "-fmode",
+      "d": "Filter set operator. Either of: and, or"
+    },
+    {
+      "t": "ffuf",
+      "f": "-fr",
+      "d": "Filter regexp"
+    },
+    {
+      "t": "ffuf",
+      "f": "-fs",
+      "d": "Filter HTTP response size. Comma separated list of sizes and ranges"
+    },
+    {
+      "t": "ffuf",
+      "f": "-ft",
+      "d": "Filter by number of milliseconds to the first response byte, either greater or less than. EG: >100 or <100"
+    },
+    {
+      "t": "ffuf",
+      "f": "-fw",
+      "d": "Filter by amount of words in response. Comma separated list of word counts and ranges"
+    },
+    {
+      "t": "ffuf",
+      "f": "-D",
+      "d": "DirSearch wordlist compatibility mode. Used in conjunction with -e flag."
+    },
+    {
+      "t": "ffuf",
+      "f": "-e",
+      "d": "Comma separated list of extensions. Extends FUZZ keyword."
+    },
+    {
+      "t": "ffuf",
+      "f": "-enc",
+      "d": "Encoders for keywords, eg. 'FUZZ:urlencode b64encode'"
+    },
+    {
+      "t": "ffuf",
+      "f": "-ic",
+      "d": "Ignore wordlist comments"
+    },
+    {
+      "t": "ffuf",
+      "f": "-input-cmd",
+      "d": "Command producing the input. --input-num is required when using this input method. Overrides -w."
+    },
+    {
+      "t": "ffuf",
+      "f": "-input-num",
+      "d": "Number of inputs to test. Used in conjunction with --input-cmd."
+    },
+    {
+      "t": "ffuf",
+      "f": "-input-shell",
+      "d": "Shell to be used for running command"
+    },
+    {
+      "t": "ffuf",
+      "f": "-mode",
+      "d": "Multi-wordlist operation mode. Available modes: clusterbomb, pitchfork, sniper"
+    },
+    {
+      "t": "ffuf",
+      "f": "-request",
+      "d": "File containing the raw http request"
+    },
+    {
+      "t": "ffuf",
+      "f": "-request-proto",
+      "d": "Protocol to use along with raw request"
+    },
+    {
+      "t": "ffuf",
+      "f": "-w",
+      "d": "Wordlist file path and (optional) keyword separated by colon. eg. '/path/to/wordlist:KEYWORD'"
+    },
+    {
+      "t": "ffuf",
+      "f": "-audit-log",
+      "d": "Write audit log containing all requests, responses and config"
+    },
+    {
+      "t": "ffuf",
+      "f": "-debug-log",
+      "d": "Write all of the internal logging to the specified file."
+    },
+    {
+      "t": "ffuf",
+      "f": "-o",
+      "d": "Write output to file"
+    },
+    {
+      "t": "ffuf",
+      "f": "-od",
+      "d": "Directory path to store matched results to."
+    },
+    {
+      "t": "ffuf",
+      "f": "-of",
+      "d": "Output file format. Available formats: json, ejson, html, md, csv, ecsv (or, 'all' for all formats)"
+    },
+    {
+      "t": "ffuf",
+      "f": "-or",
+      "d": "Don't create the output file if we don't have results"
+    }
   ]
 }
