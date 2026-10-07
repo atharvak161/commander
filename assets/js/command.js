@@ -61,6 +61,7 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
     if (!picked[f.id]) continue;
     const tok = f.short || f.long;
     let val = '';
+    let missing = false;
     if (f.takes !== 'none') {
       val = f.binds ? (slots[f.binds] || '') : (adhoc[f.id] || '');
       if (!val) {
@@ -68,6 +69,15 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
           ? ((tool.inputs.find(i => i.id === f.binds) || {}).label || f.binds)
           : 'a value';
         issues.push({ err: true, text: `${tok} needs ${label} — fill it in on the right.` });
+
+        /* A flag awaiting a value emits a VISIBLE placeholder, never a bare
+           token. Bare tokens built "ffuf -u -w /list", where ffuf reads -w as
+           the value of -u: a command that looks assembled, is wrong, and fails
+           in a way that does not point at the cause. The placeholder is quoted,
+           so it survives a paste as one literal argument and the tool complains
+           about the obviously fake value instead. */
+        val = `<${label}>`;
+        missing = true;
       }
     }
     argv.push(tok);
@@ -78,6 +88,7 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
       help: f.help || '',
       warn: f.warn,
       kind: 'flag',
+      missing,
     });
   }
 

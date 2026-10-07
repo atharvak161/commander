@@ -175,3 +175,9 @@ button{font-family:inherit;font-size:inherit;color:inherit}
   background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;
   background-size:5px 5px,5px 5px;background-repeat:no-repeat;cursor:pointer}
 .slot select:hover{border-color:var(--accent-dim)}
+
+/* a value still to be filled in: visible, never a bare flag */
+.copy[disabled]{opacity:.45;cursor:not-allowed}
+.copy[disabled]:hover{background:var(--accent)}
+.piece.missing{border-color:var(--warning)}
+.piece.missing .tok{color:var(--warning)}

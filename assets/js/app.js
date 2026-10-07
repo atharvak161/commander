@@ -212,7 +212,12 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
         renderBuild();
       });
     });
-    $('copy').addEventListener('click', function () { copy(build(tool, mode, picked, slots, adhoc).text, this, 'Copy'); });
+    $('copy').addEventListener('click', function () {
+      var b = build(tool, mode, picked, slots, adhoc);
+      /* Never hand over a command that is known to be incomplete. */
+      if (b.issues.some(function (i) { return i.err; })) return;
+      copy(b.text, this, 'Copy');
+    });
 
     renderPicker();
     renderSlots();
@@ -365,6 +370,11 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
   function renderCommand() {
     var b = build(tool, mode, picked, slots, adhoc);
     $('cmd').textContent = b.text;
+
+    var broken = b.issues.some(function (i) { return i.err; });
+    var cp = $('copy');
+    cp.disabled = broken;
+    cp.title = broken ? 'Fill in the highlighted values first' : '';
     $('issues').innerHTML = b.issues.map(function (i) {
       return '<div class="issue' + (i.err ? ' err' : '') + '">' + esc(i.text) + '</div>';
     }).join('');
@@ -375,7 +385,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
     $('pieces').innerHTML = b.pieces.map(function (p, idx) {
       var more = p.help && p.help !== p.label;
       var tag = more ? 'button' : 'div';
-      return '<' + tag + ' class="piece' + (more ? '' : ' static') + '"' + (more ? ' data-i="' + idx + '"' : '') + '>' +
+      return '<' + tag + ' class="piece' + (more ? '' : ' static') + (p.missing ? ' missing' : '') + '"' + (more ? ' data-i="' + idx + '"' : '') + '>' +
         '<div class="tok">' + esc(p.tok) + '</div>' +
         '<div class="arrow">&#8595;</div>' +
         '<div class="lbl">' + esc(p.label) + '</div>' +

@@ -33,6 +33,7 @@ Phase 1a. **ffuf is live and complete.** nmap and gobuster are next.
 | Verifier | done — `tools/verify.mjs`, three passes |
 | Quoting round-trip | done — `test/quoting.mjs` |
 | Enum proof | done — `test/enums.mjs` |
+| Placeholder guard | done — `test/placeholders.mjs` |
 | ffuf | done — 77 flags, 4 enums, 5 repeatables, verified |
 | Interface | done — picker, slots, command bar, explainer |
 | nmap, gobuster | not started |
@@ -53,6 +54,7 @@ node tools/verify.mjs ffuf    # every flag and every valid pair, against the rea
 node tools/verify.mjs ffuf --pairs
 node test/quoting.mjs         # the copied text, parsed by a real shell
 node test/enums.mjs           # every enum value, and that the set is really closed
+node test/placeholders.mjs    # no flag can swallow the one after it
 ```
 
 **`verify.mjs`** runs the actual tool. Singles, awkward values (spaces, quotes,
@@ -71,6 +73,13 @@ argument.
 closed: every declared value must be accepted, and a value outside the list must
 be rejected. This is what caught that ffuf ignores `-of` entirely unless `-o` is
 also set.
+
+**`test/placeholders.mjs`** covers the case where you have picked a flag but
+not filled its value. A bare token built `ffuf -u -w /list`, where ffuf reads
+`-w` as the *value* of `-u`: assembled-looking, wrong, and failing in a way that
+does not point at the cause. A flag awaiting a value now shows a quoted
+placeholder, Copy is disabled until the gap is filled, and the test asserts no
+flag can ever swallow the one after it.
 
 The browser and the verifier import the **same** `assets/js/command.js`, so a
 verified command is byte-for-byte the one the page gives you. `check.mjs` runs on
