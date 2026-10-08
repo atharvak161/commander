@@ -22,6 +22,22 @@ export function flagById(tool, id) {
   return tool.flags.find(f => f.id === id);
 }
 
+/**
+ * A flag as it behaves IN THIS MODE.
+ *
+ * Most flags mean the same thing everywhere, but some do not: gobuster's
+ * --timeout defaults to 10s over HTTP and 1s for DNS and TFTP, and --domain is
+ * the target in `dns` while in `dir` it is "the domain to append when using an
+ * IP address as URL". Storing those separately would duplicate the 56 shared
+ * flags across seven modes; storing one shared entry would hide the difference.
+ * So the flag carries a `perMode` override of only the fields that differ, and
+ * everything reads the flag through here.
+ */
+export function resolveFlag(flag, modeId) {
+  const over = flag.perMode && flag.perMode[modeId];
+  return over ? Object.assign({}, flag, over) : flag;
+}
+
 export function modeFlags(tool, modeId) {
   const m = tool.modes.find(x => x.id === modeId) || tool.modes[0];
   return tool.flags.filter(f => m.flags.includes(f.id));
@@ -57,8 +73,9 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
   /* Required flags lead: they are the subject of the command. */
   const ordered = flags.slice().sort((a, b) => (b.required ? 1 : 0) - (a.required ? 1 : 0));
 
-  for (const f of ordered) {
-    if (!picked[f.id]) continue;
+  for (const raw of ordered) {
+    if (!picked[raw.id]) continue;
+    const f = resolveFlag(raw, m.id);
     const tok = f.short || f.long;
     let val = '';
     let missing = false;
@@ -89,6 +106,7 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
       warn: f.warn,
       kind: 'flag',
       missing,
+      note: f.note || null,
     });
   }
 

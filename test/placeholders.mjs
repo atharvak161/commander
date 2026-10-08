@@ -28,7 +28,13 @@ for (const file of readdirSync('data/tools').filter(f => f.endsWith('.json'))) {
   const tokens = new Set(tool.flags.map(f => f.short || f.long));
 
   for (const mode of tool.modes) {
-    for (const f of tool.flags) {
+    /* Only flags this mode actually has. Iterating every flag in every mode
+       asked gobuster's `dir` about `--resolver`, which belongs to `dns`;
+       buildCommand rightly drops it, nothing is emitted, and the assertion
+       "a missing value raises an error" failed against a command that never
+       contained the flag. The test was wrong, not the data. */
+    const inMode = new Set(mode.flags);
+    for (const f of tool.flags.filter(x => inMode.has(x.id))) {
       /* Deliberately pick the flag and supply NOTHING. */
       const picked = {};
       tool.flags.filter(x => x.required).forEach(r => { picked[r.id] = true; });

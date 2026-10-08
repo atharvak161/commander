@@ -24,7 +24,7 @@ security model.
 
 ## Status
 
-Phase 1a. **ffuf, nmap and sqlmap are live and complete.** gobuster is next.
+Phase 1a complete. **ffuf, nmap, sqlmap and gobuster are live**, 548 flags.
 
 | Piece | State |
 |---|---|
@@ -37,8 +37,8 @@ Phase 1a. **ffuf, nmap and sqlmap are live and complete.** gobuster is next.
 | ffuf | done — 77 flags, 4 enums, 5 repeatables, verified |
 | nmap | done — 133 flags from help+man, every one put to the binary |
 | sqlmap | done — 271 flags read from sqlmap's own option objects |
+| gobuster | done — 59 flags across 7 modes, with per-mode overrides |
 | Interface | done — picker, slots, command bar, explainer |
-| gobuster | not started |
 
 ## How the data is trusted
 
@@ -51,6 +51,7 @@ relationship the tool does not state is left empty.
 Then it is proved against the binary, four ways:
 
 ```
+node tools/coverage.mjs       # did we MISS a flag? see below
 node tools/check.mjs          # schema, references, conflict symmetry, freshness, repo hygiene
 node tools/verify.mjs ffuf    # every flag and every valid pair, against the real binary
 node tools/verify.mjs ffuf --pairs
@@ -115,6 +116,38 @@ which the binary accepts. Everything else that looks like a set in sqlmap's help
 is an `e.g.` example, and `-v`'s documented `0-6` is advisory: it accepts
 anything. `test/enums.mjs` is what establishes the difference, by asking the
 binary.
+
+**gobuster is the first tool with real modes.** `dir`, `vhost`, `dns`, `fuzz`,
+`tftp`, `s3` and `gcs` are subcommands with their own option sets. Most options
+are shared, but four genuinely differ: `--timeout` defaults to 10s over HTTP and
+1s for DNS and TFTP, and `--domain` is the target in `dns` while in `dir` it is
+"the domain to append when using an IP address as URL". One entry per mode-flag
+pair would duplicate the 56 shared options seven times; one shared entry would
+hide the difference. So a flag carries a `perMode` override of only the fields
+that differ, and everything reads it through `resolveFlag`.
+
+## Did we miss a flag?
+
+`tools/coverage.mjs` is the gate for that, and it works the opposite way round
+from the extractors. It sweeps every flag-shaped token out of every document a
+tool has, subtracts what we carry, and puts each leftover to the **binary**.
+It also probes all 62 single-character flags outright, because sweeping
+documents can only find what the documents mention — that is how `-4` turned up,
+which nmap accepts and documents in neither its help nor its man page.
+
+It knows the ways a token can look like a new flag without being one: an
+attached value (`-p22` is `-p` with `22`), getopt bundling (`-r4d` is `-r -4 -d`,
+and comes from ASCII art in nmap's man page), an unambiguous abbreviation
+(optparse resolves `--user` to `--user-agent`, and sqlmap's help literally
+prints the truncated `--hea`), and Go's indifference to dash count (`--input-num`
+is ffuf's `-input-num`). Anything genuinely accepted but deliberately not
+offered — easter eggs, removed options, incomplete prefixes — is listed in
+`REVIEWED` with the reason and the tool's own words. An unreviewed token fails
+the build.
+
+It found `-recursion-strategy`, a real ffuf flag with a closed value set that
+was missing entirely because its name is long enough to eat the column padding
+in ffuf's help, leaving one space where the parser wanted two.
 
 The browser and the verifier import the **same** `assets/js/command.js`, so a
 verified command is byte-for-byte the one the page gives you. `check.mjs` runs on

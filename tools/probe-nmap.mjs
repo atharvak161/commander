@@ -60,8 +60,18 @@ for (const f of tool.flags) {
     /* Real flag, and it needs a value. Confirm our type produces an accepted
        command; if we had said it takes nothing, the data was wrong. */
     if (f.takes === 'none') {
-      f.takes = 'string';
-      retyped.push({ tok, from: 'none', to: 'string', why: 'nmap: requires an argument' });
+      /* nmap only says "it needs a value", not which kind. The man entry has no
+         argument name for these (that is why they were typed as taking none),
+         so read the description: "the maximum number of OS detection tries"
+         is plainly a count, and typing it as free text would be a worse guess
+         than the one the sentence supports. */
+      const d = (f.desc || '').toLowerCase();
+      const to = /number|count|tries|times|seconds|\bms\b|level|size|limit|rate/.test(d) ? 'int'
+        : /file|path|directory/.test(d) ? 'path'
+        : /host|address|interface/.test(d) ? 'host'
+        : 'string';
+      f.takes = to;
+      retyped.push({ tok, from: 'none', to, why: 'nmap: requires an argument' });
     }
     const withVal = run([tok, SAMPLE[f.takes] ?? 'x']);
     if (NOT_A_FLAG.test(withVal)) { dropped.push({ tok, why: 'rejected once given a value' }); continue; }

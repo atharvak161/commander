@@ -4,7 +4,7 @@
    Command building lives in command.js and is imported, not reimplemented:
    the verifier imports the same module, so the command the tests prove valid
    is byte-for-byte the command shown here. */
-import { buildCommand as build, blockedBy as blocked, shellQuote } from './command.js';
+import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag } from './command.js';
 
 (function () {
   'use strict';
@@ -14,7 +14,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
   var manual = '';              // raw manual text for the help tab
   var mode = null;              // current mode id
   var picked = Object.create(null);   // flagId -> true
-  var slots = Object.create(null);    // inputId -> string (persists across tools)
+  var slots = Object.create(null);    // inputId -> string, per tool
   var openPiece = null;         // which explainer piece is expanded
 
   var el = {};
@@ -29,10 +29,21 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
      count. Command text goes to textContent, never innerHTML. */
   function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
 
-  /* Slot values survive moving between tools: you usually run three tools
-     against the same target in a row. Per-browser only, never sent anywhere. */
-  try { slots = JSON.parse(sessionStorage.getItem('commander.slots') || '{}') || {}; } catch (e) { slots = {}; }
-  function saveSlots() { try { sessionStorage.setItem('commander.slots', JSON.stringify(slots)); } catch (e) {} }
+  /* Slot values are remembered PER TOOL, never shared between them.
+     They used to be shared, on the theory that you run several tools against
+     the same target in a row. In practice the tools do not want the same shape
+     of target: ffuf wants a URL containing FUZZ, sqlmap wants a URL with a
+     parameter, nmap wants a host or a CIDR block and does not take a URL at
+     all. Carrying sqlmap's URL into nmap silently produced
+     "nmap 'http://site.example.com/page.php?id=1'" — a filled-in box, no
+     warning, and a command that cannot work. Per-browser only, never sent
+     anywhere, and it degrades to empty if storage is unavailable. */
+  function slotKey() { return 'commander.slots.' + (tool ? tool.id : '_none'); }
+  function loadSlots() {
+    try { slots = JSON.parse(sessionStorage.getItem(slotKey()) || '{}') || {}; }
+    catch (e) { slots = Object.create(null); }
+  }
+  function saveSlots() { try { sessionStorage.setItem(slotKey(), JSON.stringify(slots)); } catch (e) {} }
 
   /* ---------------- routing ---------------- */
   function route() {
@@ -118,6 +129,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (doc) {
         tool = doc;
+        loadSlots();          // this tool's own values, never another tool's
         picked = Object.create(null);
         adhoc = Object.create(null);
         mode = doc.modes[0].id;
@@ -136,9 +148,23 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
   }
   function modeFlags() {
     var allowed = currentMode().flags;
-    return tool.flags.filter(function (f) { return allowed.indexOf(f.id) >= 0; });
+    var mid = currentMode().id;
+    /* Resolved for THIS mode, so the tooltip, the type of the input box and
+       which slot a flag binds to all match the mode you are actually in.
+       gobuster's --timeout is 10s in dir and 1s in dns; --domain is the target
+       in dns and something else entirely in dir. */
+    return tool.flags
+      .filter(function (f) { return allowed.indexOf(f.id) >= 0; })
+      .map(function (f) { return resolveFlag(f, mid); });
   }
-  function flagById(id) { return tool.flags.find(function (f) { return f.id === id; }); }
+  /* Resolved for the current mode. The tooltip, the value box and the
+     explainer all come through here, and an unresolved lookup showed
+     gobuster's --timeout as "HTTP Timeout, default 10s" while you were in dns
+     mode, where it is the DNS resolver timeout and defaults to 1s. */
+  function flagById(id) {
+    var f = tool.flags.find(function (x) { return x.id === id; });
+    return f ? resolveFlag(f, currentMode().id) : f;
+  }
 
   function renderTool(tab) {
     tab = tab || 'build';
@@ -234,7 +260,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
         groups[g].map(function (f) {
           var b = blocked(tool, picked, f);
           var on = !!picked[f.id];
-          var warn = f.warn ? '<span class="wn" title="' + esc(f.warn) + '">' + ({root:'&#9888;',slow:'&#9203;',noisy:'&#128226;',destructive:'&#9888;'}[f.warn] || '') + '</span>' : '';
+          var warn = f.warn ? '<span class="wn" title="' + esc(f.warn) + '">' + ({root:'&#9888;',slow:'&#9203;',noisy:'&#128226;',destructive:'&#9888;',deprecated:'&#9888;'}[f.warn] || '') + '</span>' : '';
           return '<button class="flag" data-id="' + esc(f.id) + '" aria-pressed="' + on + '"' +
             (b && !on ? ' disabled title="Conflicts with ' + esc(b.short || b.long) + '"' : '') + '>' +
             esc(f.short || f.long) + (f.required ? '<span class="req">*</span>' : '') + warn + '</button>';
@@ -271,7 +297,8 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
     tipEl.innerHTML = '<div class="t">' + esc(forms) + (f.takes !== 'none' ? ' &lt;' + esc(f.takes) + '&gt;' : '') + '</div>' +
       esc(f.desc) +
       (f.help ? '<div style="margin-top:6px">' + esc(f.help) + '</div>' : '') +
-      (f.warn ? '<div class="wn">' + esc({root:'Needs root.',slow:'Slow.',noisy:'Noisy — this will show in logs.',destructive:'Destructive — can change or delete data.'}[f.warn] || f.warn) + '</div>' : '') +
+      (f.note ? '<div class="note">' + esc(f.note) + '</div>' : '') +
+      (f.warn ? '<div class="wn">' + esc({root:'Needs root.',slow:'Slow.',noisy:'Noisy — this will show in logs.',destructive:'Destructive — can change or delete data.',deprecated:'Deprecated — the tool still accepts it but prefers another spelling.'}[f.warn] || f.warn) + '</div>' : '') +
       '<div class="meta">' +
         (f.default ? 'default: ' + esc(f.default) + ' &middot; ' : '') +
         (f.requires && f.requires.length ? 'needs ' + esc(f.requires.map(function(r){var x=flagById(r);return x?(x.short||x.long):r;}).join(', ')) + ' &middot; ' : '') +
@@ -398,7 +425,8 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
         '<div class="tok">' + esc(p.tok) + '</div>' +
         '<div class="arrow">&#8595;</div>' +
         '<div class="lbl">' + esc(p.label) + '</div>' +
-        (p.warn ? '<div class="wn">' + esc({root:'needs root',slow:'slow',noisy:'noisy',destructive:'destructive'}[p.warn] || p.warn) + '</div>' : '') +
+        (p.note ? '<div class="note">' + esc(p.note) + '</div>' : '') +
+        (p.warn ? '<div class="wn">' + esc({root:'needs root',slow:'slow',noisy:'noisy',destructive:'destructive',deprecated:'deprecated'}[p.warn] || p.warn) + '</div>' : '') +
         (openPiece === idx && more ? '<div class="more">' + esc(p.help) + '</div>' : '') +
         '</' + tag + '>';
     }).join('');

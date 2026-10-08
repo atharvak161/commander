@@ -28,7 +28,10 @@ const manifest = existsSync(manifestPath)
   : null;
 
 const TAKES = new Set(['none','string','int','path','url','port','enum','host']);
-const WARNS = new Set(['root','slow','noisy','destructive']);
+/* `warn` is a CATEGORY, because it drives a badge on the flag button. Prose
+   belongs in `note`, which the tooltip shows. Mixing the two put whole
+   sentences where an icon name goes. */
+const WARNS = new Set(['root','slow','noisy','destructive','deprecated']);
 
 for (const file of files) {
   const rel = `${TOOLS}/${file}`;
@@ -74,6 +77,13 @@ for (const file of files) {
     if (!f.group) fail.push(`${at}: has no group.`);
     if (!f.source) fail.push(`${at}: has no source.`);
     if (f.warn && !WARNS.has(f.warn)) fail.push(`${at}: warn "${f.warn}" is not a known warning.`);
+    if (f.note != null && typeof f.note !== 'string') fail.push(`${at}: note must be a string.`);
+
+    /* perMode may only name modes this tool actually has, or a flag would carry
+       an override that never applies and nobody would notice. */
+    for (const mid of Object.keys(f.perMode || {})) {
+      if (!t.modes.some(m => m.id === mid)) fail.push(`${at}: perMode names "${mid}", which is not a mode of ${t.id}.`);
+    }
     if (f.binds && !inputIds.has(f.binds)) fail.push(`${at}: binds to "${f.binds}", which is not a declared input.`);
     if (f.takes === 'none' && f.binds) fail.push(`${at}: takes no value but binds to an input.`);
     if ((f.conflicts || []).includes(f.id)) fail.push(`${at}: conflicts with itself.`);

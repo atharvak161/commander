@@ -30,7 +30,7 @@ import { join as _join } from 'node:path';
    decides where it writes; the only reliable fix is to not be standing in the
    repo when it runs. */
 const PROBE_DIR = _mkdtemp(_join(_tmpdir(), 'commander-probe-'));
-import { buildCommand, blockedBy } from '../assets/js/command.js';
+import { buildCommand, blockedBy, resolveFlag } from '../assets/js/command.js';
 
 const id = process.argv[2];
 const doPairs = process.argv.includes('--pairs');
@@ -109,10 +109,13 @@ const required = tool.flags.filter(f => f.required);
 const bad = [];
 let ran = 0;
 
-function check(label, picked, override) {
-  const flags = tool.flags.filter(f => picked[f.id]);
+function check(label, picked, override, modeId) {
+  const mid = modeId || tool.modes[0].id;
+  const allowed = new Set((tool.modes.find(m => m.id === mid) || tool.modes[0]).flags);
+  const flags = tool.flags.filter(f => picked[f.id] && allowed.has(f.id))
+    .map(f => resolveFlag(f, mid));
   const { slots, adhoc } = slotsAndAdhoc(flags, override);
-  const built = buildCommand(tool, tool.modes[0].id, picked, slots, adhoc);
+  const built = buildCommand(tool, mid, picked, slots, adhoc);
   const out = run(built.argv);
   ran++;
   if (REJECT.test(out)) {
@@ -121,14 +124,23 @@ function check(label, picked, override) {
   }
 }
 
-/* pass 1 — each flag alone, alongside whatever is required */
+/* pass 1 — each flag alone, in EVERY mode that has it.
+   This used to run against modes[0] only. For a one-mode tool that is the whole
+   job, but gobuster has seven, so six went unverified — and worse, a flag that
+   belongs to dns was "tested" under dir, where buildCommand correctly drops it,
+   so the command ran with no flag at all and passed. Silent and meaningless.
+   A flag is now checked once per mode it actually belongs to. */
 let skipped = 0;
-for (const f of tool.flags) {
-  if (SIDE_EFFECTS.has(f.id)) { skipped++; continue; }
-  const picked = {};
-  required.forEach(r => { picked[r.id] = true; });
-  picked[f.id] = true;
-  check(f.short || f.long, picked);
+for (const mode of tool.modes) {
+  const allowed = new Set(mode.flags);
+  for (const f of tool.flags) {
+    if (!allowed.has(f.id)) continue;
+    if (SIDE_EFFECTS.has(f.id)) { skipped++; continue; }
+    const picked = {};
+    required.forEach(r => { picked[r.id] = true; });
+    picked[f.id] = true;
+    check(`${tool.modes.length > 1 ? mode.id + ' ' : ''}${f.short || f.long}`, picked, undefined, mode.id);
+  }
 }
 const afterSingles = bad.length;
 

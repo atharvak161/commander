@@ -12,7 +12,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
-import { buildCommand, shellQuote } from '../assets/js/command.js';
+import { buildCommand, shellQuote, resolveFlag } from '../assets/js/command.js';
 
 /* Hostile values, deliberately. Each has broken a hand-rolled quoter somewhere. */
 const VALUES = [
@@ -66,7 +66,12 @@ for (const v of VALUES) {
 const files = readdirSync('data/tools').filter(f => f.endsWith('.json'));
 for (const file of files) {
   const tool = JSON.parse(readFileSync(`data/tools/${file}`, 'utf8'));
-  const valued = tool.flags.filter(f => f.takes !== 'none');
+  /* Every mode, not just the first. A flag can take a different kind of value
+     per mode, and for a seven-mode tool like gobuster testing only modes[0]
+     leaves six untested. */
+  for (const mode of tool.modes) {
+  const inMode = new Set(mode.flags);
+  const valued = tool.flags.filter(f => f.takes !== 'none' && inMode.has(f.id));
 
   for (const f of valued) {
     for (const v of VALUES) {
@@ -76,11 +81,11 @@ for (const file of files) {
       picked[f.id] = true;
 
       const slots = {}, adhoc = {};
-      for (const pf of tool.flags.filter(x => picked[x.id] && x.takes !== 'none')) {
+      for (const pf of tool.flags.filter(x => picked[x.id] && inMode.has(x.id)).map(x => resolveFlag(x, mode.id)).filter(x => x.takes !== 'none')) {
         if (pf.binds) slots[pf.binds] = v; else adhoc[pf.id] = v;
       }
 
-      const built = buildCommand(tool, tool.modes[0].id, picked, slots, adhoc);
+      const built = buildCommand(tool, mode.id, picked, slots, adhoc);
       let got;
       try { got = shellSplit(built.text); }
       catch (e) { fail.push({ v, why: `${tool.id} ${f.short}: shell rejected the text — ${e.message}` }); continue; }
@@ -93,6 +98,7 @@ for (const file of files) {
         });
       } else pass++;
     }
+  }
   }
 }
 

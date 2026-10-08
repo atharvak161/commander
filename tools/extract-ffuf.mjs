@@ -98,7 +98,13 @@ for (const raw of lines) {
   const sec = raw.match(/^([A-Z][A-Z\s]+):\s*$/);
   if (sec) { group = GROUPS[sec[1].trim()] || 'general'; continue; }
 
-  const m = raw.match(/^\s+(-[A-Za-z0-9-]+)\s{2,}(.+?)\s*$/);
+  /* Indent is exactly two spaces for a flag, four or more for the EXAMPLES
+     block (which contains lines like "-d '{...}' -fr \"error\"" that would
+     otherwise parse as flags). The separator is one space or more, not two:
+     -recursion-strategy is long enough to eat the column padding, leaving a
+     single space, and requiring two silently dropped it — a real flag, with a
+     closed value set, missing from the tool entirely. */
+  const m = raw.match(/^ {2}(-[A-Za-z0-9-]+)\s+(.+?)\s*$/);
   if (!m) continue;
 
   const flag = m[1];

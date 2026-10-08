@@ -5,14 +5,21 @@
       "name": "ffuf",
       "category": "recon",
       "summary": "Fast web fuzzer for content discovery, parameters, vhosts and more.",
-      "flagCount": 77
+      "flagCount": 78
+    },
+    {
+      "id": "gobuster",
+      "name": "gobuster",
+      "category": "enumeration",
+      "summary": "Brute-force enumeration of directories, DNS subdomains, vhosts and buckets.",
+      "flagCount": 59
     },
     {
       "id": "nmap",
       "name": "nmap",
       "category": "enumeration",
       "summary": "Network mapper: host discovery, port scanning, service and OS detection.",
-      "flagCount": 133
+      "flagCount": 140
     },
     {
       "id": "sqlmap",
@@ -112,6 +119,11 @@
       "t": "ffuf",
       "f": "-recursion-depth",
       "d": "Maximum recursion depth."
+    },
+    {
+      "t": "ffuf",
+      "f": "-recursion-strategy",
+      "d": "Recursion strategy: \"default\" for a redirect based, and \"greedy\" to recurse on all matches"
     },
     {
       "t": "ffuf",
@@ -409,6 +421,301 @@
       "d": "Don't create the output file if we don't have results"
     },
     {
+      "t": "gobuster",
+      "f": "--add-slash, -f",
+      "d": "Append / to each request"
+    },
+    {
+      "t": "gobuster",
+      "f": "--append-domain, --ad",
+      "d": "Append main domain from URL to words from wordlist. Otherwise the fully qualified domains need to be specified in the wordlist."
+    },
+    {
+      "t": "gobuster",
+      "f": "--body, -B",
+      "d": "Request body"
+    },
+    {
+      "t": "gobuster",
+      "f": "--check-cname, -c",
+      "d": "Also check CNAME records"
+    },
+    {
+      "t": "gobuster",
+      "f": "--client-cert-p12, --ccp12",
+      "d": "a p12 file to use for options TLS client certificates"
+    },
+    {
+      "t": "gobuster",
+      "f": "--client-cert-p12-password, --ccp12p",
+      "d": "the password to the p12 file"
+    },
+    {
+      "t": "gobuster",
+      "f": "--client-cert-pem, --ccp",
+      "d": "public key in PEM format for optional TLS client certificates]"
+    },
+    {
+      "t": "gobuster",
+      "f": "--client-cert-pem-key, --ccpk",
+      "d": "private key in PEM format for optional TLS client certificates (this key needs to have no password)"
+    },
+    {
+      "t": "gobuster",
+      "f": "--cookies, -c",
+      "d": "Cookies to use for the requests"
+    },
+    {
+      "t": "gobuster",
+      "f": "--debug",
+      "d": "enable debug output"
+    },
+    {
+      "t": "gobuster",
+      "f": "--delay, -d",
+      "d": "Time each thread waits between requests (e.g. 1500ms)"
+    },
+    {
+      "t": "gobuster",
+      "f": "--discover-backup, --db",
+      "d": "Upon finding a file search for backup files by appending multiple backup extensions"
+    },
+    {
+      "t": "gobuster",
+      "f": "--discover-pattern, --pd",
+      "d": "File containing replacement patterns applied to successful guesses"
+    },
+    {
+      "t": "gobuster",
+      "f": "--domain, --do",
+      "d": "the domain to append when using an IP address as URL. If left empty and you specify a domain based URL the hostname from the URL is extracted"
+    },
+    {
+      "t": "gobuster",
+      "f": "--exclude-hostname-length, --xh",
+      "d": "Automatically adjust exclude-length based on dynamic hostname length in responses"
+    },
+    {
+      "t": "gobuster",
+      "f": "--exclude-length, --xl",
+      "d": "exclude the following content lengths (completely ignores the status). You can separate multiple lengths by comma and it also supports ranges like 203-206"
+    },
+    {
+      "t": "gobuster",
+      "f": "--exclude-status, --xs",
+      "d": "exclude the following status codes. Can also handle ranges like 200,300-400,404."
+    },
+    {
+      "t": "gobuster",
+      "f": "--exclude-statuscodes, -b",
+      "d": "Excluded status codes. Can also handle ranges like 200,300-400,404."
+    },
+    {
+      "t": "gobuster",
+      "f": "--expanded, -e",
+      "d": "Expanded mode, print full URLs"
+    },
+    {
+      "t": "gobuster",
+      "f": "--extensions, -x",
+      "d": "File extension(s) to search for"
+    },
+    {
+      "t": "gobuster",
+      "f": "--extensions-file, -X",
+      "d": "Read file extension(s) to search from the file"
+    },
+    {
+      "t": "gobuster",
+      "f": "--follow-redirect, -r",
+      "d": "Follow redirects"
+    },
+    {
+      "t": "gobuster",
+      "f": "--force",
+      "d": "Continue even if the prechecks fail. Please only use this if you know what you are doing, it can lead to unexpected results."
+    },
+    {
+      "t": "gobuster",
+      "f": "--headers, -H",
+      "d": "Specify HTTP headers, -H 'Header1: val1' -H 'Header2: val2'"
+    },
+    {
+      "t": "gobuster",
+      "f": "--hide-length, --hl",
+      "d": "Hide the length of the body in the output"
+    },
+    {
+      "t": "gobuster",
+      "f": "--interface, --iface",
+      "d": "specify network interface to use. Can't be used with local-ip"
+    },
+    {
+      "t": "gobuster",
+      "f": "--local-ip",
+      "d": "specify local ip of network interface to use. Can't be used with interface"
+    },
+    {
+      "t": "gobuster",
+      "f": "--max-files, -m",
+      "d": "max files to list when listing buckets"
+    },
+    {
+      "t": "gobuster",
+      "f": "--method, -m",
+      "d": "HTTP method to use"
+    },
+    {
+      "t": "gobuster",
+      "f": "--no-canonicalize-headers, --nch",
+      "d": "Do not canonicalize HTTP header names. If set header names are sent as is"
+    },
+    {
+      "t": "gobuster",
+      "f": "--no-color, --nc",
+      "d": "Disable color output"
+    },
+    {
+      "t": "gobuster",
+      "f": "--no-error, --ne",
+      "d": "Don't display errors"
+    },
+    {
+      "t": "gobuster",
+      "f": "--no-fqdn, --nf",
+      "d": "Do not automatically add a trailing dot to the domain, so the resolver uses the DNS search domain"
+    },
+    {
+      "t": "gobuster",
+      "f": "--no-progress, --np",
+      "d": "Don't display progress"
+    },
+    {
+      "t": "gobuster",
+      "f": "--no-status, -n",
+      "d": "Don't print status codes"
+    },
+    {
+      "t": "gobuster",
+      "f": "--no-tls-validation, -k",
+      "d": "Skip TLS certificate verification"
+    },
+    {
+      "t": "gobuster",
+      "f": "--output, -o",
+      "d": "Output file to write results to (defaults to stdout)"
+    },
+    {
+      "t": "gobuster",
+      "f": "--password, -P",
+      "d": "Password for Basic Auth"
+    },
+    {
+      "t": "gobuster",
+      "f": "--pattern, -p",
+      "d": "File containing replacement patterns"
+    },
+    {
+      "t": "gobuster",
+      "f": "--protocol",
+      "d": "Use either 'udp' or 'tcp' as protocol on the custom resolver"
+    },
+    {
+      "t": "gobuster",
+      "f": "--proxy",
+      "d": "Proxy to use for requests [http(s)://host:port] or [socks5://host:port]"
+    },
+    {
+      "t": "gobuster",
+      "f": "--quiet, -q",
+      "d": "Don't print the banner and other noise"
+    },
+    {
+      "t": "gobuster",
+      "f": "--random-agent, --rua",
+      "d": "Use a random User-Agent string"
+    },
+    {
+      "t": "gobuster",
+      "f": "--resolver",
+      "d": "Use custom DNS server (format server.com or server.com:port)"
+    },
+    {
+      "t": "gobuster",
+      "f": "--retry",
+      "d": "Should retry on request timeout"
+    },
+    {
+      "t": "gobuster",
+      "f": "--retry-attempts, --ra",
+      "d": "Times to retry on request timeout"
+    },
+    {
+      "t": "gobuster",
+      "f": "--server, -s",
+      "d": "The target TFTP server"
+    },
+    {
+      "t": "gobuster",
+      "f": "--show-files, -s",
+      "d": "show files from found buckets"
+    },
+    {
+      "t": "gobuster",
+      "f": "--status-codes, -s",
+      "d": "Positive status codes (will be overwritten with status-codes-blacklist if set). Can also handle ranges like 200,300-400,404"
+    },
+    {
+      "t": "gobuster",
+      "f": "--status-codes-blacklist, -b",
+      "d": "Negative status codes (will override status-codes if set). Can also handle ranges like 200,300-400,404."
+    },
+    {
+      "t": "gobuster",
+      "f": "--threads, -t",
+      "d": "Number of concurrent threads"
+    },
+    {
+      "t": "gobuster",
+      "f": "--timeout, --to",
+      "d": "HTTP Timeout"
+    },
+    {
+      "t": "gobuster",
+      "f": "--tls-renegotiation",
+      "d": "Enable TLS renegotiation"
+    },
+    {
+      "t": "gobuster",
+      "f": "--url, -u",
+      "d": "The target URL"
+    },
+    {
+      "t": "gobuster",
+      "f": "--useragent, -a",
+      "d": "Set the User-Agent string"
+    },
+    {
+      "t": "gobuster",
+      "f": "--username, -U",
+      "d": "Username for Basic Auth"
+    },
+    {
+      "t": "gobuster",
+      "f": "--wildcard, --wc",
+      "d": "Force continued operation when wildcard found"
+    },
+    {
+      "t": "gobuster",
+      "f": "--wordlist, -w",
+      "d": "Path to the wordlist. Set to - to use STDIN."
+    },
+    {
+      "t": "gobuster",
+      "f": "--wordlist-offset, --wo",
+      "d": "Resume from a given position in the wordlist"
+    },
+    {
       "t": "nmap",
       "f": "--exclude",
       "d": "Exclude hosts/networks"
@@ -440,6 +747,11 @@
     },
     {
       "t": "nmap",
+      "f": "-P0",
+      "d": "Skip host discovery. Deprecated spelling of -Pn."
+    },
+    {
+      "t": "nmap",
       "f": "-PA",
       "d": "TCP SYN, TCP ACK, UDP or SCTP discovery to given ports"
     },
@@ -457,6 +769,11 @@
       "t": "nmap",
       "f": "-Pn",
       "d": "Treat all hosts as online -- skip host discovery"
+    },
+    {
+      "t": "nmap",
+      "f": "-PN",
+      "d": "Skip host discovery. Deprecated spelling of -Pn."
     },
     {
       "t": "nmap",
@@ -497,6 +814,11 @@
       "t": "nmap",
       "f": "-sn",
       "d": "Ping Scan - disable port scan"
+    },
+    {
+      "t": "nmap",
+      "f": "-sP",
+      "d": "Ping scan. Deprecated spelling of -sn."
     },
     {
       "t": "nmap",
@@ -615,6 +937,11 @@
     },
     {
       "t": "nmap",
+      "f": "-sR",
+      "d": "RPC scan. Now an alias for -sV, which it also activates."
+    },
+    {
+      "t": "nmap",
       "f": "-sV",
       "d": "Probe open ports to determine service/version info"
     },
@@ -716,7 +1043,7 @@
     {
       "t": "nmap",
       "f": "--max-retries",
-      "d": "Caps number of port scan probe retransmissions."
+      "d": "Specify the maximum number of port scan probe retransmissions"
     },
     {
       "t": "nmap",
@@ -752,6 +1079,11 @@
       "t": "nmap",
       "f": "--scan-delay",
       "d": "Adjust delay between probes"
+    },
+    {
+      "t": "nmap",
+      "f": "-T",
+      "d": "Set a timing template"
     },
     {
       "t": "nmap",
@@ -940,6 +1272,11 @@
     },
     {
       "t": "nmap",
+      "f": "-4",
+      "d": "Scan IPv4 addresses only. The counterpart of -6, and the default."
+    },
+    {
+      "t": "nmap",
       "f": "-6",
       "d": "Enable IPv6 scanning"
     },
@@ -997,6 +1334,11 @@
       "t": "nmap",
       "f": "--help",
       "d": "Print help summary page"
+    },
+    {
+      "t": "nmap",
+      "f": "--max-os-tries",
+      "d": "Set the maximum number of OS detection tries against a target"
     },
     {
       "t": "nmap",

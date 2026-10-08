@@ -63,7 +63,10 @@ Designed against the three hardest real cases found before any code was written:
       "group": "target",             // picker grouping
       "desc": "Path to the wordlist.",          // one line, hover + explainer label
       "help": "Longer paragraph...",            // expanded explanation
-      "warn": null,                  // "root"|"slow"|"noisy"|"destructive"|null
+      "warn": null,                  // "root"|"slow"|"noisy"|"destructive"|"deprecated"|null
+      "note": null,                  // free prose caveat, shown in the tooltip
+      "perMode": null,               // { "<modeId>": { desc?, default?, takes?, binds? } }
+                                     //   only where a mode genuinely differs
       "conflicts": [],               // flag ids
       "requires": [],                // flag ids
       "since": null,

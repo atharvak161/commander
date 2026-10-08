@@ -100,6 +100,7 @@ function add(token, { arg = null, desc = '', group = 'misc', source, long = null
     desc: desc.trim(),
     help: '',
     warn: null,
+    note: null,
     conflicts: [],
     requires: [],
     since: null,
@@ -227,7 +228,23 @@ function rebuild(desc, parts, i) {
    which start the same way but run on. */
 const MAN_LINE = /^ {5}(-{1,2}[A-Za-z][A-Za-z0-9_-]*(?:[;,]\s*-{1,2}[A-Za-z][A-Za-z0-9_-]*)*)((?:\s+[a-z][A-Za-z0-9_ ,\[\]|-]*?)?)\s*(?:\(([^()]*)\))?\s*$/;
 
-const manLines = readFileSync(MAN, 'utf8').split('\n');
+/* An option's parenthetical can wrap onto the next line:
+       --max-os-tries (Set the maximum number of OS detection tries against a
+           target)
+   Requiring a balanced "(...)" on one line skipped six real entries, and lost
+   --max-os-tries entirely along with -T's NAMED timing templates. Join an
+   unclosed parenthetical with the line that finishes it before matching. */
+const rawMan = readFileSync(MAN, 'utf8').split('\n');
+const manLines = [];
+for (let i = 0; i < rawMan.length; i++) {
+  let l = rawMan[i];
+  if (/^ {5}-{1,2}\S/.test(l) && (l.match(/\(/g) || []).length > (l.match(/\)/g) || []).length) {
+    while (i + 1 < rawMan.length && (l.match(/\(/g) || []).length > (l.match(/\)/g) || []).length) {
+      l += ' ' + rawMan[++i].trim();
+    }
+  }
+  manLines.push(l);
+}
 for (let i = 0; i < manLines.length; i++) {
   const m = manLines[i].match(MAN_LINE);
   if (!m) continue;
@@ -254,6 +271,95 @@ for (let i = 0; i < manLines.length; i++) {
   for (const tok of spec.split(/[;,]\s*/)) {
     add(tok.trim(), { arg, desc, group: 'misc', source: 'man' });
   }
+}
+
+/* Relationships nmap states in an ERROR rather than in its help, found by
+   running it: "You cannot use -F (fast scan) or -p (explicit port selection)
+   when not doing a port scan". -sL and -sn are the no-port-scan modes.
+
+   Deliberately only these four edges. Scan types are NOT blanket-exclusive —
+   nmap accepts -sL together with -sn — so inventing a rule like "one scan type
+   at a time" would block valid commands. */
+const OBSERVED_CONFLICTS = [['p', 'sL'], ['p', 'sn'], ['F', 'sL'], ['F', 'sn']];
+for (const [a, b] of OBSERVED_CONFLICTS) {
+  const fa = flags.get(a), fb = flags.get(b);
+  if (!fa || !fb) continue;
+  if (!fa.conflicts.includes(b)) fa.conflicts.push(b);
+  if (!fb.conflicts.includes(a)) fb.conflicts.push(a);
+}
+
+/* The one piece of nmap syntax people reach for most and the help never spells
+   out: the value "-" means every port. "-p-" in the wild is just -p with "-"
+   as its value, which is why there is no separate -p- flag to pick. */
+const PORT_HELP = 'Takes a range, a list, or "-" on its own for all 65535 ports. '
+  + 'The familiar "-p-" is this flag with "-" as its value, so type a single dash here. '
+  + 'Other forms: 22 / 1-1000 / 80,443,8080 / U:53,T:21-25 to mix protocols.';
+if (flags.get('p')) flags.get('p').help = PORT_HELP;
+
+/* -T has two spellings. The help shows "-T<0-5>", which expands to the six
+   numeric flags above; the man page shows
+   "-T paranoid|sneaky|polite|normal|aggressive|insane", which nmap also accepts
+   and which is far more readable in a saved command. Both are real, so both are
+   offered. Verified: all six names are accepted. */
+const T_NAMES = ['paranoid', 'sneaky', 'polite', 'normal', 'aggressive', 'insane'];
+const tExisting = flags.get('T');
+if (tExisting) {
+  /* The man pass already created -T from "-T paranoid|sneaky|..." but typed it
+     as free text. The six names ARE the whole set, so make it a picker. */
+  tExisting.takes = 'enum';
+  tExisting.enum = T_NAMES;
+  tExisting.default = tExisting.default || 'normal';
+  tExisting.group = 'timing';
+  tExisting.help = 'The same six templates as -T0 through -T5, in the order above: -T paranoid is -T0, '
+    + '-T insane is -T5. The names are easier to read back in a saved command.';
+} else {
+  flags.set('T', {
+    id: 'T', short: '-T', long: null, takes: 'enum', enum: T_NAMES, binds: null,
+    required: false, repeatable: false, default: 'normal', group: 'timing',
+    desc: 'Set a timing template by name. Higher is faster and noisier.',
+    help: 'The same six templates as -T0 through -T5, in the order above: -T paranoid is -T0, -T insane is -T5. '
+        + 'The names are easier to read back in a saved command.',
+    warn: null, note: null, conflicts: [], requires: [], since: null, source: 'man',
+  });
+}
+
+/* Spellings nmap still accepts and warns about. People copy them out of older
+   walkthroughs, so a builder that cannot express them sends you to the terminal
+   to hand-edit — and nmap names the replacement itself, which is worth showing. */
+/* -4 is accepted by nmap and documented NOWHERE — not in -h, not in the man
+   page's option list. It is the counterpart of -6 and forces IPv4, and people
+   use it. Found by probing the single-character space rather than by reading,
+   which is why tools/coverage.mjs now probes all 62. */
+if (!flags.has('4')) {
+  flags.set('4', {
+    id: '4', short: '-4', long: null, takes: 'none', enum: null, binds: null,
+    required: false, repeatable: false, default: null, group: 'misc',
+    desc: 'Scan IPv4 addresses only. The counterpart of -6, and the default.',
+    help: 'nmap accepts this but documents it in neither its help nor its man page.',
+    warn: null, note: null, conflicts: ['6'], requires: [], since: null, source: 'observed',
+  });
+  const six = flags.get('6');
+  if (six && !six.conflicts.includes('4')) six.conflicts.push('4');
+}
+
+const DEPRECATED = [
+  ['-sP', 'sn', 'discovery', 'Ping scan. Deprecated spelling of -sn.'],
+  ['-P0', 'Pn', 'discovery', 'Skip host discovery. Deprecated spelling of -Pn.'],
+  ['-PN', 'Pn', 'discovery', 'Skip host discovery. Deprecated spelling of -Pn.'],
+  ['-sR', 'sV', 'version',   'RPC scan. Now an alias for -sV, which it also activates.'],
+];
+for (const [tok, modern, group, desc] of DEPRECATED) {
+  const id = slug(tok);
+  if (flags.has(id)) continue;
+  const m = flags.get(modern);
+  flags.set(id, {
+    id, short: tok, long: null, takes: 'none', enum: null, binds: null,
+    required: false, repeatable: false, default: null, group,
+    desc, help: '',
+    warn: 'deprecated',
+    note: `nmap prints "The ${tok} option is deprecated. Please use -${modern}" and carries on. Prefer -${modern}.`,
+    conflicts: [], requires: [], since: null, source: 'observed',
+  });
 }
 
 /* ------------------------------------------------------------- assemble --- */

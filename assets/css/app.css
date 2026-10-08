@@ -181,3 +181,6 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .copy[disabled]:hover{background:var(--accent)}
 .piece.missing{border-color:var(--warning)}
 .piece.missing .tok{color:var(--warning)}
+
+/* a prose caveat, distinct from the warn badge */
+.tip .note, .piece .note{color:var(--info);font-size:11.5px;margin-top:5px;line-height:1.45}
