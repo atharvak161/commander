@@ -6,6 +6,13 @@
       "category": "recon",
       "summary": "Fast web fuzzer for content discovery, parameters, vhosts and more.",
       "flagCount": 77
+    },
+    {
+      "id": "nmap",
+      "name": "nmap",
+      "category": "enumeration",
+      "summary": "Network mapper: host discovery, port scanning, service and OS detection.",
+      "flagCount": 133
     }
   ],
   "flagIndex": [
@@ -393,6 +400,671 @@
       "t": "ffuf",
       "f": "-or",
       "d": "Don't create the output file if we don't have results"
+    },
+    {
+      "t": "nmap",
+      "f": "--exclude",
+      "d": "Exclude hosts/networks"
+    },
+    {
+      "t": "nmap",
+      "f": "--excludefile",
+      "d": "Exclude list from file"
+    },
+    {
+      "t": "nmap",
+      "f": "-iL",
+      "d": "Input from list of hosts/networks"
+    },
+    {
+      "t": "nmap",
+      "f": "-iR",
+      "d": "Choose random targets"
+    },
+    {
+      "t": "nmap",
+      "f": "--dns-servers",
+      "d": "Specify custom DNS servers"
+    },
+    {
+      "t": "nmap",
+      "f": "-n",
+      "d": "No reverse DNS resolution"
+    },
+    {
+      "t": "nmap",
+      "f": "-PA",
+      "d": "TCP SYN, TCP ACK, UDP or SCTP discovery to given ports"
+    },
+    {
+      "t": "nmap",
+      "f": "-PE",
+      "d": "ICMP echo, timestamp, and netmask request discovery probes"
+    },
+    {
+      "t": "nmap",
+      "f": "-PM",
+      "d": "ICMP echo, timestamp, and netmask request discovery probes"
+    },
+    {
+      "t": "nmap",
+      "f": "-Pn",
+      "d": "Treat all hosts as online -- skip host discovery"
+    },
+    {
+      "t": "nmap",
+      "f": "-PO",
+      "d": "IP Protocol Ping"
+    },
+    {
+      "t": "nmap",
+      "f": "-PP",
+      "d": "ICMP echo, timestamp, and netmask request discovery probes"
+    },
+    {
+      "t": "nmap",
+      "f": "-PS",
+      "d": "TCP SYN, TCP ACK, UDP or SCTP discovery to given ports"
+    },
+    {
+      "t": "nmap",
+      "f": "-PU",
+      "d": "TCP SYN, TCP ACK, UDP or SCTP discovery to given ports"
+    },
+    {
+      "t": "nmap",
+      "f": "-PY",
+      "d": "TCP SYN, TCP ACK, UDP or SCTP discovery to given ports"
+    },
+    {
+      "t": "nmap",
+      "f": "-R",
+      "d": "Reverse DNS resolution for all targets"
+    },
+    {
+      "t": "nmap",
+      "f": "-sL",
+      "d": "List Scan - simply list targets to scan"
+    },
+    {
+      "t": "nmap",
+      "f": "-sn",
+      "d": "Ping Scan - disable port scan"
+    },
+    {
+      "t": "nmap",
+      "f": "--system-dns",
+      "d": "Use system DNS resolver"
+    },
+    {
+      "t": "nmap",
+      "f": "--traceroute",
+      "d": "Trace hop path to each host"
+    },
+    {
+      "t": "nmap",
+      "f": "-b",
+      "d": "FTP bounce scan"
+    },
+    {
+      "t": "nmap",
+      "f": "-sA",
+      "d": "TCP ACK scans"
+    },
+    {
+      "t": "nmap",
+      "f": "--scanflags",
+      "d": "Customize TCP scan flags"
+    },
+    {
+      "t": "nmap",
+      "f": "-sF",
+      "d": "TCP Null, FIN, and Xmas scans"
+    },
+    {
+      "t": "nmap",
+      "f": "-sI",
+      "d": "Idle scan"
+    },
+    {
+      "t": "nmap",
+      "f": "-sM",
+      "d": "TCP Maimon scans"
+    },
+    {
+      "t": "nmap",
+      "f": "-sN",
+      "d": "TCP Null, FIN, and Xmas scans"
+    },
+    {
+      "t": "nmap",
+      "f": "-sO",
+      "d": "IP protocol scan"
+    },
+    {
+      "t": "nmap",
+      "f": "-sS",
+      "d": "TCP SYN scans"
+    },
+    {
+      "t": "nmap",
+      "f": "-sT",
+      "d": "TCP Connect() scans"
+    },
+    {
+      "t": "nmap",
+      "f": "-sU",
+      "d": "UDP scans"
+    },
+    {
+      "t": "nmap",
+      "f": "-sW",
+      "d": "TCP Window scans"
+    },
+    {
+      "t": "nmap",
+      "f": "-sX",
+      "d": "TCP Null, FIN, and Xmas scans"
+    },
+    {
+      "t": "nmap",
+      "f": "-sY",
+      "d": "SCTP INIT scans"
+    },
+    {
+      "t": "nmap",
+      "f": "-sZ",
+      "d": "SCTP COOKIE-ECHO scans"
+    },
+    {
+      "t": "nmap",
+      "f": "--exclude-ports",
+      "d": "Exclude the specified ports from scanning"
+    },
+    {
+      "t": "nmap",
+      "f": "-F",
+      "d": "Fast mode - Scan fewer ports than the default scan"
+    },
+    {
+      "t": "nmap",
+      "f": "-p",
+      "d": "Only scan specified ports Ex: -p22; -p1-65535; -p U:53,111,137,T:21-25,80,139,8080,S:9"
+    },
+    {
+      "t": "nmap",
+      "f": "--port-ratio",
+      "d": "Scan ports more common than <ratio>"
+    },
+    {
+      "t": "nmap",
+      "f": "-r",
+      "d": "Scan ports sequentially - don't randomize"
+    },
+    {
+      "t": "nmap",
+      "f": "--top-ports",
+      "d": "Scans the n highest-ratio ports found in nmap-services file after excluding all ports specified by --exclude-ports."
+    },
+    {
+      "t": "nmap",
+      "f": "-sV",
+      "d": "Probe open ports to determine service/version info"
+    },
+    {
+      "t": "nmap",
+      "f": "--version-all",
+      "d": "Try every single probe (intensity 9)"
+    },
+    {
+      "t": "nmap",
+      "f": "--version-intensity",
+      "d": "Set from 0 (light) to 9 (try all probes)"
+    },
+    {
+      "t": "nmap",
+      "f": "--version-light",
+      "d": "Limit to most likely probes (intensity 2)"
+    },
+    {
+      "t": "nmap",
+      "f": "--version-trace",
+      "d": "Show detailed version scan activity (for debugging)"
+    },
+    {
+      "t": "nmap",
+      "f": "-sC",
+      "d": "Performs a script scan using the default set of scripts."
+    },
+    {
+      "t": "nmap",
+      "f": "--script",
+      "d": "<Lua scripts> is a comma separated list of directories, script-files or script-categories"
+    },
+    {
+      "t": "nmap",
+      "f": "--script-args",
+      "d": "provide arguments to scripts"
+    },
+    {
+      "t": "nmap",
+      "f": "--script-args-file",
+      "d": "Lets you load arguments to NSE scripts from a file."
+    },
+    {
+      "t": "nmap",
+      "f": "--script-help",
+      "d": "Show help about scripts. <Lua scripts> is a comma-separated list of script-files or script-categories."
+    },
+    {
+      "t": "nmap",
+      "f": "--script-trace",
+      "d": "This option does what --packet-trace does, just one ISO layer higher."
+    },
+    {
+      "t": "nmap",
+      "f": "--script-updatedb",
+      "d": "This option updates the script database found in scripts/script.db which is used by Nmap to determine the available default scripts and categories."
+    },
+    {
+      "t": "nmap",
+      "f": "-O",
+      "d": "Enable OS detection"
+    },
+    {
+      "t": "nmap",
+      "f": "--osscan-guess",
+      "d": "Guess OS more aggressively"
+    },
+    {
+      "t": "nmap",
+      "f": "--osscan-limit",
+      "d": "Limit OS detection to promising targets"
+    },
+    {
+      "t": "nmap",
+      "f": "--host-timeout",
+      "d": "Give up on target after this long"
+    },
+    {
+      "t": "nmap",
+      "f": "--initial-rtt-timeout",
+      "d": "Specifies probe round trip time."
+    },
+    {
+      "t": "nmap",
+      "f": "--max-hostgroup",
+      "d": "Parallel host scan group sizes"
+    },
+    {
+      "t": "nmap",
+      "f": "--max-parallelism",
+      "d": "Probe parallelization"
+    },
+    {
+      "t": "nmap",
+      "f": "--max-rate",
+      "d": "Send packets no faster than <number> per second"
+    },
+    {
+      "t": "nmap",
+      "f": "--max-retries",
+      "d": "Caps number of port scan probe retransmissions."
+    },
+    {
+      "t": "nmap",
+      "f": "--max-rtt-timeout",
+      "d": "Specifies probe round trip time."
+    },
+    {
+      "t": "nmap",
+      "f": "--max-scan-delay",
+      "d": "Adjust delay between probes"
+    },
+    {
+      "t": "nmap",
+      "f": "--min-hostgroup",
+      "d": "Parallel host scan group sizes"
+    },
+    {
+      "t": "nmap",
+      "f": "--min-parallelism",
+      "d": "Probe parallelization"
+    },
+    {
+      "t": "nmap",
+      "f": "--min-rate",
+      "d": "Send packets no slower than <number> per second"
+    },
+    {
+      "t": "nmap",
+      "f": "--min-rtt-timeout",
+      "d": "Specifies probe round trip time."
+    },
+    {
+      "t": "nmap",
+      "f": "--scan-delay",
+      "d": "Adjust delay between probes"
+    },
+    {
+      "t": "nmap",
+      "f": "-T0",
+      "d": "Set timing template (higher is faster) (template 0)"
+    },
+    {
+      "t": "nmap",
+      "f": "-T1",
+      "d": "Set timing template (higher is faster) (template 1)"
+    },
+    {
+      "t": "nmap",
+      "f": "-T2",
+      "d": "Set timing template (higher is faster) (template 2)"
+    },
+    {
+      "t": "nmap",
+      "f": "-T3",
+      "d": "Set timing template (higher is faster) (template 3)"
+    },
+    {
+      "t": "nmap",
+      "f": "-T4",
+      "d": "Set timing template (higher is faster) (template 4)"
+    },
+    {
+      "t": "nmap",
+      "f": "-T5",
+      "d": "Set timing template (higher is faster) (template 5)"
+    },
+    {
+      "t": "nmap",
+      "f": "--badsum",
+      "d": "Send packets with a bogus TCP/UDP/SCTP checksum"
+    },
+    {
+      "t": "nmap",
+      "f": "-D",
+      "d": "Cloak a scan with decoys"
+    },
+    {
+      "t": "nmap",
+      "f": "--data",
+      "d": "Append custom binary data to sent packets"
+    },
+    {
+      "t": "nmap",
+      "f": "--data-length",
+      "d": "Append random data to sent packets"
+    },
+    {
+      "t": "nmap",
+      "f": "--data-string",
+      "d": "Append a custom ASCII string to sent packets"
+    },
+    {
+      "t": "nmap",
+      "f": "-e",
+      "d": "Use specified interface"
+    },
+    {
+      "t": "nmap",
+      "f": "-f",
+      "d": "fragment packets (optionally w/given MTU)"
+    },
+    {
+      "t": "nmap",
+      "f": "-g, --source-port",
+      "d": "Use given port number"
+    },
+    {
+      "t": "nmap",
+      "f": "--ip-options",
+      "d": "Send packets with specified ip options"
+    },
+    {
+      "t": "nmap",
+      "f": "--mtu",
+      "d": "fragment packets (optionally w/given MTU)"
+    },
+    {
+      "t": "nmap",
+      "f": "--proxies",
+      "d": "Relay connections through HTTP/SOCKS4 proxies"
+    },
+    {
+      "t": "nmap",
+      "f": "-S",
+      "d": "Spoof source address"
+    },
+    {
+      "t": "nmap",
+      "f": "--spoof-mac",
+      "d": "Spoof your MAC address"
+    },
+    {
+      "t": "nmap",
+      "f": "--ttl",
+      "d": "Set IP time-to-live field"
+    },
+    {
+      "t": "nmap",
+      "f": "--append-output",
+      "d": "Append to rather than clobber specified output files"
+    },
+    {
+      "t": "nmap",
+      "f": "-d",
+      "d": "Increase debugging level (use -dd or more for greater effect)"
+    },
+    {
+      "t": "nmap",
+      "f": "--iflist",
+      "d": "Print host interfaces and routes (for debugging)"
+    },
+    {
+      "t": "nmap",
+      "f": "--no-stylesheet",
+      "d": "Prevent associating of XSL stylesheet w/XML output"
+    },
+    {
+      "t": "nmap",
+      "f": "--noninteractive",
+      "d": "Disable runtime interactions via keyboard"
+    },
+    {
+      "t": "nmap",
+      "f": "-oA",
+      "d": "Output in the three major formats at once"
+    },
+    {
+      "t": "nmap",
+      "f": "-oG",
+      "d": "Output scan in normal, XML, s|<rIpt kIddi3, and Grepable format, respectively, to the given filename."
+    },
+    {
+      "t": "nmap",
+      "f": "-oN",
+      "d": "Output scan in normal, XML, s|<rIpt kIddi3, and Grepable format, respectively, to the given filename."
+    },
+    {
+      "t": "nmap",
+      "f": "--open",
+      "d": "Only show open (or possibly open) ports"
+    },
+    {
+      "t": "nmap",
+      "f": "-oS",
+      "d": "Output scan in normal, XML, s|<rIpt kIddi3, and Grepable format, respectively, to the given filename."
+    },
+    {
+      "t": "nmap",
+      "f": "-oX",
+      "d": "Output scan in normal, XML, s|<rIpt kIddi3, and Grepable format, respectively, to the given filename."
+    },
+    {
+      "t": "nmap",
+      "f": "--packet-trace",
+      "d": "Trace packets and data sent and received"
+    },
+    {
+      "t": "nmap",
+      "f": "--reason",
+      "d": "Display the reason a port is in a particular state"
+    },
+    {
+      "t": "nmap",
+      "f": "--resume",
+      "d": "Resume an aborted scan"
+    },
+    {
+      "t": "nmap",
+      "f": "--stylesheet",
+      "d": "XSL stylesheet to transform XML output to HTML"
+    },
+    {
+      "t": "nmap",
+      "f": "-v",
+      "d": "Increase verbosity level (use -vv or more for greater effect)"
+    },
+    {
+      "t": "nmap",
+      "f": "--webxml",
+      "d": "Reference stylesheet from Nmap.Org for more portable XML"
+    },
+    {
+      "t": "nmap",
+      "f": "-6",
+      "d": "Enable IPv6 scanning"
+    },
+    {
+      "t": "nmap",
+      "f": "-A",
+      "d": "Enable OS detection, version detection, script scanning, and traceroute"
+    },
+    {
+      "t": "nmap",
+      "f": "--adler32",
+      "d": "Use deprecated Adler32 instead of CRC32C for SCTP checksums"
+    },
+    {
+      "t": "nmap",
+      "f": "--allports",
+      "d": "Don't exclude any ports from version detection"
+    },
+    {
+      "t": "nmap",
+      "f": "--datadir",
+      "d": "Specify custom Nmap data file location"
+    },
+    {
+      "t": "nmap",
+      "f": "--defeat-icmp-ratelimit",
+      "d": "Similar to --defeat-rst-ratelimit, the --defeat-icmp-ratelimit option trades accuracy for speed, increasing UDP scanning speed against hosts that rate-limit ICMP error messages."
+    },
+    {
+      "t": "nmap",
+      "f": "--defeat-rst-ratelimit",
+      "d": "Many hosts have long used rate limiting to reduce the number of ICMP error messages (such as port-unreachable errors) they send."
+    },
+    {
+      "t": "nmap",
+      "f": "--disable-arp-ping",
+      "d": "No ARP or ND Ping"
+    },
+    {
+      "t": "nmap",
+      "f": "--discovery-ignore-rst",
+      "d": "In some cases, firewalls may spoof TCP reset (RST) replies in response to probes to unoccupied or disallowed addresses."
+    },
+    {
+      "t": "nmap",
+      "f": "--fuzzy",
+      "d": "Guess OS detection results"
+    },
+    {
+      "t": "nmap",
+      "f": "-h",
+      "d": "Print this help summary page."
+    },
+    {
+      "t": "nmap",
+      "f": "--help",
+      "d": "Print help summary page"
+    },
+    {
+      "t": "nmap",
+      "f": "--nsock-engine",
+      "d": "Enforce use of a given nsock IO multiplexing engine."
+    },
+    {
+      "t": "nmap",
+      "f": "--privileged",
+      "d": "Assume that the user is fully privileged"
+    },
+    {
+      "t": "nmap",
+      "f": "--randomize-hosts",
+      "d": "Randomize target host order"
+    },
+    {
+      "t": "nmap",
+      "f": "--release-memory",
+      "d": "Release memory before quitting"
+    },
+    {
+      "t": "nmap",
+      "f": "--resolve-all",
+      "d": "Scan each resolved address"
+    },
+    {
+      "t": "nmap",
+      "f": "--script-timeout",
+      "d": "While some scripts complete in fractions of a second, others can take hours or more depending on the nature of the script, arguments passed in, network and application conditions, and more."
+    },
+    {
+      "t": "nmap",
+      "f": "--send-eth",
+      "d": "Send using raw ethernet frames or IP packets"
+    },
+    {
+      "t": "nmap",
+      "f": "--send-ip",
+      "d": "Send using raw ethernet frames or IP packets"
+    },
+    {
+      "t": "nmap",
+      "f": "--servicedb",
+      "d": "Specify custom services file"
+    },
+    {
+      "t": "nmap",
+      "f": "--stats-every",
+      "d": "Print periodic timing stats"
+    },
+    {
+      "t": "nmap",
+      "f": "--unique",
+      "d": "Scan each address only once"
+    },
+    {
+      "t": "nmap",
+      "f": "--unprivileged",
+      "d": "Assume that the user lacks raw socket privileges"
+    },
+    {
+      "t": "nmap",
+      "f": "-V",
+      "d": "Print version number"
+    },
+    {
+      "t": "nmap",
+      "f": "--version",
+      "d": "Print version number"
+    },
+    {
+      "t": "nmap",
+      "f": "--versiondb",
+      "d": "Specify custom service probes file"
     }
   ]
 }

@@ -24,7 +24,7 @@ security model.
 
 ## Status
 
-Phase 1a. **ffuf is live and complete.** nmap and gobuster are next.
+Phase 1a. **ffuf and nmap are live and complete.** sqlmap and gobuster are next.
 
 | Piece | State |
 |---|---|
@@ -35,8 +35,9 @@ Phase 1a. **ffuf is live and complete.** nmap and gobuster are next.
 | Enum proof | done — `test/enums.mjs` |
 | Placeholder guard | done — `test/placeholders.mjs` |
 | ffuf | done — 77 flags, 4 enums, 5 repeatables, verified |
+| nmap | done — 133 flags from help+man, every one put to the binary |
 | Interface | done — picker, slots, command bar, explainer |
-| nmap, gobuster | not started |
+| sqlmap, gobuster | not started |
 
 ## How the data is trusted
 
@@ -55,6 +56,7 @@ node tools/verify.mjs ffuf --pairs
 node test/quoting.mjs         # the copied text, parsed by a real shell
 node test/enums.mjs           # every enum value, and that the set is really closed
 node test/placeholders.mjs    # no flag can swallow the one after it
+node tools/probe-nmap.mjs    # nmap only: ask the binary which candidates are real
 ```
 
 **`verify.mjs`** runs the actual tool. Singles, awkward values (spaces, quotes,
@@ -80,6 +82,20 @@ not filled its value. A bare token built `ffuf -u -w /list`, where ffuf reads
 does not point at the cause. A flag awaiting a value now shows a quoted
 placeholder, Copy is disabled until the gap is filled, and the test asserts no
 flag can ever swallow the one after it.
+
+**nmap needed a different kind of proof.** Its `-h` is a summary — it documents
+98 flags where the man page documents 160 — and the man page's prose mentions
+`-oG-` and `-d9` as examples of usage, which are not options. So both are read,
+and then every candidate is put to nmap itself: `tools/probe-nmap.mjs` keeps only
+what nmap accepts, and uses nmap's own "requires an argument" to correct whether
+a flag takes a value. The text proposes, the binary decides.
+
+That probe is safe because of two things nmap does. It parses every argument
+*before* it checks privilege, so "requires root privileges" is proof a flag
+parsed rather than a failure; and with no target it scans nothing. So the whole
+flag set is verified with no root and **no packets** — the verifier strips the
+`<Target>` placeholder before running, which is exactly what leaves the command
+targetless.
 
 The browser and the verifier import the **same** `assets/js/command.js`, so a
 verified command is byte-for-byte the one the page gives you. `check.mjs` runs on

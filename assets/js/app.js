@@ -300,7 +300,10 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
   function activeSlots() {
     var need = {};
     modeFlags().forEach(function (f) { if (picked[f.id] && f.binds) need[f.binds] = true; });
-    return (tool.inputs || []).filter(function (i) { return need[i.id]; });
+    /* A trailing input is always shown. It belongs to no flag — nmap takes its
+       target as a bare argument — so waiting for a flag to bind it would hide
+       the one box the tool cannot run without. */
+    return (tool.inputs || []).filter(function (i) { return need[i.id] || i.trailing; });
   }
 
   /* A picked enum flag with no value would emit a bare "-mode" and break the
@@ -326,9 +329,13 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
     var html = act.map(function (i) {
       var users = modeFlags().filter(function (f) { return picked[f.id] && f.binds === i.id; })
         .map(function (f) { return f.short || f.long; }).join(', ');
+      /* No flag carries a trailing value, so say where it goes instead. */
+      var note = users ? 'used by ' + users
+        : i.trailing ? 'goes at the end of the command'
+        : '';
       return '<div class="slot"><label for="slot-' + esc(i.id) + '">' + esc(i.label) + '</label>' +
         '<input id="slot-' + esc(i.id) + '" value="' + esc(slots[i.id] || '') + '" placeholder="' + esc(i.placeholder || '') + '">' +
-        '<div class="used">used by ' + esc(users) + '</div></div>';
+        '<div class="used">' + esc(note) + '</div></div>';
     }).join('');
 
     html += loose.map(function (f) {

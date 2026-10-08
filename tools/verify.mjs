@@ -69,8 +69,28 @@ function slotsAndAdhoc(flags, override) {
   return { slots, adhoc };
 }
 
+/* Flags with a side effect beyond this process. Verifying that nmap ACCEPTS
+   --script-updatedb does not require letting it rewrite the installed script
+   database, so these are checked for membership by probe-nmap.mjs and skipped
+   here. */
+const SIDE_EFFECTS = new Set(['script-updatedb']);
+
+/* A placeholder is not a value. buildCommand emits "<Target>" when a required
+   input is empty, and for nmap that string would be passed as a hostname — it
+   would be resolved, and anything that resolved would be SCANNED. The verifier
+   strips every placeholder before running, which for nmap leaves a command with
+   no target at all: nmap then parses every flag and reports "No targets were
+   specified, so 0 hosts scanned". That is the whole point — flag acceptance is
+   provable with no target, no privileges and no packets. */
+const PLACEHOLDER = /^<.+>$/;
+
+function stripPlaceholders(argv) {
+  return argv.filter(a => !PLACEHOLDER.test(a));
+}
+
 function run(argv) {
-  try { return execFileSync(tool.id, argv, { stdio: 'pipe', timeout: 5000, encoding: 'utf8', cwd: PROBE_DIR }); }
+  const safe = stripPlaceholders(argv);
+  try { return execFileSync(tool.id, safe, { stdio: 'pipe', timeout: 15000, encoding: 'utf8', cwd: PROBE_DIR }); }
   catch (e) { return `${e.stdout || ''}${e.stderr || ''}`; }
 }
 
@@ -91,7 +111,9 @@ function check(label, picked, override) {
 }
 
 /* pass 1 — each flag alone, alongside whatever is required */
+let skipped = 0;
 for (const f of tool.flags) {
+  if (SIDE_EFFECTS.has(f.id)) { skipped++; continue; }
   const picked = {};
   required.forEach(r => { picked[r.id] = true; });
   picked[f.id] = true;
@@ -100,7 +122,7 @@ for (const f of tool.flags) {
 const afterSingles = bad.length;
 
 /* pass 3 — awkward values on every flag that takes a path */
-for (const f of tool.flags.filter(f => f.takes === 'path')) {
+for (const f of tool.flags.filter(f => f.takes === 'path' && !SIDE_EFFECTS.has(f.id))) {
   for (const v of AWKWARD) {
     const picked = {};
     required.forEach(r => { picked[r.id] = true; });

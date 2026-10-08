@@ -92,6 +92,34 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
     });
   }
 
+  /* Trailing positionals. ffuf names its target with -u; nmap takes it as a
+     bare argument at the end, and sqlmap accepts both. So an input may declare
+     itself trailing, and it is appended after every flag — which is also the
+     only position nmap accepts it in.
+
+     `requiredUnless` covers the real case that the positional is not always
+     needed: nmap wants a target, unless -iL reads one from a file or -iR
+     generates random ones. Demanding a target then would be wrong. */
+  for (const i of (tool.inputs || []).filter(x => x.trailing)) {
+    let val = slots[i.id] || '';
+    let missing = false;
+    if (!val) {
+      const satisfied = (i.requiredUnless || []).some(id => picked[id]);
+      if (!i.required || satisfied) continue;
+      issues.push({ err: true, text: `${tool.name} needs ${i.label} — fill it in on the right.` });
+      val = `<${i.label}>`;
+      missing = true;
+    }
+    argv.push(val);
+    pieces.push({
+      tok: shellQuote(val),
+      label: i.label,
+      help: i.help || '',
+      kind: 'positional',
+      missing,
+    });
+  }
+
   for (const f of flags) {
     if (f.required && !picked[f.id]) {
       issues.push({ err: true, text: `${f.short || f.long} is required by ${tool.name}${tool.modes.length > 1 ? ' ' + m.name : ''}.` });
