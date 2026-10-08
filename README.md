@@ -24,7 +24,7 @@ security model.
 
 ## Status
 
-Phase 1a. **ffuf and nmap are live and complete.** sqlmap and gobuster are next.
+Phase 1a. **ffuf, nmap and sqlmap are live and complete.** gobuster is next.
 
 | Piece | State |
 |---|---|
@@ -36,8 +36,9 @@ Phase 1a. **ffuf and nmap are live and complete.** sqlmap and gobuster are next.
 | Placeholder guard | done — `test/placeholders.mjs` |
 | ffuf | done — 77 flags, 4 enums, 5 repeatables, verified |
 | nmap | done — 133 flags from help+man, every one put to the binary |
+| sqlmap | done — 271 flags read from sqlmap's own option objects |
 | Interface | done — picker, slots, command bar, explainer |
-| sqlmap, gobuster | not started |
+| gobuster | not started |
 
 ## How the data is trusted
 
@@ -57,6 +58,7 @@ node test/quoting.mjs         # the copied text, parsed by a real shell
 node test/enums.mjs           # every enum value, and that the set is really closed
 node test/placeholders.mjs    # no flag can swallow the one after it
 node tools/probe-nmap.mjs    # nmap only: ask the binary which candidates are real
+python3 tools/dump-sqlmap-options.py <libexec>   # sqlmap only: its own option objects
 ```
 
 **`verify.mjs`** runs the actual tool. Singles, awkward values (spaces, quotes,
@@ -96,6 +98,23 @@ parsed rather than a failure; and with no target it scans nothing. So the whole
 flag set is verified with no root and **no packets** — the verifier strips the
 `<Target>` placeholder before running, which is exactly what leaves the command
 targetless.
+
+**sqlmap needed a third kind of source.** Its `-hh` truncates long option names
+to a fixed column — `--openapi=OPENAP..`, `-A AGENT, --user..`, 59 of them — and
+it ignores `COLUMNS`, so no terminal width recovers them. Parsing that would
+invent flags. But sqlmap is Python and declares its options with optparse, so
+`tools/dump-sqlmap-options.py` hooks `add_option` and lets sqlmap build its own
+parser, then reads the real objects: full names, types, actions, defaults and
+group titles, in sqlmap's own order. That is the declaration the help is a lossy
+rendering of.
+
+The same source settles its enums. sqlmap validates exactly two options against
+a fixed set, and both are enum classes that can be read directly — which matters,
+because the help text for `--tor-type` lists three values and omits `HTTPS`,
+which the binary accepts. Everything else that looks like a set in sqlmap's help
+is an `e.g.` example, and `-v`'s documented `0-6` is advisory: it accepts
+anything. `test/enums.mjs` is what establishes the difference, by asking the
+binary.
 
 The browser and the verifier import the **same** `assets/js/command.js`, so a
 verified command is byte-for-byte the one the page gives you. `check.mjs` runs on

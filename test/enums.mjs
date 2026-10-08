@@ -45,6 +45,17 @@ function withRequires(tool, ids) {
 const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|unrecognized option|invalid option|not defined:/i;
 const SENTINEL = 'commander-not-a-real-value';
 
+/* The sentinel has to be the right SHAPE or the test proves nothing.
+   For an int-typed flag a text sentinel is rejected for being text, not for
+   being outside the set, so "--level 1-5" looked closed even though nothing
+   had checked the range. A numeric set gets a number outside it. */
+function sentinelFor(f) {
+  const numeric = f.enum.every(v => /^-?\d+$/.test(v));
+  if (!numeric) return SENTINEL;
+  const max = Math.max(...f.enum.map(Number));
+  return String(max + 9999);
+}
+
 /* Probe output goes to a scratch dir, never the workspace and never a name that
    could collide with something real. */
 const SCRATCH = mkdtempSync(join(tmpdir(), 'commander-enums-'));
@@ -94,7 +105,7 @@ for (const file of readdirSync('data/tools').filter(f => f.endsWith('.json'))) {
     const slots = {}; const adhoc = {};
     const picked = withRequires(tool, [...tool.flags.filter(x => x.required).map(x => x.id), f.id]);
     for (const pf of tool.flags.filter(x => picked[x.id] && x.takes !== 'none')) {
-      const val = pf.id === f.id ? SENTINEL
+      const val = pf.id === f.id ? sentinelFor(f)
         : pf.takes === 'url' ? 'http://127.0.0.1:1/FUZZ'
         : pf.id === 'o' ? scratchFile()
         : '/dev/null';
@@ -102,9 +113,20 @@ for (const file of readdirSync('data/tools').filter(f => f.endsWith('.json'))) {
     }
     const built = buildCommand(tool, tool.modes[0].id, picked, slots, adhoc);
     const r = run(tool.name, built.argv);
-    const complained = /invalid|unknown|unsupported|not a valid|must be one of|bad |error/i.test(r.out);
+    /* Different tools word a rejection differently, and the first version of
+       this list was too narrow: sqlmap says "[CRITICAL] value for option
+       '--level' must be an integer value from range [1, 5]", which matched
+       none of it, so four genuinely closed sets were reported as open.
+
+       The complaint must also NAME the flag or the value. Any long run prints
+       the word "error" somewhere eventually, and a test that accepts that as
+       proof is not proving anything. */
+    const clean = r.out.replace(/\x1B\[[0-9;?]*[A-Za-z]/g, '');
+    const sent = sentinelFor(f);
+    const complained = /invalid|unknown|unsupported|not a valid|not recognis|not recogniz|unrecognis|unrecogniz|must be|accepts one of|out of range|bad value|\[critical\]/i.test(clean)
+      && (clean.includes(f.short) || (f.long && clean.includes(f.long)) || clean.includes(sent));
     if (complained) { rejectedBad++; console.log(`  ok  ${f.short.padEnd(18)} ${f.enum.join(', ')}`); }
-    else fail.push(`${tool.id} ${f.short}: accepted "${SENTINEL}" — the declared set is not actually closed, so enum is the wrong type for this flag`);
+    else fail.push(`${tool.id} ${f.short}: accepted "${sentinelFor(f)}" — the declared set is not actually closed, so enum is the wrong type for this flag`);
   }
 }
 

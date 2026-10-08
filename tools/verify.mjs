@@ -51,7 +51,7 @@ const AWKWARD = ['a b', "it's", 'a$b', 'a\\b', 'a"b', 'a;b'];
 
 /* A rejection of the SYNTAX. A connection error or a usage dump from missing
    required args is not a failure of our data. */
-const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|unrecognized option|invalid option|not defined:/i;
+const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|unrecognized option|invalid option|not defined:|no such option/i;
 
 function valueFor(f) {
   if (f.takes === 'none') return null;
@@ -73,7 +73,18 @@ function slotsAndAdhoc(flags, override) {
    --script-updatedb does not require letting it rewrite the installed script
    database, so these are checked for membership by probe-nmap.mjs and skipped
    here. */
-const SIDE_EFFECTS = new Set(['script-updatedb']);
+const SIDE_EFFECTS = new Set([
+  'script-updatedb',   // nmap: rewrites the installed NSE script database
+  'purge',             // sqlmap: erases sqlmap's own data directory
+  'dependencies',      // sqlmap: tries to install things
+  'update',            // sqlmap: pulls a new version over the network
+  'wizard',            // sqlmap: interactive, would hang the run
+  'shell',             // sqlmap: interactive SQL shell
+  'live-test',         // sqlmap: runs its own test suite over the network
+  'smoke-test',
+  'vuln-test',
+  'api',               // sqlmap: starts a server
+]);
 
 /* A placeholder is not a value. buildCommand emits "<Target>" when a required
    input is empty, and for nmap that string would be passed as a hostname — it

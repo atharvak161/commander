@@ -228,7 +228,9 @@ import { buildCommand as build, blockedBy as blocked, shellQuote } from './comma
     var groups = {};
     modeFlags().forEach(function (f) { (groups[f.group] = groups[f.group] || []).push(f); });
     $('picker').innerHTML = Object.keys(groups).map(function (g) {
-      return '<div class="fg"><div class="fg-h">' + esc(g) + '</div><div class="flags">' +
+      /* Group ids are slugs so they are safe as keys; the heading shows words.
+         sqlmap has groups like "user-defined-function-injection". */
+      return '<div class="fg"><div class="fg-h">' + esc(g.replace(/-/g, ' ')) + '</div><div class="flags">' +
         groups[g].map(function (f) {
           var b = blocked(tool, picked, f);
           var on = !!picked[f.id];
