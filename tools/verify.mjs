@@ -21,6 +21,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdtempSync as _mkdtemp, writeFileSync as _writeFile, chmodSync as _chmod } from 'node:fs';
 import { tmpdir as _tmpdir } from 'node:os';
+import os from 'node:os';
 import { join as _join } from 'node:path';
 
 /* Probes run in a scratch directory, never the repo.
@@ -211,7 +212,11 @@ async function pool(jobs, width, worker) {
   await Promise.all(Array.from({ length: Math.min(width, jobs.length) }, run1));
 }
 
-const WIDTH = Number(process.env.VERIFY_WIDTH || 12);
+/* Default to half the cores, not twelve. Twelve parallel sqlmap processes
+   pegged roughly four cores and spun the fans up for ten minutes; the run is
+   not urgent enough to take the whole machine. Raise it with VERIFY_WIDTH
+   when nothing else is going on. */
+const WIDTH = Number(process.env.VERIFY_WIDTH || Math.max(2, Math.floor((os.cpus?.().length || 8) / 2)));
 
 const required = tool.flags.filter(f => f.required);
 const bad = [];
