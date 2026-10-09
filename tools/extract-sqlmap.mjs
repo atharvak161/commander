@@ -21,6 +21,7 @@
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { recipes, alternatives, examples } from './recipes/sqlmap.mjs';
 
 const DUMP = process.argv[2] || 'data/manuals/sqlmap.options.json';
 const OUT = 'data/tools/sqlmap.json';
@@ -122,6 +123,13 @@ for (const o of options) {
   });
 }
 
+/* Flags that do the same job, for a recipe's "or change it" list. */
+const _byId = new Map(flags.map ? [] : []);
+for (const [aid, alts] of Object.entries(alternatives)) {
+  const f = (Array.isArray(flags) ? flags : [...flags.values()]).find(x => x.id === aid);
+  if (f) f.alternatives = alts.filter(a => (Array.isArray(flags) ? flags : [...flags.values()]).some(x => x.id === a.id));
+}
+
 const tool = {
   id: 'sqlmap',
   name: 'sqlmap',
@@ -149,8 +157,16 @@ const tool = {
        OpenAPI target, they do not supply one. */
     { ids: flags.filter(f => f.group === 'target' && f.takes !== 'none' && !/^openapi-/.test(f.id)).map(f => f.id), label: 'something to test' },
   ],
-  recipes: [],
+  /* Curated, not parsed: which flags belong together for a job is a judgement
+     no help text makes. Verified like any other command — tools/verify.mjs
+     runs every recipe against the binary. */
+  recipes,
 };
+
+
+/* The example values a recipe falls back to until the panel is filled in.
+   Applied by id so the input literals stay about the input, not the examples. */
+for (const i of tool.inputs || []) if (examples[i.id]) i.example = examples[i.id];
 
 writeFileSync(OUT, JSON.stringify(tool, null, 2) + '\n');
 console.log(`extract-sqlmap: ${flags.length} flags -> ${OUT} (sqlmap ${version})`);

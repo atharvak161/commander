@@ -69,6 +69,9 @@ Designed against the three hardest real cases found before any code was written:
       "long": "--wordlist",
       "takes": "path",               // none|string|int|path|url|port|enum|host
       "enum": null,                  // values, when takes == "enum"
+      "alternatives": [             // "or change it", shown in a recipe breakdown
+        { "id": "T2", "when": "you want to stay under rate-based detection" }
+      ],
       "enumEnforced": true,          // false = the tool DOCUMENTS these values but does
                                      //   not reject others at parse time (curl's
                                      //   --cert-type fails later, during the handshake).
@@ -98,12 +101,18 @@ Designed against the three hardest real cases found before any code was written:
     }
   ],
 
+  // Ready-made commands. Curated, never parsed: which flags belong together
+  // for a job is a judgement no help text makes. Built through buildCommand
+  // like any other command, and verified against the binary the same way.
   "recipes": [
     {
       "id": "dir-common",
       "name": "Common directories",
-      "mode": "dir",
-      "flags": { "wordlist": "$WORDLIST", "threads": "20" },
+      "category": "Web content",       // groups the cards on the Ready-made tab
+      "summary": "One line on what it does, shown on the closed card.",
+      "mode": "dir",                   // omit for a single-mode tool
+      "flags": { "wordlist": true, "threads": "20" },   // true = flag takes no value
+      "examples": { "target": "http://example.com/" },  // overrides the input's own example
       "when": "First pass on any web target.",
       "cost": "~5000 requests."
     }

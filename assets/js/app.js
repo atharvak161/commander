@@ -4,7 +4,8 @@
    Command building lives in command.js and is imported, not reimplemented:
    the verifier imports the same module, so the command the tests prove valid
    is byte-for-byte the command shown here. */
-import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag } from './command.js';
+import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
+         buildRecipe, alternativesFor } from './command.js';
 
 (function () {
   'use strict';
@@ -177,6 +178,9 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag } 
       '</div>' +
       '<div class="tabs" role="tablist">' +
         '<button class="tab" role="tab" data-tab="build" aria-selected="' + (tab === 'build') + '">Build a command</button>' +
+        ((tool.recipes || []).length
+          ? '<button class="tab" role="tab" data-tab="ready" aria-selected="' + (tab === 'ready') + '">Ready-made <span class="cnt">' + Number(tool.recipes.length) + '</span></button>'
+          : '') +
         '<button class="tab" role="tab" data-tab="manual" aria-selected="' + (tab === 'manual') + '">Manual</button>' +
       '</div>' +
       '<div id="pane"></div>';
@@ -186,7 +190,131 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag } 
         location.hash = '#/' + encodeURIComponent(tool.id) + '/' + b.dataset.tab;
       });
     });
-    if (tab === 'manual') renderManual(); else renderBuild();
+    if (tab === 'manual') renderManual();
+    else if (tab === 'ready') renderReady();
+    else renderBuild();
+  }
+
+  /* ---------------- ready-made tab ---------------- */
+  /* Recipes are shown as complete commands against an example target, so they
+     read as something you could run. The moment the panel on the right has a
+     value, every one of them switches to it. A card is closed until you click
+     it: the point is to scan fifteen commands quickly, not to wade through
+     fifteen breakdowns. */
+  var openRecipe = null;
+
+  function renderReady() {
+    var cats = [];
+    tool.recipes.forEach(function (r) { if (cats.indexOf(r.category) < 0) cats.push(r.category); });
+
+    $('pane').innerHTML =
+      '<div class="cols">' +
+        '<div>' +
+          '<p class="readyhint" id="readyhint"></p>' +
+          '<div id="reclist"></div>' +
+        '</div>' +
+        '<aside class="panel" id="slots" aria-label="Your values"><h2>Your values</h2></aside>' +
+      '</div>';
+
+    paintRecipes();
+    renderRecipeSlots();
+  }
+
+  function paintRecipes() {
+    var usingExample = (tool.inputs || []).some(function (i) {
+      return !(slots[i.id] || '').trim();
+    });
+    $('readyhint').innerHTML = usingExample
+      ? 'Commands below use example values. Fill anything in on the right and they all update.'
+      : 'Using your values. Click a command to see what each part does.';
+
+    var cats = [];
+    tool.recipes.forEach(function (r) { if (cats.indexOf(r.category) < 0) cats.push(r.category); });
+
+    $('reclist').innerHTML = cats.map(function (c) {
+      return '<div class="rcat"><div class="rcat-h">' + esc(c) + '</div>' +
+        tool.recipes.filter(function (r) { return r.category === c; }).map(recipeCard).join('') +
+      '</div>';
+    }).join('');
+
+    $('reclist').querySelectorAll('.rec-head').forEach(function (b) {
+      b.addEventListener('click', function () {
+        openRecipe = openRecipe === b.dataset.id ? null : b.dataset.id;
+        paintRecipes();
+      });
+    });
+    $('reclist').querySelectorAll('.rec-copy').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var r = tool.recipes.find(function (x) { return x.id === b.dataset.id; });
+        copy(buildRecipe(tool, r, slots).text, b, 'Copy');
+      });
+    });
+  }
+
+  function recipeCard(r) {
+    var built = buildRecipe(tool, r, slots);
+    var open = openRecipe === r.id;
+    var mid = r.mode || tool.modes[0].id;
+
+    var body = '';
+    if (open) {
+      body = '<div class="rec-body">' +
+        '<p class="rec-when"><b>When:</b> ' + esc(r.when) + (r.cost ? ' <span class="rec-cost">' + esc(r.cost) + '</span>' : '') + '</p>' +
+        '<div class="explain-h">What each part does</div>' +
+        '<div class="pieces">' + built.pieces.map(function (p) {
+          return '<div class="piece static">' +
+            '<div class="tok">' + esc(p.tok) + '</div><div class="arrow">&darr;</div>' +
+            '<div class="lbl">' + esc(p.label || '') + '</div>' +
+            (p.note ? '<div class="note">' + esc(p.note) + '</div>' : '') +
+          '</div>';
+        }).join('') + '</div>' +
+        swapsFor(r, mid) +
+      '</div>';
+    }
+
+    return '<div class="rec' + (open ? ' open' : '') + '">' +
+      '<button class="rec-head" data-id="' + esc(r.id) + '" aria-expanded="' + open + '">' +
+        '<div class="rec-top"><span class="rec-name">' + esc(r.name) + '</span>' +
+          '<span class="rec-chev">' + (open ? '&minus;' : '+') + '</span></div>' +
+        '<div class="rec-sum">' + esc(r.summary) + '</div>' +
+        '<code class="rec-cmd">' + esc(built.text) + '</code>' +
+      '</button>' +
+      '<button class="rec-copy" data-id="' + esc(r.id) + '">Copy</button>' +
+      body +
+    '</div>';
+  }
+
+  /* "or swap it for" — the alternatives declared on each flag the recipe uses. */
+  function swapsFor(r, mid) {
+    var rows = [];
+    Object.keys(r.flags || {}).forEach(function (id) {
+      var f = tool.flags.find(function (x) { return x.id === id; });
+      if (!f) return;
+      var alts = alternativesFor(tool, f, mid);
+      if (!alts.length) return;
+      rows.push('<li><code>' + esc(f.short || f.long) + '</code> ' + esc(resolveFlag(f, mid).desc) +
+        '<ul>' + alts.map(function (a) {
+          return '<li>swap for <code>' + esc(a.token) + '</code> ' + esc(a.when) + '</li>';
+        }).join('') + '</ul></li>');
+    });
+    if (!rows.length) return '';
+    return '<div class="swaps"><div class="explain-h">Or change it</div><ul>' + rows.join('') + '</ul></div>';
+  }
+
+  /* The same input panel as the builder, so one target serves both tabs. */
+  function renderRecipeSlots() {
+    var html = (tool.inputs || []).map(function (i) {
+      return '<div class="slot"><label for="rslot-' + esc(i.id) + '">' + esc(i.label) + '</label>' +
+        '<input id="rslot-' + esc(i.id) + '" value="' + esc(slots[i.id] || '') + '" placeholder="' + esc(i.placeholder || '') + '">' +
+        '<div class="used">' + esc(i.example ? 'example: ' + i.example : '') + '</div></div>';
+    }).join('');
+    $('slots').innerHTML = '<h2>Your values</h2>' + (html ||
+      '<p class="none">This tool takes its values on the flags themselves.</p>');
+    (tool.inputs || []).forEach(function (i) {
+      var e = $('rslot-' + i.id);
+      if (e) e.addEventListener('input', function () { slots[i.id] = this.value; saveSlots(); paintRecipes(); });
+    });
   }
 
   /* ---------------- manual tab ---------------- */

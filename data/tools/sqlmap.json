@@ -9,7 +9,7 @@
     "toolVersion": "1.10.9#stable",
     "source": "declaration",
     "tier": "A",
-    "verifiedAt": "2026-10-08",
+    "verifiedAt": "2026-10-09",
     "host": "darwin-arm64"
   },
   "modes": [
@@ -297,7 +297,8 @@
       "id": "target",
       "label": "Target URL",
       "placeholder": "http://site.example.com/page.php?id=1",
-      "help": "The URL to test, including the parameter you want probed."
+      "help": "The URL to test, including the parameter you want probed.",
+      "example": "http://example.com/page.php?id=1"
     }
   ],
   "flags": [
@@ -1040,7 +1041,13 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "declaration"
+      "source": "declaration",
+      "alternatives": [
+        {
+          "id": "tor",
+          "when": "you want it routed through Tor instead"
+        }
+      ]
     },
     {
       "id": "proxy-cred",
@@ -1634,7 +1641,13 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "declaration"
+      "source": "declaration",
+      "alternatives": [
+        {
+          "id": "delay",
+          "when": "you need to go slower, not faster"
+        }
+      ]
     },
     {
       "id": "p",
@@ -1957,7 +1970,17 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "declaration"
+      "source": "declaration",
+      "alternatives": [
+        {
+          "id": "random-agent",
+          "when": "the filter keys on the user agent rather than the payload"
+        },
+        {
+          "id": "delay",
+          "when": "it is a rate limit rather than a content filter"
+        }
+      ]
     },
     {
       "id": "proof",
@@ -2001,7 +2024,13 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "declaration"
+      "source": "declaration",
+      "alternatives": [
+        {
+          "id": "risk",
+          "when": "you want more dangerous payloads rather than more of them"
+        }
+      ]
     },
     {
       "id": "risk",
@@ -2195,7 +2224,13 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "declaration"
+      "source": "declaration",
+      "alternatives": [
+        {
+          "id": "time-sec",
+          "when": "you are using time-based blind and need a longer delay"
+        }
+      ]
     },
     {
       "id": "time-sec",
@@ -2727,7 +2762,17 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "declaration"
+      "source": "declaration",
+      "alternatives": [
+        {
+          "id": "count",
+          "when": "you only need the row count, which is far less intrusive"
+        },
+        {
+          "id": "dump-all",
+          "when": "you genuinely need everything and the scope allows it"
+        }
+      ]
     },
     {
       "id": "dump-all",
@@ -3677,7 +3722,13 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "declaration"
+      "source": "declaration",
+      "alternatives": [
+        {
+          "id": "answers",
+          "when": "you want to script specific answers rather than take defaults"
+        }
+      ]
     },
     {
       "id": "binary-fields",
@@ -5486,5 +5537,177 @@
       "label": "something to test"
     }
   ],
-  "recipes": []
+  "recipes": [
+    {
+      "id": "basic",
+      "name": "Is it injectable?",
+      "category": "Finding it",
+      "summary": "The first question. Tests the parameters in the URL and stops there.",
+      "flags": {
+        "url": true,
+        "batch": true
+      },
+      "when": "You have a URL with a parameter and want a yes or no.",
+      "cost": "A few minutes. --batch answers sqlmap's prompts with the defaults."
+    },
+    {
+      "id": "thorough",
+      "name": "Look harder",
+      "category": "Finding it",
+      "summary": "Raises the number of tests and the risk of the payloads used.",
+      "flags": {
+        "url": true,
+        "level": "5",
+        "risk": "3",
+        "batch": true
+      },
+      "when": "The basic test found nothing and you still suspect injection.",
+      "cost": "Much slower and much louder. Risk 3 can modify data."
+    },
+    {
+      "id": "from-request",
+      "name": "From a saved request",
+      "category": "Finding it",
+      "summary": "Reads a full HTTP request from a file, so headers, cookies and body come along.",
+      "flags": {
+        "r": "request.txt",
+        "batch": true
+      },
+      "when": "The request is complex, authenticated, or you captured it from a proxy.",
+      "cost": "Save the request from Burp or your browser first."
+    },
+    {
+      "id": "post-data",
+      "name": "Test a POST body",
+      "category": "Finding it",
+      "summary": "Sends a form body and tests the parameters in it.",
+      "flags": {
+        "url": true,
+        "data": "username=admin&password=test",
+        "batch": true
+      },
+      "examples": {
+        "target": "http://example.com/login"
+      },
+      "when": "The injectable parameter is in a form, not the URL.",
+      "cost": "As above."
+    },
+    {
+      "id": "one-param",
+      "name": "Test one parameter only",
+      "category": "Finding it",
+      "summary": "Narrows testing to a single parameter, which is far faster.",
+      "flags": {
+        "url": true,
+        "p": "id",
+        "batch": true
+      },
+      "when": "You already know which parameter is suspect.",
+      "cost": "Much faster than testing everything."
+    },
+    {
+      "id": "list-dbs",
+      "name": "List the databases",
+      "category": "Enumerating",
+      "summary": "Once injection is confirmed, the first thing worth asking.",
+      "flags": {
+        "url": true,
+        "dbs": true,
+        "batch": true
+      },
+      "when": "Injection is proved and you are mapping what is reachable.",
+      "cost": "Fast once the injection point is known."
+    },
+    {
+      "id": "list-tables",
+      "name": "List tables in one database",
+      "category": "Enumerating",
+      "summary": "Names the tables inside a database you have identified.",
+      "flags": {
+        "url": true,
+        "D": "testdb",
+        "tables": true,
+        "batch": true
+      },
+      "when": "You know the database name and want its structure.",
+      "cost": "Fast."
+    },
+    {
+      "id": "dump-table",
+      "name": "Dump one table",
+      "category": "Enumerating",
+      "summary": "Pulls the rows out of a single table. Narrow, on purpose.",
+      "flags": {
+        "url": true,
+        "D": "testdb",
+        "T": "users",
+        "dump": true,
+        "batch": true
+      },
+      "when": "You need to show that data is reachable.",
+      "cost": "Slow, and it retrieves real data. Take only what the engagement allows."
+    },
+    {
+      "id": "current-user",
+      "name": "Who am I on the database?",
+      "category": "Enumerating",
+      "summary": "Current user, current database, and whether that user is an admin.",
+      "flags": {
+        "url": true,
+        "current-user": true,
+        "current-db": true,
+        "is-dba": true,
+        "batch": true
+      },
+      "when": "Assessing how far the injection reaches.",
+      "cost": "Fast, and far less intrusive than a dump."
+    },
+    {
+      "id": "waf-bypass",
+      "name": "Get past a filter",
+      "category": "When it is blocked",
+      "summary": "Applies tamper scripts that rewrite payloads, and slows down to avoid rate limits.",
+      "flags": {
+        "url": true,
+        "tamper": "space2comment,between,randomcase",
+        "level": "3",
+        "risk": "2",
+        "delay": "1",
+        "random-agent": true,
+        "batch": true
+      },
+      "when": "Something is filtering the obvious payloads.",
+      "cost": "Slow. Tamper scripts are database-specific — check which suit the back end."
+    },
+    {
+      "id": "via-proxy",
+      "name": "Through a proxy",
+      "category": "When it is blocked",
+      "summary": "Routes everything through a local proxy so you can watch the requests.",
+      "flags": {
+        "url": true,
+        "proxy": "http://127.0.0.1:8080",
+        "batch": true
+      },
+      "when": "You want Burp or ZAP to see what sqlmap is sending.",
+      "cost": "None, beyond the proxy being up."
+    },
+    {
+      "id": "crawl",
+      "name": "Crawl, then test",
+      "category": "Finding it",
+      "summary": "Follows links from the starting URL and tests the forms and parameters it finds.",
+      "flags": {
+        "url": true,
+        "crawl": "2",
+        "forms": true,
+        "batch": true
+      },
+      "examples": {
+        "target": "http://example.com/"
+      },
+      "when": "You have a site rather than a single parameter.",
+      "cost": "Slow, and it touches every page it finds."
+    }
+  ]
 }

@@ -244,6 +244,35 @@ being read as an error), and it is matched with its dashes (Go echoes `--bogus`
 back as `-bogus`, and matching the bare name made "you passed a" look like a
 rejection of `--pass`).
 
+## Ready-made commands
+
+Every tool has a **Ready-made** tab: complete, working commands for the jobs
+people actually do, grouped by what you are trying to achieve — everyday,
+stealth and evasion, enumeration, debugging. 65 of them so far
+(curl 15, ffuf 11, gobuster 11, nmap 16, sqlmap 12).
+
+They read as something you could run straight away, because they are: before
+you have typed anything they show a complete command against `example.com`,
+and the moment you fill in the panel on the right every command on the page
+switches to your values. Each one is closed until you click it — the point is
+to scan fifteen commands quickly — and opening it shows the same piece-by-piece
+breakdown the builder gives, plus an **"or change it"** list: `-T4` is the
+timing template, swap it for `-T2` to stay under rate-based detection, or `-T5`
+on your own fast network.
+
+A recipe is not a string. It names flags and values, and is built through the
+same `buildCommand` as everything else, so it gets the same quoting, the same
+ordering and the same conflict handling — and `tools/verify.mjs` runs every
+recipe against the real binary like any other command. `check.mjs` refuses a
+recipe that names a flag the tool does not have, gives a value to a flag that
+takes none, or sets an enum to something outside its set. It caught two wrong
+flag ids in these the first time they were written.
+
+Recipes are **built without their examples** when verified. A recipe's example
+target is a real host — `scanme.nmap.org`, a `/24` — and running one as written
+would scan it. With the examples withheld the target becomes a placeholder the
+verifier strips, and the flags are still proved with nothing to aim at.
+
 ## Rebuilding the data
 
 One extractor per tool, never a universal parser — four tools print four

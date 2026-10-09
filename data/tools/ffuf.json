@@ -106,13 +106,15 @@
       "id": "target",
       "label": "Target URL",
       "kind": "url",
-      "placeholder": "https://example.com/FUZZ"
+      "placeholder": "https://example.com/FUZZ",
+      "example": "http://example.com/FUZZ"
     },
     {
       "id": "wordlist",
       "label": "Wordlist",
       "kind": "path",
-      "placeholder": "~/wordlists/SecLists/Discovery/Web-Content/common.txt"
+      "placeholder": "~/wordlists/SecLists/Discovery/Web-Content/common.txt",
+      "example": "/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt"
     },
     {
       "id": "output",
@@ -1668,5 +1670,187 @@
       "label": "where the words come from"
     }
   ],
-  "recipes": []
+  "recipes": [
+    {
+      "id": "dirs",
+      "name": "Find directories and files",
+      "category": "Content discovery",
+      "summary": "The standard first pass. FUZZ goes where you want the words tried.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "t": "40",
+        "c": true
+      },
+      "when": "Any web target you are allowed to test.",
+      "cost": "Minutes, depending on the wordlist."
+    },
+    {
+      "id": "dirs-ext",
+      "name": "Directories with file extensions",
+      "category": "Content discovery",
+      "summary": "Tries each word on its own and with common web extensions.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "e": ".php,.html,.txt,.bak,.zip",
+        "t": "40",
+        "c": true
+      },
+      "when": "You are after files, not just folders — backups and configs especially.",
+      "cost": "Five times the requests of a plain run."
+    },
+    {
+      "id": "recursive",
+      "name": "Recurse into what it finds",
+      "category": "Content discovery",
+      "summary": "Re-runs the wordlist inside every directory it discovers, two levels deep.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "recursion": true,
+        "recursion-depth": "2",
+        "t": "40",
+        "c": true
+      },
+      "when": "The first pass found directories worth digging into.",
+      "cost": "Grows fast. Keep the wordlist small or the depth low."
+    },
+    {
+      "id": "filter-size",
+      "name": "Hide the soft-404s",
+      "category": "Tuning the results",
+      "summary": "Filters out responses of one size, which is how you remove a \"not found\" page that returns 200.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "fs": "4242",
+        "t": "40",
+        "c": true
+      },
+      "when": "Everything comes back 200 and you need to find the real hits.",
+      "cost": "Run once without it first to learn the size to filter."
+    },
+    {
+      "id": "match-codes",
+      "name": "Only interesting status codes",
+      "category": "Tuning the results",
+      "summary": "Shows only the responses worth looking at, including 401 and 403 — which prove something is there.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "mc": "200,204,301,302,307,401,403,405",
+        "t": "40",
+        "c": true
+      },
+      "when": "You want the noise gone without filtering by size.",
+      "cost": "Same requests, fewer lines."
+    },
+    {
+      "id": "vhost",
+      "name": "Virtual hosts",
+      "category": "Other targets",
+      "summary": "Fuzzes the Host header instead of the path, to find sites sharing one address.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "H": "Host: FUZZ.example.com",
+        "fs": "4242",
+        "t": "40",
+        "c": true
+      },
+      "examples": {
+        "target": "http://example.com/"
+      },
+      "when": "One IP, and you suspect it serves more than one site.",
+      "cost": "Needs a size or word filter, or every response looks the same."
+    },
+    {
+      "id": "params",
+      "name": "GET parameters",
+      "category": "Other targets",
+      "summary": "Looks for parameter names a page accepts but does not advertise.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "fs": "4242",
+        "t": "40",
+        "c": true
+      },
+      "examples": {
+        "target": "http://example.com/page.php?FUZZ=test",
+        "wordlist": "/usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt"
+      },
+      "when": "Hunting for hidden parameters, including debug switches.",
+      "cost": "Filter by size, or every wrong guess looks identical."
+    },
+    {
+      "id": "post-data",
+      "name": "POST body fuzzing",
+      "category": "Other targets",
+      "summary": "Sends each word in a form body rather than the URL.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "X": "POST",
+        "d": "username=admin&password=FUZZ",
+        "H": "Content-Type: application/x-www-form-urlencoded",
+        "fc": "401",
+        "t": "40",
+        "c": true
+      },
+      "examples": {
+        "target": "http://example.com/login",
+        "wordlist": "/usr/share/seclists/Passwords/Common-Credentials/10k-most-common.txt"
+      },
+      "when": "Testing a login form you have written permission to test.",
+      "cost": "Loud, and it will lock accounts. Be careful."
+    },
+    {
+      "id": "authenticated",
+      "name": "Behind a login",
+      "category": "Other targets",
+      "summary": "Carries a session cookie so you scan as a logged-in user.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "b": "session=PASTE_YOUR_COOKIE",
+        "t": "40",
+        "c": true
+      },
+      "when": "The interesting content is only visible once signed in.",
+      "cost": "Paste a real cookie from your own session first."
+    },
+    {
+      "id": "quiet",
+      "name": "Slow and polite",
+      "category": "Tuning the results",
+      "summary": "One request at a time with a delay, for a fragile target or a rate limit.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "t": "1",
+        "p": "1",
+        "c": true
+      },
+      "when": "The target is small, old, or you have been asked not to hammer it.",
+      "cost": "Hours on a large wordlist."
+    },
+    {
+      "id": "save-json",
+      "name": "Save the results",
+      "category": "Tuning the results",
+      "summary": "Writes JSON you can parse later, alongside the normal output.",
+      "flags": {
+        "u": true,
+        "w": true,
+        "o": "ffuf.json",
+        "of": "json",
+        "t": "40",
+        "c": true
+      },
+      "when": "Any run whose results feed into something else.",
+      "cost": "None."
+    }
+  ]
 }

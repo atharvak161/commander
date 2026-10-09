@@ -57,6 +57,44 @@ for (const file of files) {
     if (!g.label) fail.push(`${rel}: requiresOneOf group has no label, so the message would not say what the choice is for.`);
   }
 
+  /* Recipes are commands we RECOMMEND, so they get the same scrutiny as the
+     data they are built from: every flag must exist and belong to the mode,
+     a value must only be given to a flag that takes one, and an enum value
+     must be one of the declared ones. */
+  const recipeIds = new Set();
+  for (const r of t.recipes || []) {
+    const at = `${rel}: recipe "${r.id || '?'}"`;
+    for (const k of ['id', 'name', 'category', 'summary', 'when']) if (!r[k]) fail.push(`${at}: missing ${k}.`);
+    if (recipeIds.has(r.id)) fail.push(`${at}: duplicate recipe id.`);
+    recipeIds.add(r.id);
+
+    const mid = r.mode || (t.modes[0] || {}).id;
+    const mode = t.modes.find(m => m.id === mid);
+    if (!mode) { fail.push(`${at}: mode "${mid}" does not exist.`); continue; }
+
+    for (const [fid, v] of Object.entries(r.flags || {})) {
+      const f = (t.flags || []).find(x => x.id === fid);
+      if (!f) { fail.push(`${at}: uses "${fid}", which is not a flag of ${t.id}.`); continue; }
+      if (!mode.flags.includes(fid)) fail.push(`${at}: uses "${fid}", which is not in mode "${mid}".`);
+      const eff = (f.perMode && f.perMode[mid]) ? { ...f, ...f.perMode[mid] } : f;
+      if (eff.takes === 'none' && v !== true) fail.push(`${at}: gives a value to "${fid}", which takes none.`);
+      if (eff.takes !== 'none' && v === true && !eff.binds) fail.push(`${at}: "${fid}" needs a value and the recipe gives none.`);
+      if (eff.takes === 'enum' && v !== true && !eff.enum.includes(String(v)))
+        fail.push(`${at}: "${fid}" is set to "${v}", which is not one of ${eff.enum.join(', ')}.`);
+    }
+    for (const id of Object.keys(r.examples || {}))
+      if (!(t.inputs || []).some(i => i.id === id)) fail.push(`${at}: example for "${id}", which is not an input.`);
+  }
+
+  /* An alternative must name a real flag, or the swap line would point nowhere. */
+  for (const f of t.flags || []) {
+    for (const a of f.alternatives || []) {
+      if (!(t.flags || []).some(x => x.id === a.id))
+        fail.push(`${rel}: flag ${f.short} suggests "${a.id}", which is not a flag of ${t.id}.`);
+      if (!a.when) fail.push(`${rel}: flag ${f.short} suggests ${a.id} with no "when", so the reader cannot tell why.`);
+    }
+  }
+
   // provenance
   const p = t.provenance || {};
   for (const k of ['toolVersion','source','tier','verifiedAt'])

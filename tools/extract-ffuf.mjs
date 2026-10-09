@@ -12,6 +12,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { recipes, alternatives, examples } from './recipes/ffuf.mjs';
 
 const SRC = 'data/manuals/ffuf.txt';
 const OUT = 'data/tools/ffuf.json';
@@ -261,8 +262,16 @@ const doc = {
     { ids: ['u', 'request'], label: 'the target' },
     { ids: ['w', 'input-cmd'], label: 'where the words come from' },
   ],
-  recipes: [],
+  /* Curated, not parsed: which flags belong together for a job is a judgement
+     no help text makes. Verified like any other command — tools/verify.mjs
+     runs every recipe against the binary. */
+  recipes,
 };
+
+
+/* The example values a recipe falls back to until the panel is filled in.
+   Applied by id so the input literals stay about the input, not the examples. */
+for (const i of doc.inputs || []) if (examples[i.id]) i.example = examples[i.id];
 
 writeFileSync(OUT, JSON.stringify(doc, null, 2) + '\n');
 console.log(`extract-ffuf: ${flags.length} flags -> ${OUT} (ffuf ${version})`);

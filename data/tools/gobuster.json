@@ -9,7 +9,7 @@
     "toolVersion": "3.8.2",
     "source": "help",
     "tier": "A",
-    "verifiedAt": "2026-10-08",
+    "verifiedAt": "2026-10-09",
     "host": "darwin-arm64"
   },
   "modes": [
@@ -279,13 +279,15 @@
       "id": "target",
       "label": "Target",
       "placeholder": "http://10.10.10.10/  or  example.com",
-      "help": "Whatever the mode points at: a URL for dir, vhost and fuzz, a domain for dns, a server for tftp."
+      "help": "Whatever the mode points at: a URL for dir, vhost and fuzz, a domain for dns, a server for tftp.",
+      "example": "http://example.com/"
     },
     {
       "id": "wordlist",
       "label": "Wordlist",
       "placeholder": "/path/to/wordlist.txt",
-      "help": "Path to the wordlist. gobuster also accepts - for stdin."
+      "help": "Path to the wordlist. gobuster also accepts - for stdin.",
+      "example": "/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt"
     }
   ],
   "flags": [
@@ -620,7 +622,17 @@
         "vhost": {
           "desc": "exclude the following content lengths. You can separate multiple lengths by comma and it also supports ranges like 203-206"
         }
-      }
+      },
+      "alternatives": [
+        {
+          "id": "status-codes",
+          "when": "status code is the cleaner signal"
+        },
+        {
+          "id": "status-codes-blacklist",
+          "when": "it is easier to say which codes to hide"
+        }
+      ]
     },
     {
       "id": "exclude-status",
@@ -700,7 +712,13 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "help"
+      "source": "help",
+      "alternatives": [
+        {
+          "id": "extensions-file",
+          "when": "your extension list is long enough to live in a file"
+        }
+      ]
     },
     {
       "id": "extensions-file",
@@ -1049,7 +1067,13 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "help"
+      "source": "help",
+      "alternatives": [
+        {
+          "id": "quiet",
+          "when": "you only want the findings on screen"
+        }
+      ]
     },
     {
       "id": "password",
@@ -1329,7 +1353,13 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "help"
+      "source": "help",
+      "alternatives": [
+        {
+          "id": "delay",
+          "when": "you want to pace by time rather than by thread count"
+        }
+      ]
     },
     {
       "id": "timeout",
@@ -1439,7 +1469,13 @@
       "conflicts": [],
       "requires": [],
       "since": null,
-      "source": "help"
+      "source": "help",
+      "alternatives": [
+        {
+          "id": "cookies",
+          "when": "the site uses a session cookie rather than basic auth"
+        }
+      ]
     },
     {
       "id": "wildcard",
@@ -1502,5 +1538,189 @@
       "source": "help"
     }
   ],
-  "recipes": []
+  "recipes": [
+    {
+      "id": "dir-basic",
+      "mode": "dir",
+      "name": "Find directories",
+      "category": "Web content",
+      "summary": "The standard directory scan.",
+      "flags": {
+        "url": true,
+        "wordlist": true,
+        "threads": "40"
+      },
+      "when": "First pass on a web server.",
+      "cost": "Minutes."
+    },
+    {
+      "id": "dir-ext",
+      "mode": "dir",
+      "name": "Directories and files",
+      "category": "Web content",
+      "summary": "Adds common web extensions to every word.",
+      "flags": {
+        "url": true,
+        "wordlist": true,
+        "extensions": "php,html,txt,bak,old,zip",
+        "threads": "40"
+      },
+      "when": "You want files — backups and leftover configs especially.",
+      "cost": "Six times the requests."
+    },
+    {
+      "id": "dir-auth",
+      "mode": "dir",
+      "name": "Behind basic auth",
+      "category": "Web content",
+      "summary": "Supplies HTTP basic credentials with every request.",
+      "flags": {
+        "url": true,
+        "wordlist": true,
+        "username": "admin",
+        "password": "password",
+        "threads": "20"
+      },
+      "when": "The server challenges you before showing anything.",
+      "cost": "Use credentials you were given."
+    },
+    {
+      "id": "dir-quiet",
+      "mode": "dir",
+      "name": "Slow and quiet",
+      "category": "Web content",
+      "summary": "Few threads with a delay between requests.",
+      "flags": {
+        "url": true,
+        "wordlist": true,
+        "threads": "2",
+        "delay": "500ms"
+      },
+      "when": "A rate limit, a WAF, or a fragile server.",
+      "cost": "Much slower, on purpose."
+    },
+    {
+      "id": "dns-sub",
+      "mode": "dns",
+      "name": "Find subdomains",
+      "category": "DNS",
+      "summary": "Resolves each word as a subdomain of the target domain.",
+      "flags": {
+        "domain": true,
+        "wordlist": true,
+        "threads": "40"
+      },
+      "examples": {
+        "target": "example.com",
+        "wordlist": "/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt"
+      },
+      "when": "Mapping what a domain exposes beyond its main site.",
+      "cost": "Fast. Uses your resolver unless you set one."
+    },
+    {
+      "id": "dns-cname",
+      "mode": "dns",
+      "name": "Subdomains with CNAMEs",
+      "category": "DNS",
+      "summary": "Also reports CNAME records, which often reveal the hosting provider.",
+      "flags": {
+        "domain": true,
+        "wordlist": true,
+        "check-cname": true,
+        "threads": "40"
+      },
+      "examples": {
+        "target": "example.com",
+        "wordlist": "/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt"
+      },
+      "when": "Looking for third-party services, or a dangling record.",
+      "cost": "Slightly slower."
+    },
+    {
+      "id": "vhost-basic",
+      "mode": "vhost",
+      "name": "Virtual hosts",
+      "category": "Virtual hosts",
+      "summary": "Tries each word as a Host header against one address.",
+      "flags": {
+        "url": true,
+        "wordlist": true,
+        "append-domain": true,
+        "threads": "20"
+      },
+      "examples": {
+        "wordlist": "/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt"
+      },
+      "when": "One IP serving several sites. Point it at the IP, not the name.",
+      "cost": "Minutes."
+    },
+    {
+      "id": "fuzz-param",
+      "mode": "fuzz",
+      "name": "Fuzz anywhere in the request",
+      "category": "Fuzzing",
+      "summary": "Replaces the FUZZ keyword wherever you put it — path, header or body.",
+      "flags": {
+        "url": true,
+        "wordlist": true,
+        "exclude-length": "0",
+        "threads": "40"
+      },
+      "examples": {
+        "target": "http://example.com/?FUZZ=test",
+        "wordlist": "/usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt"
+      },
+      "when": "Hunting hidden parameters or header values.",
+      "cost": "Needs a length filter or everything matches."
+    },
+    {
+      "id": "s3-buckets",
+      "mode": "s3",
+      "name": "Open S3 buckets",
+      "category": "Cloud storage",
+      "summary": "Tests each word as an AWS bucket name and reports the readable ones.",
+      "flags": {
+        "wordlist": true,
+        "threads": "20"
+      },
+      "examples": {
+        "wordlist": "/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt"
+      },
+      "when": "Looking for a company's public buckets by name.",
+      "cost": "Talks to AWS, not to your target."
+    },
+    {
+      "id": "gcs-buckets",
+      "mode": "gcs",
+      "name": "Open Google Cloud buckets",
+      "category": "Cloud storage",
+      "summary": "The same idea against Google Cloud Storage.",
+      "flags": {
+        "wordlist": true,
+        "threads": "20"
+      },
+      "examples": {
+        "wordlist": "/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt"
+      },
+      "when": "The target uses Google Cloud rather than AWS.",
+      "cost": "Talks to Google, not to your target."
+    },
+    {
+      "id": "tftp-files",
+      "mode": "tftp",
+      "name": "TFTP files",
+      "category": "Other services",
+      "summary": "Asks a TFTP server for each filename in the list.",
+      "flags": {
+        "server": true,
+        "wordlist": true
+      },
+      "examples": {
+        "target": "10.10.10.10",
+        "wordlist": "/usr/share/seclists/Discovery/Infrastructure/common-tftp-filenames.txt"
+      },
+      "when": "A UDP/69 service turned up in a port scan.",
+      "cost": "Fast. TFTP has no authentication, which is the point."
+    }
+  ]
 }

@@ -16,6 +16,7 @@
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { recipes, alternatives, examples } from './recipes/curl.mjs';
 
 const HELP = 'data/manuals/curl.help.txt';
 const MAN = 'data/manuals/curl.txt';
@@ -163,6 +164,13 @@ for (let i = 0; i < manLines.length; i++) {
 
 const list = [...flags.values()].sort((a, b) => a.id.localeCompare(b.id));
 
+/* Flags that do the same job, for a recipe's "or change it" list. */
+const _byId = new Map(flags.map ? [] : []);
+for (const [aid, alts] of Object.entries(alternatives)) {
+  const f = (Array.isArray(flags) ? flags : [...flags.values()]).find(x => x.id === aid);
+  if (f) f.alternatives = alts.filter(a => (Array.isArray(flags) ? flags : [...flags.values()]).some(x => x.id === a.id));
+}
+
 const tool = {
   id: 'curl',
   name: 'curl',
@@ -189,8 +197,16 @@ const tool = {
     },
   ],
   flags: list,
-  recipes: [],
+  /* Curated, not parsed: which flags belong together for a job is a judgement
+     no help text makes. Verified like any other command — tools/verify.mjs
+     runs every recipe against the binary. */
+  recipes,
 };
+
+
+/* The example values a recipe falls back to until the panel is filled in.
+   Applied by id so the input literals stay about the input, not the examples. */
+for (const i of tool.inputs || []) if (examples[i.id]) i.example = examples[i.id];
 
 writeFileSync(OUT, JSON.stringify(tool, null, 2) + '\n');
 console.log(`extract-curl: ${list.length} flags -> ${OUT} (curl ${version})`);

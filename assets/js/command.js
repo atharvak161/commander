@@ -194,3 +194,67 @@ export function blockedBy(tool, picked, f) {
   }
   return null;
 }
+
+/**
+ * A ready-made command.
+ *
+ * A recipe names the flags and the values that make a real, sensible command
+ * for one job — "stealth SYN scan", "dump a database", "POST some JSON". It is
+ * built through buildCommand like everything else, deliberately: the same
+ * quoting, the same ordering, the same conflict handling, and the verifier can
+ * run every recipe against the real binary because it is just another command.
+ *
+ * Values come from the user first and the example second. Before you have
+ * typed a target, a recipe shows a complete command against `example.com` so
+ * you can read it and see the shape; the moment you fill the panel in, every
+ * recipe on the page switches to your values. Nothing shows "<Target>" — a
+ * recipe is meant to be readable on its own.
+ */
+export function buildRecipe(tool, recipe, slots, opts) {
+  const mode = recipe.mode || tool.modes[0].id;
+  const picked = Object.create(null);
+  const adhoc = Object.create(null);
+  const boundFromRecipe = Object.create(null);
+
+  for (const [id, v] of Object.entries(recipe.flags || {})) {
+    const f = flagById(tool, id);
+    if (!f) continue;
+    picked[id] = true;
+    if (v !== true && v != null && v !== '') {
+      /* A value given to a BOUND flag becomes that input's value. A recipe
+         should not have to know which flags are wired to the panel: saying
+         "-o ffuf.json" means write to ffuf.json, and before this it was
+         silently dropped and the command showed "-o '<Output file>'". */
+      if (f.binds) boundFromRecipe[f.binds] = String(v);
+      else adhoc[id] = String(v);
+    }
+  }
+
+  /* Whatever the user has typed wins; otherwise the input's example.
+     `useExamples: false` leaves every unfilled input EMPTY, which is what the
+     verifier wants: a recipe's example target is a real host — scanme.nmap.org,
+     a /24 — and running the recipe as written would scan it. With the examples
+     withheld the target becomes a placeholder, which the verifier strips, and
+     the flags are still proved against the binary with nothing to aim at. */
+  const useExamples = !opts || opts.useExamples !== false;
+  const filled = Object.create(null);
+  for (const i of tool.inputs || []) {
+    const given = (slots || {})[i.id];
+    filled[i.id] = (given && String(given).trim()) ? given
+      : (boundFromRecipe[i.id] ?? (useExamples ? (recipe.examples?.[i.id] ?? i.example ?? '') : ''));
+  }
+
+  const built = buildCommand(tool, mode, picked, filled, adhoc);
+  /* A recipe is complete by construction, so an unfilled-value complaint would
+     only ever mean the data is wrong — keep real errors, drop the rest. */
+  return { ...built, usingExample: (tool.inputs || []).some(i => !((slots || {})[i.id] || '').trim() && filled[i.id]) };
+}
+
+/** Other flags that do the same job, for the "or swap it for" line. */
+export function alternativesFor(tool, flag, modeId) {
+  return (flag.alternatives || [])
+    .map(a => ({ ...a, flag: flagById(tool, a.id) }))
+    .filter(a => a.flag && (!modeId || !tool.modes.find(m => m.id === modeId) ||
+                            tool.modes.find(m => m.id === modeId).flags.includes(a.id)))
+    .map(a => ({ token: a.flag.short || a.flag.long, when: a.when, desc: resolveFlag(a.flag, modeId).desc }));
+}

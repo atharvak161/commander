@@ -26,6 +26,7 @@
  *    put to nmap itself and dropped unless it is accepted. See tools/probe-nmap.mjs.
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { recipes, alternatives, examples } from './recipes/nmap.mjs';
 import { execFileSync } from 'node:child_process';
 
 const HELP = 'data/manuals/nmap.help.txt';
@@ -370,6 +371,12 @@ for (const [tok, modern, group, desc] of DEPRECATED) {
   });
 }
 
+/* Flags that do the same job, so a recipe's breakdown can offer a swap. */
+for (const [id, alts] of Object.entries(alternatives)) {
+  const f = flags.get(id);
+  if (f) f.alternatives = alts.filter(a => flags.has(a.id));
+}
+
 /* ------------------------------------------------------------- assemble --- */
 /* Group order follows nmap's own help, not the alphabet. nmap presents its
    options in the order you actually use them — what to scan, how to find it,
@@ -407,11 +414,20 @@ const tool = {
          the command line is not required when either is picked. */
       requiredUnless: ['iL', 'iR'],
       help: 'Hosts, ranges or CIDR blocks. nmap takes these as bare arguments at the end, not behind a flag.',
+      example: examples.target,
     },
   ],
   flags: list,
-  recipes: [],
+  /* Curated, not parsed. A recipe is a judgement about which flags belong
+     together for a job, and no help text states that. They are verified like
+     any other command: tools/verify.mjs runs every one against the binary. */
+  recipes,
 };
+
+
+/* The example values a recipe falls back to until the panel is filled in.
+   Applied by id so the input literals stay about the input, not the examples. */
+for (const i of tool.inputs || []) if (examples[i.id]) i.example = examples[i.id];
 
 writeFileSync(OUT, JSON.stringify(tool, null, 2) + '\n');
 console.log(`extract-nmap: ${list.length} flags -> ${OUT} (nmap ${version})`);

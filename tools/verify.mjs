@@ -54,7 +54,7 @@ function pathFor(f) {
   const hint = `${f.id} ${f.desc || ''}`;
   return WRITES.test(hint) ? _join(PROBE_DIR, `out-${++outSeq}.txt`) : SAMPLE_FILE;
 }
-import { buildCommand, blockedBy, resolveFlag } from '../assets/js/command.js';
+import { buildCommand, blockedBy, resolveFlag, buildRecipe } from '../assets/js/command.js';
 
 const id = process.argv[2];
 const pairArg = process.argv.find(a => a === '--pairs' || a.startsWith('--pairs='));
@@ -265,6 +265,21 @@ for (const f of tool.flags.filter(f => f.takes === 'path' && !SIDE_EFFECTS.has(f
 }
 const afterAwkward = jobs.length;
 
+/* pass 4 — every recipe, exactly as the page would build it.
+   These are the commands we put in front of someone as "use this", so they had
+   better run. Values come from the recipe's own examples, which is what a
+   visitor sees before typing anything. */
+let recipeCount = 0;
+for (const r of tool.recipes || []) {
+  /* WITHOUT the examples. A recipe's example target is a real host, and
+     building one as a visitor sees it would have the verifier scan
+     scanme.nmap.org and a /24 subnet, once per recipe. */
+  const built = buildRecipe(tool, r, {}, { useExamples: false });
+  jobs.push({ label: `recipe: ${r.name}`, built, tokens: Object.keys(r.flags || {})
+    .map(id => { const f = tool.flags.find(x => x.id === id); return f && (f.short || f.long); }).filter(Boolean) });
+  recipeCount++;
+}
+
 /* pass 2 — every valid pair the UI would allow */
 let pairs = 0;
 let sampled = null;
@@ -349,6 +364,7 @@ console.log(`  awkward   ${afterAwkward - afterSingles}`);
 if (doPairs) {
   console.log(`  pairs     ${pairs}${sampled ? ` of ${sampled.total} (all ${sampled.must} that could interact, plus a seeded sample)` : ' (every valid pair)'}`);
 }
+if (recipeCount) console.log(`  recipes   ${recipeCount}`);
 console.log(`  rejected  ${bad.length}`);
 if (stalled.length) console.log(`  STALLED   ${stalled.length}  <- never finished, so never verified`);
 console.log(`  commands run: ${ran} in ${((Date.now() - t0) / 1000).toFixed(1)}s at width ${WIDTH}`);
