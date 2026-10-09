@@ -35,7 +35,11 @@ const NEEDS_VALUE = /option [`'"]?-{1,2}[^'"`\s]+['"`]? requires an argument/i;
 
 function run(argv) {
   try {
-    return execFileSync('nmap', argv, { encoding: 'utf8', stdio: 'pipe', timeout: 15000, cwd: PROBE_DIR });
+/* stdin on 'ignore', always. A tool that reads stdin when it has no target —
+   sqlmap does — blocks on an open pipe until the timeout, and a timed-out probe
+   matches no rejection pattern, so it would be counted as a pass for a command
+   that never ran. */
+    return execFileSync('nmap', argv, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 15000, cwd: PROBE_DIR });
   } catch (e) {
     return String(e.stdout || '') + String(e.stderr || '');
   }

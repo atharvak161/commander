@@ -64,6 +64,15 @@ function inferEnum(desc) {
 /* Second shape ffuf uses for a closed set: quoted alternatives joined by "or".
      -preflight-error  Preflight error handling: "abort" or "ignore"
    Two flags carried this and both were typed as free text. */
+/* Third shape: "Matcher set operator. Either of: and, or". Two flags use it
+   (-mmode and -fmode) and both were free text; ffuf rejects anything else. */
+function inferEitherOf(desc) {
+  const m = /\bEither of:\s*([a-z0-9]+(?:\s*,\s*[a-z0-9]+)+)/i.exec(desc);
+  if (!m) return null;
+  const vals = m[1].split(/\s*,\s*/).map(v => v.trim()).filter(Boolean);
+  return vals.length >= 2 ? vals : null;
+}
+
 function inferQuotedEnum(desc) {
   const m = /:\s*("[a-z0-9_.-]+"(?:\s*(?:,|or)\s*"[a-z0-9_.-]+")+)/i.exec(desc);
   if (!m) return null;
@@ -74,7 +83,7 @@ function inferQuotedEnum(desc) {
 function inferTakes(flag, desc) {
   const d = desc.toLowerCase();
   if (/^\(default:\s*(true|false)\)/.test(d) || /\(default: false\)/.test(d)) return 'none';
-  if (inferEnum(desc) || inferQuotedEnum(desc)) return 'enum';
+  if (inferEnum(desc) || inferQuotedEnum(desc) || inferEitherOf(desc)) return 'enum';
   if (/\bwordlist\b|\bfile\b|\bpath\b|\bdirectory\b/.test(d)) return 'path';
   if (/\burl\b/.test(d)) return 'url';
   if (/number of|\bseconds\b|\brate\b|\bamount\b|\bdelay\b|\bthreads\b|\bdepth\b|\bcount\b/.test(d)) return 'int';
@@ -120,7 +129,7 @@ for (const raw of lines) {
      "(default: clusterbomb)" glued to the last enum value, so -mode came out
      with clusterbomb and pitchfork and silently lost sniper. */
   const takes = (def === 'false' || def === 'true') ? 'none' : inferTakes(flag, desc);
-  const enumVals = takes === 'enum' ? (inferEnum(desc) || inferQuotedEnum(desc)) : null;
+  const enumVals = takes === 'enum' ? (inferEnum(desc) || inferQuotedEnum(desc) || inferEitherOf(desc)) : null;
 
   flags.push({
     id: slug(flag),
@@ -210,8 +219,10 @@ for (const f of flags) if (BINDS[f.id]) f.binds = BINDS[f.id];
 
 const uFlag = flags.find(f => f.id === 'u');
 const wFlag = flags.find(f => f.id === 'w');
-if (uFlag) uFlag.required = true;
-if (wFlag) wFlag.required = true;
+/* NOT marked required, deliberately. ffuf accepts -request in place of -u and
+   --input-cmd in place of -w, so demanding these two told someone running a
+   perfectly valid "ffuf -request r.txt --input-cmd 'seq 1 10'" that -u and -w
+   were missing. The real rule is one-of, and it lives in requiresOneOf. */
 
 const doc = {
   id: 'ffuf',
@@ -241,6 +252,15 @@ const doc = {
     { id: 'output',   label: 'Output file', kind: 'path', placeholder: 'results.json' },
   ],
   flags,
+  /* ffuf's own words, from its startup errors:
+       "-u flag or -request flag is required"
+       "Either -w or --input-cmd flag is required"
+     Marking -u and -w required outright would complain at someone who
+     correctly used -request or --input-cmd instead. */
+  requiresOneOf: [
+    { ids: ['u', 'request'], label: 'the target' },
+    { ids: ['w', 'input-cmd'], label: 'where the words come from' },
+  ],
   recipes: [],
 };
 

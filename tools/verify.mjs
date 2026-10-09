@@ -18,8 +18,8 @@
  *   node tools/verify.mjs ffuf [--pairs]
  */
 import { readFileSync, existsSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync as _mkdtemp } from 'node:fs';
+import { execFileSync, spawn } from 'node:child_process';
+import { mkdtempSync as _mkdtemp, writeFileSync as _writeFile, chmodSync as _chmod } from 'node:fs';
 import { tmpdir as _tmpdir } from 'node:os';
 import { join as _join } from 'node:path';
 
@@ -30,10 +30,39 @@ import { join as _join } from 'node:path';
    decides where it writes; the only reliable fix is to not be standing in the
    repo when it runs. */
 const PROBE_DIR = _mkdtemp(_join(_tmpdir(), 'commander-probe-'));
+
+/* A real one-line file, not /dev/null. An EMPTY wordlist is a degenerate input
+   and tools do not agree on what it means: gobuster's fuzz mode waits forever
+   on one (859 probes stalled), while its dir mode returns at once. One word
+   costs nothing and is what a user would actually pass. */
+const SAMPLE_FILE = _join(PROBE_DIR, 'commander-sample.txt');
+_writeFile(SAMPLE_FILE, 'admin\n');
+/* Read-only, deliberately. A flag that WRITES must never be handed the file a
+   flag that READS depends on, and making the sample unwritable means a mistake
+   fails loudly here instead of corrupting the run. */
+_chmod(SAMPLE_FILE, 0o444);
+
+/* Output paths get their own file, one per probe. Giving every path flag the
+   same value meant "--output <wordlist>" truncated the wordlist as it ran, and
+   every probe after it saw an empty wordlist — which makes gobuster's fuzz
+   mode hang. 859 pairs "stalled" and the cause was three pairs earlier in the
+   sequence. Isolated, every one of them passed. */
+let outSeq = 0;
+const WRITES = /output|\bsave\b|\bwrite\b|\bdest\b|\blog\b|report|dump-file|results-file|har\b/i;
+function pathFor(f) {
+  const hint = `${f.id} ${f.desc || ''}`;
+  return WRITES.test(hint) ? _join(PROBE_DIR, `out-${++outSeq}.txt`) : SAMPLE_FILE;
+}
 import { buildCommand, blockedBy, resolveFlag } from '../assets/js/command.js';
 
 const id = process.argv[2];
-const doPairs = process.argv.includes('--pairs');
+const pairArg = process.argv.find(a => a === '--pairs' || a.startsWith('--pairs='));
+const doPairs = Boolean(pairArg);
+/* --pairs runs every valid pair. --pairs=N caps the run at roughly N.
+   sqlmap has 271 flags, so 36,585 pairs, and it costs about 0.4s per run in
+   Python startup alone — three and a half hours. A cap keeps the pass useful
+   without pretending the machine is free. */
+const pairBudget = pairArg && pairArg.includes('=') ? Number(pairArg.split('=')[1]) : Infinity;
 if (!id) { console.error('usage: verify.mjs <toolId> [--pairs]'); process.exit(2); }
 
 const path = `data/tools/${id}.json`;
@@ -44,7 +73,7 @@ try { execFileSync('which', [tool.id], { stdio: 'pipe' }); }
 catch { console.error(`${tool.id} is not installed locally; container path (P2) not wired yet.`); process.exit(2); }
 
 const SAMPLE = {
-  none: null, string: 'x', int: '1', path: '/dev/null',
+  none: null, string: 'x', int: '1', path: SAMPLE_FILE,
   url: 'http://127.0.0.1:1/FUZZ', port: '80', host: '127.0.0.1', enum: null,
 };
 const AWKWARD = ['a b', "it's", 'a$b', 'a\\b', 'a"b', 'a;b'];
@@ -56,6 +85,7 @@ const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|
 function valueFor(f) {
   if (f.takes === 'none') return null;
   if (f.takes === 'enum') return (f.enum && f.enum[0]) || 'x';
+  if (f.takes === 'path') return pathFor(f);
   return SAMPLE[f.takes] ?? 'x';
 }
 
@@ -69,11 +99,41 @@ function slotsAndAdhoc(flags, override) {
   return { slots, adhoc };
 }
 
+/* Flags that would REACH THE NETWORK. This is a safety rule, not a speed one:
+   the verifier's whole premise is that a tool rejects a bad flag long before it
+   opens a socket, so nothing it runs may leave the machine. An exhaustive pair
+   run found 201 probes stalling on sqlmap's -g, which is a Google dork — it was
+   querying a search engine, once per pair, for an hour.
+
+   -g and --gpage send a search query; --check-internet fetches
+   google.com/generate_204 (named in sqlmap's own settings.py); --tor reaches
+   for a Tor daemon; --update and --dependencies fetch from the internet.
+   Membership for all of them is established by the declaration and the singles
+   pass, neither of which needs them to actually run. */
+const NETWORK = new Set([
+  /* sqlmap */
+  'g', 'gpage',          // Google dork: sends a search query
+  'check-internet',      // fetches google.com/generate_204, named in sqlmap's settings.py
+  'tor',                 // reaches for a Tor daemon
+  'update', 'dependencies',
+
+  /* nmap — and -iR is the worst thing in this file.
+     "-iR <num>" does not mean "pretend". nmap GENERATES RANDOM PUBLIC IP
+     ADDRESSES and scans them. Running it here would have been scanning
+     strangers' machines from this laptop, once per probe. It is blocked
+     outright and must stay blocked.
+     -iL reads targets from a file and resolves every line, which with any
+     sample file means outbound DNS. --dns-servers points nmap at a resolver
+     and waits on it. All three are proved by the singles pass, which runs
+     them with nothing to resolve. */
+  'iR', 'iL', 'dns-servers',
+]);
+
 /* Flags with a side effect beyond this process. Verifying that nmap ACCEPTS
    --script-updatedb does not require letting it rewrite the installed script
    database, so these are checked for membership by probe-nmap.mjs and skipped
    here. */
-const SIDE_EFFECTS = new Set([
+const SIDE_EFFECTS_ONLY = new Set([
   'script-updatedb',   // nmap: rewrites the installed NSE script database
   'purge',             // sqlmap: erases sqlmap's own data directory
   'dependencies',      // sqlmap: tries to install things
@@ -81,10 +141,22 @@ const SIDE_EFFECTS = new Set([
   'wizard',            // sqlmap: interactive, would hang the run
   'shell',             // sqlmap: interactive SQL shell
   'live-test',         // sqlmap: runs its own test suite over the network
-  'smoke-test',
+  'smoke-test',        // sqlmap: its own smoke tests, minutes long
   'vuln-test',
+  'fp-test',           // sqlmap: fingerprint test suite, never finished inside the timeout
+  'payload-lint',      // sqlmap: lints its whole payload set, same
   'api',               // sqlmap: starts a server
 ]);
+
+/* Slow BY DESIGN, so excluded from the pairs pass only. nmap's -T0 (paranoid)
+   and -T1 (sneaky) insert minutes of delay between probes — that is what they
+   are for. Alone they return at once, because with no target there is nothing
+   to pace, so the singles pass still proves them; pairing them with a probe
+   flag just buys a timeout. */
+const SLOW_BY_DESIGN = new Set(['T0', 'T1', 'T']);
+
+/* Everything the verifier refuses to run, for either reason. */
+const SIDE_EFFECTS = new Set([...SIDE_EFFECTS_ONLY, ...NETWORK]);
 
 /* A placeholder is not a value. buildCommand emits "<Target>" when a required
    input is empty, and for nmap that string would be passed as a hostname — it
@@ -99,16 +171,48 @@ function stripPlaceholders(argv) {
   return argv.filter(a => !PLACEHOLDER.test(a));
 }
 
+/* stdin MUST be closed, and this is not a detail.
+   sqlmap reads its target list from stdin when no target option is given, so
+   with an open pipe it waits forever: 213 of its 271 flags sat until the
+   timeout. A timed-out probe matches no rejection pattern, so the verifier
+   counted every one of them as ACCEPTED — a silent pass for a command that
+   never ran. spawn with stdin on 'ignore' gives the tool an immediate EOF:
+   the same probe goes from 12 seconds to 0.4.
+
+   execFile could not fix it. Its stdio option is overridden so it can capture
+   output, so the pipe stayed open whatever was asked for. */
 function run(argv) {
   const safe = stripPlaceholders(argv);
-  try { return execFileSync(tool.id, safe, { stdio: 'pipe', timeout: 15000, encoding: 'utf8', cwd: PROBE_DIR }); }
-  catch (e) { return `${e.stdout || ''}${e.stderr || ''}`; }
+  return new Promise(resolve => {
+    const child = spawn(tool.id, safe, { stdio: ['ignore', 'pipe', 'pipe'], cwd: PROBE_DIR });
+    let out = '';
+    const take = d => { if (out.length < (4 << 20)) out += d; };
+    child.stdout.on('data', take);
+    child.stderr.on('data', take);
+    let timedOut = false;
+    const timer = setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, 20000);
+    child.on('error', e => { clearTimeout(timer); resolve({ out: String(e.message), timedOut: false }); });
+    child.on('close', () => { clearTimeout(timer); resolve({ out, timedOut }); });
+  });
 }
+
+/* Run the queue with a bounded number in flight. sqlmap takes about half a
+   second to start, and every valid pair of its 271 flags is 36,000 commands —
+   hours in sequence, minutes like this. The bound keeps it from forking a
+   process per pair all at once. */
+async function pool(jobs, width, worker) {
+  let next = 0;
+  const run1 = async () => { while (next < jobs.length) { const i = next++; await worker(jobs[i]); } };
+  await Promise.all(Array.from({ length: Math.min(width, jobs.length) }, run1));
+}
+
+const WIDTH = Number(process.env.VERIFY_WIDTH || 12);
 
 const required = tool.flags.filter(f => f.required);
 const bad = [];
 let ran = 0;
 
+const jobs = [];
 function check(label, picked, override, modeId) {
   const mid = modeId || tool.modes[0].id;
   const allowed = new Set((tool.modes.find(m => m.id === mid) || tool.modes[0]).flags);
@@ -116,12 +220,7 @@ function check(label, picked, override, modeId) {
     .map(f => resolveFlag(f, mid));
   const { slots, adhoc } = slotsAndAdhoc(flags, override);
   const built = buildCommand(tool, mid, picked, slots, adhoc);
-  const out = run(built.argv);
-  ran++;
-  if (REJECT.test(out)) {
-    const line = out.split('\n').find(l => REJECT.test(l)) || '';
-    bad.push({ label, cmd: built.text, why: line.trim() });
-  }
+  jobs.push({ label, built });
 }
 
 /* pass 1 — each flag alone, in EVERY mode that has it.
@@ -142,7 +241,7 @@ for (const mode of tool.modes) {
     check(`${tool.modes.length > 1 ? mode.id + ' ' : ''}${f.short || f.long}`, picked, undefined, mode.id);
   }
 }
-const afterSingles = bad.length;
+const afterSingles = jobs.length;
 
 /* pass 3 — awkward values on every flag that takes a path */
 for (const f of tool.flags.filter(f => f.takes === 'path' && !SIDE_EFFECTS.has(f.id))) {
@@ -153,33 +252,91 @@ for (const f of tool.flags.filter(f => f.takes === 'path' && !SIDE_EFFECTS.has(f
     check(`${f.short || f.long} = ${JSON.stringify(v)}`, picked, v);
   }
 }
-const afterAwkward = bad.length;
+const afterAwkward = jobs.length;
 
 /* pass 2 — every valid pair the UI would allow */
 let pairs = 0;
+let sampled = null;
+const candidates = [];
 if (doPairs) {
-  const list = tool.flags;
-  for (let i = 0; i < list.length; i++) {
-    for (let j = i + 1; j < list.length; j++) {
-      const a = list[i], b = list[j];
-      const picked = {};
-      required.forEach(r => { picked[r.id] = true; });
-      picked[a.id] = true;
-      if (blockedBy(tool, picked, b)) continue;   // the UI would not permit it
-      picked[b.id] = true;
-      check(`${a.short || a.long} + ${b.short || b.long}`, picked);
-      pairs++;
+  /* Per mode, because a pair that does not exist together is not a pair. This
+     loop used to run over every flag of the tool regardless of mode, so for
+     gobuster it combined dns flags with s3 flags — commands no mode accepts. */
+  for (const mode of tool.modes) {
+    const list = tool.flags.filter(f => mode.flags.includes(f.id) && !SIDE_EFFECTS.has(f.id) && !SLOW_BY_DESIGN.has(f.id));
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const a = list[i], b = list[j];
+        const picked = {};
+        required.forEach(r => { picked[r.id] = true; });
+        picked[a.id] = true;
+        if (blockedBy(tool, picked, b)) continue;   // the UI would not permit it
+        picked[b.id] = true;
+        candidates.push({ mode, a, b, picked });
+      }
     }
+  }
+
+  /* Under a cap, keep the pairs where two flags could actually interact and
+     sample the rest. A pair interacts if either side declares a conflict or a
+     requirement, carries a closed value set, or they sit in the same group —
+     that is where a tool's own validation lives. The remainder is shuffled
+     with a fixed seed, so a capped run is reproducible and a failure can be
+     repeated rather than hunted for. */
+  const interacts = p =>
+    (p.a.conflicts || []).length || (p.b.conflicts || []).length ||
+    (p.a.requires || []).length || (p.b.requires || []).length ||
+    p.a.takes === 'enum' || p.b.takes === 'enum' ||
+    p.a.group === p.b.group;
+
+  let chosen = candidates;
+  if (candidates.length > pairBudget) {
+    const must = candidates.filter(interacts);
+    const rest = candidates.filter(p => !interacts(p));
+    let seed = 20261008;
+    const rand = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    for (let i = rest.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [rest[i], rest[j]] = [rest[j], rest[i]]; }
+    chosen = must.concat(rest.slice(0, Math.max(0, pairBudget - must.length)));
+    sampled = { total: candidates.length, must: must.length, kept: chosen.length };
+  }
+
+  for (const p of chosen) {
+    check(`${tool.modes.length > 1 ? p.mode.id + ' ' : ''}${p.a.short || p.a.long} + ${p.b.short || p.b.long}`, p.picked, undefined, p.mode.id);
+    pairs++;
   }
 }
 
-console.log(`\nverify ${tool.id} ${tool.provenance.toolVersion}`);
-console.log(`  singles   ${tool.flags.length}  (${afterSingles} rejected)`);
-console.log(`  awkward   ${tool.flags.filter(f => f.takes === 'path').length * AWKWARD.length}  (${afterAwkward - afterSingles} rejected)`);
-if (doPairs) console.log(`  pairs     ${pairs}  (${bad.length - afterAwkward} rejected)`);
-console.log(`  commands run: ${ran}`);
+const t0 = Date.now();
+const stalled = [];
+await pool(jobs, WIDTH, async job => {
+  const { out, timedOut } = await run(job.built.argv);
+  ran++;
+  /* A probe that never finished proves nothing. Counting it as a pass is how
+     a verifier reports success for commands it never actually tested. */
+  if (timedOut) { stalled.push({ label: job.label, cmd: job.built.text }); return; }
+  if (REJECT.test(out)) {
+    const line = out.split('\n').find(l => REJECT.test(l)) || '';
+    bad.push({ label: job.label, cmd: job.built.text, why: line.trim() });
+  }
+});
 
-if (bad.length) {
+console.log(`\nverify ${tool.id} ${tool.provenance.toolVersion}`);
+console.log(`  singles   ${afterSingles}`);
+console.log(`  awkward   ${afterAwkward - afterSingles}`);
+if (doPairs) {
+  console.log(`  pairs     ${pairs}${sampled ? ` of ${sampled.total} (all ${sampled.must} that could interact, plus a seeded sample)` : ' (every valid pair)'}`);
+}
+console.log(`  rejected  ${bad.length}`);
+if (stalled.length) console.log(`  STALLED   ${stalled.length}  <- never finished, so never verified`);
+console.log(`  commands run: ${ran} in ${((Date.now() - t0) / 1000).toFixed(1)}s at width ${WIDTH}`);
+
+if (stalled.length) {
+  console.error(`\nINCONCLUSIVE — ${stalled.length} probe(s) hit the timeout and prove nothing:`);
+  stalled.slice(0, 15).forEach(b => console.error(`  ? ${b.label}\n      ${b.cmd}`));
+  if (stalled.length > 15) console.error(`  ... and ${stalled.length - 15} more`);
+}
+
+if (bad.length || stalled.length) {
   console.error(`\nREJECTED — ${bad.length}:`);
   bad.slice(0, 25).forEach(b => console.error(`  x ${b.label}\n      ${b.cmd}\n      ${b.why}`));
   if (bad.length > 25) console.error(`  ... and ${bad.length - 25} more`);

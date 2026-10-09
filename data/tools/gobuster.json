@@ -572,7 +572,8 @@
         "dns": {
           "desc": "The target domain",
           "takes": "host",
-          "binds": "target"
+          "binds": "target",
+          "required": true
         }
       }
     },
@@ -1237,7 +1238,7 @@
       "takes": "host",
       "enum": null,
       "binds": "target",
-      "required": false,
+      "required": true,
       "repeatable": false,
       "default": null,
       "group": "options",
@@ -1387,7 +1388,7 @@
       "takes": "url",
       "enum": null,
       "binds": "target",
-      "required": false,
+      "required": true,
       "repeatable": false,
       "default": null,
       "group": "options",
@@ -1467,7 +1468,7 @@
       "takes": "path",
       "enum": null,
       "binds": "wordlist",
-      "required": false,
+      "required": true,
       "repeatable": false,
       "default": null,
       "group": "options",

@@ -30,12 +30,15 @@ Phase 1a complete. **ffuf, nmap, sqlmap and gobuster are live**, 548 flags.
 |---|---|
 | Schema | done — `data/SCHEMA.md` |
 | Checker | done — `tools/check.mjs` |
-| Verifier | done — `tools/verify.mjs`, three passes |
+| Verifier | done — `tools/verify.mjs`, parallel, every mode |
 | Quoting round-trip | done — `test/quoting.mjs` |
 | Enum proof | done — `test/enums.mjs` |
 | Placeholder guard | done — `test/placeholders.mjs` |
-| ffuf | done — 77 flags, 4 enums, 5 repeatables, verified |
-| nmap | done — 133 flags from help+man, every one put to the binary |
+| Relationships | done — `test/relationships.mjs` |
+| Repeatable flags | done — `test/repeatable.mjs` |
+| Coverage gate | done — `tools/coverage.mjs` |
+| ffuf | done — 78 flags, 6 enums, 5 repeatables |
+| nmap | done — 140 flags from help+man, every one put to the binary |
 | sqlmap | done — 271 flags read from sqlmap's own option objects |
 | gobuster | done — 59 flags across 7 modes, with per-mode overrides |
 | Interface | done — picker, slots, command bar, explainer |
@@ -48,7 +51,7 @@ from the tool's own sentences — "Implies -ac", "Overrides -w" — rather than
 assumed, so they stay correct when the tool changes. Nothing is invented: a
 relationship the tool does not state is left empty.
 
-Then it is proved against the binary, four ways:
+Then it is proved against the binary:
 
 ```
 node tools/coverage.mjs       # did we MISS a flag? see below
@@ -58,21 +61,37 @@ node tools/verify.mjs ffuf --pairs
 node test/quoting.mjs         # the copied text, parsed by a real shell
 node test/enums.mjs           # every enum value, and that the set is really closed
 node test/placeholders.mjs    # no flag can swallow the one after it
+node test/relationships.mjs   # conflicts block both ways and nothing else does
+node test/repeatable.mjs      # a flag you may give twice is emitted twice
 node tools/probe-nmap.mjs    # nmap only: ask the binary which candidates are real
 python3 tools/dump-sqlmap-options.py <libexec>   # sqlmap only: its own option objects
 ```
 
-**`verify.mjs`** runs the actual tool. Singles, awkward values (spaces, quotes,
-`$`, backslashes, semicolons), and every valid pair — 2,992 real commands for
-ffuf, all accepted. No packets are sent: a tool rejects an unknown flag long
-before it opens a socket.
+**`verify.mjs`** runs the actual tool, in parallel, once per mode. Singles,
+awkward values (spaces, quotes, `$`, backslashes, semicolons), and every valid
+pair — 3,134 commands for ffuf, 9,803 for nmap, 3,714 for gobuster, 8,419 for
+sqlmap, all accepted. A tool rejects an unknown flag long before it opens a
+socket, which is why this is safe; the flags that would break that rule are
+refused outright, see below.
 
 **`test/quoting.mjs`** closes the gap that matters most. The verifier runs an
 argument *array*; you copy a *string* a shell parses. If the quoting were wrong
 those two would differ and the verified command would not be the one that runs.
 So it hands the text to `/bin/sh` and asserts the arguments come back
-byte-identical — 1,535 cases, including `a;rm -rf /` staying a single harmless
-argument.
+byte-identical — 10,219 cases across the four tools, including `a;rm -rf /`
+staying a single harmless argument.
+
+**`test/relationships.mjs`** checks the half that is easy to forget. Every
+declared conflict must block in both directions — and **nothing else may
+block**. A blocker that is too eager silently removes valid commands and gives
+the user no way to find out why. It also covers "at least one of these": ffuf
+takes `-request` in place of `-u` and `--input-cmd` in place of `-w`, so
+demanding `-u` outright argued with a command that works.
+
+**`test/repeatable.mjs`** covers the flags you are allowed to give more than
+once. `-H` and `--headers` are the everyday case — two or three headers in one
+command is ordinary — and the interface offered a single box, so the second and
+third were silently dropped.
 
 **`test/enums.mjs`** asks the binary whether a closed value set is really
 closed: every declared value must be accepted, and a value outside the list must
@@ -126,6 +145,61 @@ pair would duplicate the 56 shared options seven times; one shared entry would
 hide the difference. So a flag carries a `perMode` override of only the fields
 that differ, and everything reads it through `resolveFlag`.
 
+### A probe that never finished is not a pass
+
+The verifier runs the real tool and looks for a rejection in its output. That
+is only sound if the tool actually ran. sqlmap reads its target list from
+**stdin** when no target option is given, so with an open pipe it waits
+forever — 213 of its 271 flags sat until the timeout. A timed-out probe matches
+no rejection pattern, so every one of them was counted as **accepted**: a
+silent pass for a command that never executed.
+
+Two changes. Probes run through `spawn` with stdin on `'ignore'`, which hands
+the tool an immediate EOF and takes the same probe from 12 seconds to 0.4.
+(`execFile` cannot do this — it overrides `stdio` so it can capture output.)
+And a timeout is now reported as INCONCLUSIVE and fails the run, because the
+one thing a verifier must never do is report success for work it did not do.
+
+What remains are two of sqlmap's own test runners, `--fp-test` and
+`--payload-lint`, which genuinely take minutes. They are in the documented skip
+list rather than quietly timing out.
+
+### Nothing the verifier runs may leave the machine
+
+That is the premise of the whole approach — a tool rejects an unknown flag long
+before it opens a socket — so it has to be enforced rather than assumed. It was
+not. An exhaustive pair run surfaced 201 probes stalling on sqlmap's `-g`, which
+is a **Google dork**: the verifier had been querying a search engine, once per
+pair, for an hour. `--check-internet` fetches `google.com/generate_204`, named
+in sqlmap's own `settings.py`.
+
+Worse was waiting in nmap. **`-iR <num>` does not mean "pretend": nmap
+generates random PUBLIC IP addresses and scans them.** Running it here was
+scanning strangers' machines from this laptop, once per probe. `-iL` reads
+targets from a file and resolves every line; `--dns-servers` points nmap at a
+resolver and waits on it.
+
+There is now an explicit `NETWORK` set — `-g`, `--gpage`, `--check-internet`,
+`--tor`, `--update`, `--dependencies`, `-iR`, `-iL`, `--dns-servers` — that the
+verifier refuses to run.
+Membership for those flags is established by the declaration and the singles
+pass, neither of which needs them to actually execute. Where a target is
+unavoidable it is loopback port 1 (refused instantly, never leaves the host) or
+an RFC 2606 `.invalid` name that cannot resolve.
+
+### A writer must not be handed a reader's file
+
+Every path-typed flag used to get the same sample file. So `--output <that
+file>` truncated the wordlist *as the run proceeded*, and every probe after it
+saw an empty wordlist — which makes gobuster's `fuzz` mode hang. 859 pairs
+reported as stalled, and the cause was three pairs earlier in the sequence;
+every one of them passed in isolation, which is what made it hard to see.
+
+Output-ish flags now get their own file, one per probe, and the shared sample
+is `chmod 444` so the mistake fails loudly instead of corrupting the run.
+gobuster went from 859 stalls to none, and from a timeout-bound crawl to 64
+seconds.
+
 ## Did we miss a flag?
 
 `tools/coverage.mjs` is the gate for that, and it works the opposite way round
@@ -152,6 +226,28 @@ in ffuf's help, leaving one space where the parser wanted two.
 The browser and the verifier import the **same** `assets/js/command.js`, so a
 verified command is byte-for-byte the one the page gives you. `check.mjs` runs on
 pre-commit. A tool only appears in the interface once its data passes all of it.
+
+## Rebuilding the data
+
+One extractor per tool, never a universal parser — four tools print four
+incompatible shapes, and a parser general enough for all of them is a parser
+that quietly mis-reads each. Each writes `data/tools/<id>.json`; nothing in
+that directory is edited by hand.
+
+```
+nmap -h > data/manuals/nmap.help.txt && man nmap | col -bx > data/manuals/nmap.txt
+sqlmap -hh > data/manuals/sqlmap.txt
+python3 tools/dump-sqlmap-options.py <sqlmap libexec> > data/manuals/sqlmap.options.json
+
+node tools/extract-ffuf.mjs
+node tools/extract-nmap.mjs && node tools/probe-nmap.mjs   # the probe corrects the data
+node tools/extract-sqlmap.mjs
+node tools/extract-gobuster.mjs                            # runs gobuster <mode> --help itself
+node tools/build-manifest.mjs
+```
+
+Then the gates above. A tool only reaches the interface once it passes all of
+them.
 
 ## Ethics
 

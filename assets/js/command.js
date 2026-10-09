@@ -81,6 +81,11 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
     let missing = false;
     if (f.takes !== 'none') {
       val = f.binds ? (slots[f.binds] || '') : (adhoc[f.id] || '');
+      /* A repeatable flag is filled one value per line, so "nothing useful
+         typed" means every line is blank — not just an empty box. Without this
+         a box holding two newlines produced -H '  ', a header made of
+         whitespace, with no warning. */
+      if (f.repeatable && !String(val).split('\n').some(v => v.trim())) val = '';
       if (!val) {
         const label = f.binds
           ? ((tool.inputs.find(i => i.id === f.binds) || {}).label || f.binds)
@@ -97,17 +102,42 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
         missing = true;
       }
     }
-    argv.push(tok);
-    if (val) argv.push(val);
-    pieces.push({
-      tok: tok + (val ? ' ' + shellQuote(val) : ''),
-      label: f.desc,
-      help: f.help || '',
-      warn: f.warn,
-      kind: 'flag',
-      missing,
-      note: f.note || null,
-    });
+    /* A repeatable flag is given once per value. ffuf's -H and gobuster's
+       --headers are the common case: two or three headers in one command is
+       ordinary, and emitting only the first silently dropped the rest. Values
+       are entered one per line, so a value that itself contains a comma or a
+       space is still a single value. */
+    const values = (f.repeatable && !missing)
+      ? String(val).split('\n').map(v => v.trim()).filter(Boolean)
+      : [val];
+
+    for (const v of (values.length ? values : [val])) {
+      argv.push(tok);
+      if (v) argv.push(v);
+      pieces.push({
+        tok: tok + (v ? ' ' + shellQuote(v) : ''),
+        label: f.desc,
+        help: f.help || '',
+        warn: f.warn,
+        kind: 'flag',
+        missing,
+        note: f.note || null,
+      });
+    }
+  }
+
+  /* "At least one of these." Some requirements are not per-flag: ffuf says
+     "-u flag or -request flag is required" and "Either -w or --input-cmd flag
+     is required"; sqlmap's Target group says "At least one of these options
+     has to be provided to define the target(s)". Marking one member required
+     would be wrong — it would complain at someone who correctly used the other
+     — and marking none left "sqlmap" on its own offered as a finished command. */
+  for (const group of tool.requiresOneOf || []) {
+    const members = group.ids.filter(id => (m.flags || []).includes(id));
+    if (!members.length) continue;
+    if (members.some(id => picked[id])) continue;
+    const names = members.map(id => { const f = flagById(tool, id); return f ? (f.short || f.long) : id; });
+    issues.push({ err: true, text: `${tool.name} needs one of ${names.join(', ')}${group.label ? ' — ' + group.label : ''}.` });
   }
 
   /* Trailing positionals. ffuf names its target with -u; nmap takes it as a
@@ -138,7 +168,8 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
     });
   }
 
-  for (const f of flags) {
+  for (const raw2 of flags) {
+    const f = resolveFlag(raw2, m.id);
     if (f.required && !picked[f.id]) {
       issues.push({ err: true, text: `${f.short || f.long} is required by ${tool.name}${tool.modes.length > 1 ? ' ' + m.name : ''}.` });
     }

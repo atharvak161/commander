@@ -87,7 +87,11 @@ function sweep(text) {
 }
 
 function run(cmd, argv) {
-  try { return execFileSync(cmd, argv, { stdio: 'pipe', timeout: 20000, encoding: 'utf8', cwd: PROBE_DIR }); }
+/* stdin on 'ignore', always. A tool that reads stdin when it has no target —
+   sqlmap does — blocks on an open pipe until the timeout, and a timed-out probe
+   matches no rejection pattern, so it would be counted as a pass for a command
+   that never ran. */
+  try { return execFileSync(cmd, argv, { stdio: ['ignore', 'pipe', 'pipe'], timeout: 20000, encoding: 'utf8', cwd: PROBE_DIR }); }
   catch (e) { return `${e.stdout || ''}${e.stderr || ''}`; }
 }
 

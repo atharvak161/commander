@@ -44,9 +44,22 @@ Designed against the three hardest real cases found before any code was written:
   ],
 
   // Input slots this tool can consume. The side panel renders these.
+  // A trailing input is a bare argument rather than a flag value: nmap takes
+  // its target that way. It is always shown, because no flag binds it, and
+  // `requiredUnless` lets another flag supply it instead (nmap's -iL reads
+  // targets from a file, so a target on the line is not required then).
   "inputs": [
     { "id": "target",   "label": "Target URL",  "kind": "url",  "placeholder": "https://example.com" },
-    { "id": "wordlist", "label": "Wordlist",    "kind": "path", "placeholder": "~/wordlists/SecLists/..." }
+    { "id": "wordlist", "label": "Wordlist",    "kind": "path", "placeholder": "~/wordlists/SecLists/..." },
+    { "id": "target", "label": "Target", "trailing": true, "required": true, "requiredUnless": ["iL", "iR"] }
+  ],
+
+  // "At least one of these." Some requirements are not per-flag: ffuf accepts
+  // -request in place of -u, and sqlmap's Target group says "At least one of
+  // these options has to be provided". Marking one member required would
+  // complain at someone who correctly used another.
+  "requiresOneOf": [
+    { "ids": ["u", "request"], "label": "the target" }
   ],
 
   "flags": [
@@ -65,8 +78,14 @@ Designed against the three hardest real cases found before any code was written:
       "help": "Longer paragraph...",            // expanded explanation
       "warn": null,                  // "root"|"slow"|"noisy"|"destructive"|"deprecated"|null
       "note": null,                  // free prose caveat, shown in the tooltip
-      "perMode": null,               // { "<modeId>": { desc?, default?, takes?, binds? } }
-                                     //   only where a mode genuinely differs
+      "perMode": null,               // { "<modeId>": { desc?, default?, takes?, binds?, required? } }
+                                     //   ONLY the fields a mode genuinely changes.
+                                     //   gobuster's --timeout is 10s over HTTP and 1s for
+                                     //   DNS; --domain is the target in dns and something
+                                     //   else in dir. One entry per mode-and-flag would
+                                     //   duplicate the 56 shared options seven times; one
+                                     //   shared entry would hide the difference.
+                                     //   Read every flag through resolveFlag(flag, modeId).
       "conflicts": [],               // flag ids
       "requires": [],                // flag ids
       "since": null,

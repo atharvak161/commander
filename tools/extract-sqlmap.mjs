@@ -64,6 +64,28 @@ function takesFor(o, enumVals) {
    test/enums.mjs, which fails a set the binary does not actually close. */
 const ADVISORY_ONLY = new Set(['-v']);
 
+/* sqlmap states some defaults only in the help string — "(default 1)",
+   "(default \"BEUSTQ\")" — while the option object carries None. Leaving it in
+   the description shows the user a stray "(default 3)" where a default badge
+   belongs. Eleven flags were affected.
+
+   The pattern demands whitespace and content after the word, so --tor-type's
+   nested "(HTTP, SOCKS4 or SOCKS5 (default))" — which marks WHICH value is the
+   default rather than naming one — is left alone, as is --level's
+   "(1-5, default 1)" where the paren opens before the range. */
+const HELP_DEFAULT = /\s*\(default:?\s+([^()]+)\)\s*$/;
+/* The other shape, where the default rides along inside a range:
+   "Level of tests to perform (1-5, default 1)". The range stays in the
+   description because it is explanatory; only the default moves. */
+const HELP_DEFAULT_INNER = /,\s*default:?\s+([^(),]+)\)\s*$/;
+
+function defaultFor(o) {
+  if (o.default !== null && o.default !== undefined) return String(o.default);
+  const h = o.help || '';
+  const m = HELP_DEFAULT.exec(h) || HELP_DEFAULT_INNER.exec(h);
+  return m ? m[1].trim().replace(/^"|"$/g, '') : null;
+}
+
 const flags = [];
 const seen = new Set();
 for (const o of options) {
@@ -88,9 +110,9 @@ for (const o of options) {
     binds: id === 'url' ? 'target' : null,
     required: false,                                       // sqlmap accepts -u, -r, -l, -m, -g or -d
     repeatable: false,
-    default: o.default === null || o.default === undefined ? null : String(o.default),
+    default: defaultFor(o),
     group: GROUP_SLUG(o.group),
-    desc: (o.help || '').replace(/\s+/g, ' ').trim(),
+    desc: (o.help || '').replace(HELP_DEFAULT, '').replace(HELP_DEFAULT_INNER, ')').replace(/\s+/g, ' ').trim(),
     help: '',
     warn: null,
     conflicts: [],
@@ -119,6 +141,14 @@ const tool = {
     { id: 'target', label: 'Target URL', placeholder: 'http://site.example.com/page.php?id=1', help: 'The URL to test, including the parameter you want probed.' },
   ],
   flags,
+  /* sqlmap's Target group carries its own rule: "At least one of these options
+     has to be provided to define the target(s)". Without it, a bare "sqlmap"
+     was offered as a finished command. */
+  requiresOneOf: [
+    /* The target SOURCES only. --openapi-base and --openapi-tags shape an
+       OpenAPI target, they do not supply one. */
+    { ids: flags.filter(f => f.group === 'target' && f.takes !== 'none' && !/^openapi-/.test(f.id)).map(f => f.id), label: 'something to test' },
+  ],
   recipes: [],
 };
 

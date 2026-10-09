@@ -93,7 +93,7 @@ for (const [mode] of MODES) {
 
     ids.push(id);
     const takes = takesFor(long, desc, hasValue);
-    const entry = { desc, default: def, takes, binds: null };
+    const entry = { desc, default: def, takes, binds: null, required: false };
 
     if (!byId.has(id)) byId.set(id, { id, long, short, repeatable, modes: {} });
     const f = byId.get(id);
@@ -103,6 +103,12 @@ for (const [mode] of MODES) {
   modeFlags.set(mode, ids);
 }
 
+/* What each mode cannot run without, established by running gobuster:
+   every mode needs a wordlist, and the target flag differs — -u for dir, vhost
+   and fuzz, --domain for dns, -s for tftp. s3 and gcs need only the wordlist.
+   Without this the builder offered "gobuster dir" with Copy enabled, which is
+   a command that only prints the help. */
+
 /* Which flag is "the target" in each mode. The same box on the right serves
    all seven, which is the point of a constant input panel. --domain is the
    target in dns only; in dir and vhost it means something else entirely, so
@@ -110,11 +116,12 @@ for (const [mode] of MODES) {
 const TARGET_OF = { dir: 'url', vhost: 'url', fuzz: 'url', dns: 'domain', tftp: 'server' };
 for (const [mode, flagId] of Object.entries(TARGET_OF)) {
   const f = byId.get(flagId);
-  if (f && f.modes[mode]) f.modes[mode].binds = 'target';
+  if (f && f.modes[mode]) { f.modes[mode].binds = 'target'; f.modes[mode].required = true; }
 }
 for (const f of byId.values()) {
-  for (const [mode, e] of Object.entries(f.modes)) if (f.id === 'wordlist') e.binds = 'wordlist';
+  for (const [mode, e] of Object.entries(f.modes)) if (f.id === 'wordlist') { e.binds = 'wordlist'; e.required = true; }
 }
+
 
 /* gobuster's help has one copy-paste bug: --method carries the description of
    --client-cert-p12-password. Kept as a correction rather than silently shipped,
@@ -150,12 +157,12 @@ for (const f of byId.values()) {
     for (const [, e] of entries) counts.set(JSON.stringify(e[key]), (counts.get(JSON.stringify(e[key])) || 0) + 1);
     return JSON.parse([...counts.entries()].sort((a, b) => b[1] - a[1])[0][0]);
   };
-  const base = { desc: pick('desc'), default: pick('default'), takes: pick('takes'), binds: pick('binds') };
+  const base = { desc: pick('desc'), default: pick('default'), takes: pick('takes'), binds: pick('binds'), required: pick('required') };
 
   const perMode = {};
   for (const [mode, e] of entries) {
     const diff = {};
-    for (const k of ['desc', 'default', 'takes', 'binds']) {
+    for (const k of ['desc', 'default', 'takes', 'binds', 'required']) {
       if (JSON.stringify(e[k]) !== JSON.stringify(base[k])) diff[k] = e[k];
     }
     if (Object.keys(diff).length) perMode[mode] = diff;
@@ -169,7 +176,7 @@ for (const f of byId.values()) {
     takes: base.takes,
     enum: null,
     binds: base.binds,
-    required: false,
+    required: base.required,
     repeatable: f.repeatable,
     default: base.default,
     group: 'options',

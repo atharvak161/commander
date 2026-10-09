@@ -184,3 +184,8 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 
 /* a prose caveat, distinct from the warn badge */
 .tip .note, .piece .note{color:var(--info);font-size:11.5px;margin-top:5px;line-height:1.45}
+
+/* repeatable flags take one value per line */
+.slot textarea{width:100%;background:var(--bg-input);border:1px solid var(--border-2);border-radius:6px;
+  padding:7px 10px;color:var(--text);font-family:var(--mono);font-size:12.5px;resize:vertical;min-height:38px}
+.slot textarea::placeholder{color:var(--text-faint)}

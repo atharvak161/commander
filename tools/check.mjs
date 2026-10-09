@@ -46,6 +46,17 @@ for (const file of files) {
     if (t[k] === undefined) fail.push(`${rel}: missing required key "${k}".`);
   if (!t.flags) continue;
 
+  /* "At least one of these" must name real flags, or the interface would demand
+     something that does not exist, and must offer a genuine choice — a group of
+     one is just a required flag wearing a different hat. */
+  const flagIds = new Set((t.flags || []).map(f => f.id));
+  for (const g of t.requiresOneOf || []) {
+    const ids = g.ids || [];
+    for (const id of ids) if (!flagIds.has(id)) fail.push(`${rel}: requiresOneOf names "${id}", which is not a flag of ${t.id}.`);
+    if (ids.length < 2) fail.push(`${rel}: requiresOneOf group "${g.label || ''}" has ${ids.length} option(s); fewer than two is just a required flag.`);
+    if (!g.label) fail.push(`${rel}: requiresOneOf group has no label, so the message would not say what the choice is for.`);
+  }
+
   // provenance
   const p = t.provenance || {};
   for (const k of ['toolVersion','source','tier','verifiedAt'])

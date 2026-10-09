@@ -378,6 +378,11 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag } 
           return '<option value="' + esc(v) + '"' + (adhoc[f.id] === v ? ' selected' : '') +
                  '>' + esc(v) + (v === f.default ? ' (default)' : '') + '</option>';
         }).join('') + '</select>';
+      } else if (f.repeatable) {
+        /* One value per line. The tool accepts the flag more than once, so the
+           box has to allow more than one answer. */
+        field = '<textarea id="adhoc-' + esc(f.id) + '" rows="2" placeholder="' +
+                esc(f.takes) + ' — one per line">' + esc(adhoc[f.id] || '') + '</textarea>';
       } else {
         field = '<input id="adhoc-' + esc(f.id) + '" value="' + esc(adhoc[f.id] || '') +
                 '" placeholder="' + esc(f.takes) + '">';
@@ -385,7 +390,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag } 
       return '<div class="slot"><label for="adhoc-' + esc(f.id) + '">' + esc(tok) +
         ' <span style="color:var(--text-faint)">&lt;' + esc(f.takes) + '&gt;</span></label>' +
         field +
-        '<div class="used">' + esc(f.desc.slice(0, 54)) + '</div></div>';
+        '<div class="used">' + esc(f.repeatable ? 'repeatable — one per line' : f.desc.slice(0, 54)) + '</div></div>';
     }).join('');
 
     $('slots').innerHTML = html;

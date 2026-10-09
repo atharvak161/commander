@@ -557,7 +557,7 @@
       "takes": "url",
       "enum": null,
       "binds": "target",
-      "required": true,
+      "required": false,
       "repeatable": false,
       "default": null,
       "group": "http",
@@ -1074,8 +1074,11 @@
       "id": "mmode",
       "short": "-mmode",
       "long": null,
-      "takes": "string",
-      "enum": null,
+      "takes": "enum",
+      "enum": [
+        "and",
+        "or"
+      ],
       "binds": null,
       "required": false,
       "repeatable": false,
@@ -1207,8 +1210,11 @@
       "id": "fmode",
       "short": "-fmode",
       "long": null,
-      "takes": "string",
-      "enum": null,
+      "takes": "enum",
+      "enum": [
+        "and",
+        "or"
+      ],
       "binds": null,
       "required": false,
       "repeatable": false,
@@ -1507,7 +1513,7 @@
       "takes": "path",
       "enum": null,
       "binds": "wordlist",
-      "required": true,
+      "required": false,
       "repeatable": false,
       "default": null,
       "group": "input",
@@ -1644,6 +1650,22 @@
       "requires": [],
       "since": null,
       "source": "help"
+    }
+  ],
+  "requiresOneOf": [
+    {
+      "ids": [
+        "u",
+        "request"
+      ],
+      "label": "the target"
+    },
+    {
+      "ids": [
+        "w",
+        "input-cmd"
+      ],
+      "label": "where the words come from"
     }
   ],
   "recipes": []

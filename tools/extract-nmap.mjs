@@ -301,6 +301,14 @@ if (flags.get('p')) flags.get('p').help = PORT_HELP;
    "-T paranoid|sneaky|polite|normal|aggressive|insane", which nmap also accepts
    and which is far more readable in a saved command. Both are real, so both are
    offered. Verified: all six names are accepted. */
+/* -T0 and -T1 wait minutes between probes. A scan at -T0 can take days, and
+   someone picking it from a button deserves to be told. */
+const SLOW_TEMPLATES = { T0: 'paranoid', T1: 'sneaky' };
+for (const [id] of Object.entries(SLOW_TEMPLATES)) {
+  const f = flags.get(id);
+  if (f) { f.warn = 'slow'; f.note = 'Waits minutes between probes. A full scan at this template can take days.'; }
+}
+
 const T_NAMES = ['paranoid', 'sneaky', 'polite', 'normal', 'aggressive', 'insane'];
 const tExisting = flags.get('T');
 if (tExisting) {
