@@ -24,7 +24,7 @@ security model.
 
 ## Status
 
-Phase 1a complete. **ffuf, nmap, sqlmap and gobuster are live**, 548 flags.
+**ffuf, nmap, sqlmap, gobuster and curl are live**, 805 flags.
 
 | Piece | State |
 |---|---|
@@ -41,6 +41,7 @@ Phase 1a complete. **ffuf, nmap, sqlmap and gobuster are live**, 548 flags.
 | nmap | done — 140 flags from help+man, every one put to the binary |
 | sqlmap | done — 271 flags read from sqlmap's own option objects |
 | gobuster | done — 59 flags across 7 modes, with per-mode overrides |
+| curl | done — 257 flags, 27 repeatable, read from help + man |
 | Interface | done — picker, slots, command bar, explainer |
 
 ## How the data is trusted
@@ -63,7 +64,8 @@ node test/enums.mjs           # every enum value, and that the set is really clo
 node test/placeholders.mjs    # no flag can swallow the one after it
 node test/relationships.mjs   # conflicts block both ways and nothing else does
 node test/repeatable.mjs      # a flag you may give twice is emitted twice
-node tools/probe-nmap.mjs    # nmap only: ask the binary which candidates are real
+node tools/probe.mjs <tool>   # drop what the binary refuses, whatever the help says
+node tools/probe-nmap.mjs    # nmap only: it needs more than membership
 python3 tools/dump-sqlmap-options.py <libexec>   # sqlmap only: its own option objects
 ```
 
@@ -226,6 +228,21 @@ in ffuf's help, leaving one space where the parser wanted two.
 The browser and the verifier import the **same** `assets/js/command.js`, so a
 verified command is byte-for-byte the one the page gives you. `check.mjs` runs on
 pre-commit. A tool only appears in the interface once its data passes all of it.
+
+**curl's help lists an option this build refuses.** `--socks5-gssapi-service`
+appears in `curl --help all` and then answers "option
+--socks5-gssapi-service: is unknown", because the name is compiled in but the
+library behind it is not. `tools/probe.mjs` is the generic form of the nmap
+probe: it puts every extracted flag to the binary and drops what is refused.
+
+Finding that needed a fix to the verifier first. Its rejection patterns did not
+include curl's wording — curl writes "option --x: is unknown", not "unknown
+option" — so **curl's verification could not fail**. Two narrower bugs came out
+of the same fix: a rejection must now name the flag (curl's `--manual` prints a
+manual containing the words "Unknown option specified to libcurl", which was
+being read as an error), and it is matched with its dashes (Go echoes `--bogus`
+back as `-bogus`, and matching the bare name made "you passed a" look like a
+rejection of `--pass`).
 
 ## Rebuilding the data
 

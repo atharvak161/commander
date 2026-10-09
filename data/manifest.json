@@ -1,9 +1,16 @@
 {
   "tools": [
     {
+      "id": "curl",
+      "name": "curl",
+      "category": "http",
+      "summary": "Transfer data to or from a server over HTTP, FTP, SMTP and twenty other protocols.",
+      "flagCount": 257
+    },
+    {
       "id": "ffuf",
       "name": "ffuf",
-      "category": "recon",
+      "category": "enumeration",
       "summary": "Fast web fuzzer for content discovery, parameters, vhosts and more.",
       "flagCount": 78
     },
@@ -30,6 +37,1291 @@
     }
   ],
   "flagIndex": [
+    {
+      "t": "curl",
+      "f": "--abstract-unix-socket",
+      "d": "Connect via abstract Unix domain socket"
+    },
+    {
+      "t": "curl",
+      "f": "--alt-svc",
+      "d": "Enable alt-svc with this cache file"
+    },
+    {
+      "t": "curl",
+      "f": "--anyauth",
+      "d": "Pick any authentication method"
+    },
+    {
+      "t": "curl",
+      "f": "--append, -a",
+      "d": "Append to target file when uploading"
+    },
+    {
+      "t": "curl",
+      "f": "--aws-sigv4",
+      "d": "AWS V4 signature auth"
+    },
+    {
+      "t": "curl",
+      "f": "--basic",
+      "d": "HTTP Basic Authentication"
+    },
+    {
+      "t": "curl",
+      "f": "--ca-native",
+      "d": "Load CA certs from the OS"
+    },
+    {
+      "t": "curl",
+      "f": "--cacert",
+      "d": "CA certificate to verify peer against"
+    },
+    {
+      "t": "curl",
+      "f": "--capath",
+      "d": "CA directory to verify peer against"
+    },
+    {
+      "t": "curl",
+      "f": "--cert, -E",
+      "d": "Client certificate file and password"
+    },
+    {
+      "t": "curl",
+      "f": "--cert-status",
+      "d": "Verify server cert status OCSP-staple"
+    },
+    {
+      "t": "curl",
+      "f": "--cert-type",
+      "d": "Certificate type (DER/PEM/ENG/P12)"
+    },
+    {
+      "t": "curl",
+      "f": "--ciphers",
+      "d": "SSL ciphers to use"
+    },
+    {
+      "t": "curl",
+      "f": "--compressed",
+      "d": "Request compressed response"
+    },
+    {
+      "t": "curl",
+      "f": "--compressed-ssh",
+      "d": "Enable SSH compression"
+    },
+    {
+      "t": "curl",
+      "f": "--config, -K",
+      "d": "Read config from a file"
+    },
+    {
+      "t": "curl",
+      "f": "--connect-timeout",
+      "d": "Maximum time allowed to connect"
+    },
+    {
+      "t": "curl",
+      "f": "--connect-to",
+      "d": "Connect to host"
+    },
+    {
+      "t": "curl",
+      "f": "--continue-at, -C",
+      "d": "Resumed transfer offset"
+    },
+    {
+      "t": "curl",
+      "f": "--cookie, -b",
+      "d": "Send cookies from string/load from file"
+    },
+    {
+      "t": "curl",
+      "f": "--cookie-jar, -c",
+      "d": "Save cookies to <filename> after operation"
+    },
+    {
+      "t": "curl",
+      "f": "--create-dirs",
+      "d": "Create necessary local directory hierarchy"
+    },
+    {
+      "t": "curl",
+      "f": "--create-file-mode",
+      "d": "File mode for created files"
+    },
+    {
+      "t": "curl",
+      "f": "--crlf",
+      "d": "Convert LF to CRLF in upload"
+    },
+    {
+      "t": "curl",
+      "f": "--crlfile",
+      "d": "Certificate Revocation list"
+    },
+    {
+      "t": "curl",
+      "f": "--curves",
+      "d": "(EC) TLS key exchange algorithms to request"
+    },
+    {
+      "t": "curl",
+      "f": "--data, -d",
+      "d": "HTTP POST data"
+    },
+    {
+      "t": "curl",
+      "f": "--data-ascii",
+      "d": "HTTP POST ASCII data"
+    },
+    {
+      "t": "curl",
+      "f": "--data-binary",
+      "d": "HTTP POST binary data"
+    },
+    {
+      "t": "curl",
+      "f": "--data-raw",
+      "d": "HTTP POST data, '@' allowed"
+    },
+    {
+      "t": "curl",
+      "f": "--data-urlencode",
+      "d": "HTTP POST data URL encoded"
+    },
+    {
+      "t": "curl",
+      "f": "--delegation",
+      "d": "GSS-API delegation permission"
+    },
+    {
+      "t": "curl",
+      "f": "--digest",
+      "d": "HTTP Digest Authentication"
+    },
+    {
+      "t": "curl",
+      "f": "--disable, -q",
+      "d": "Disable .curlrc"
+    },
+    {
+      "t": "curl",
+      "f": "--disable-eprt",
+      "d": "Inhibit using EPRT or LPRT"
+    },
+    {
+      "t": "curl",
+      "f": "--disable-epsv",
+      "d": "Inhibit using EPSV"
+    },
+    {
+      "t": "curl",
+      "f": "--disallow-username-in-url",
+      "d": "Disallow username in URL"
+    },
+    {
+      "t": "curl",
+      "f": "--dns-interface",
+      "d": "Interface to use for DNS requests"
+    },
+    {
+      "t": "curl",
+      "f": "--dns-ipv4-addr",
+      "d": "IPv4 address to use for DNS requests"
+    },
+    {
+      "t": "curl",
+      "f": "--dns-ipv6-addr",
+      "d": "IPv6 address to use for DNS requests"
+    },
+    {
+      "t": "curl",
+      "f": "--dns-servers",
+      "d": "DNS server addrs to use"
+    },
+    {
+      "t": "curl",
+      "f": "--doh-cert-status",
+      "d": "Verify DoH server cert status OCSP-staple"
+    },
+    {
+      "t": "curl",
+      "f": "--doh-insecure",
+      "d": "Allow insecure DoH server connections"
+    },
+    {
+      "t": "curl",
+      "f": "--doh-url",
+      "d": "Resolve hostnames over DoH"
+    },
+    {
+      "t": "curl",
+      "f": "--dump-header, -D",
+      "d": "Write the received headers to <filename>"
+    },
+    {
+      "t": "curl",
+      "f": "--egd-file",
+      "d": "EGD socket path for random data"
+    },
+    {
+      "t": "curl",
+      "f": "--engine",
+      "d": "Crypto engine to use"
+    },
+    {
+      "t": "curl",
+      "f": "--etag-compare",
+      "d": "Load ETag from file"
+    },
+    {
+      "t": "curl",
+      "f": "--etag-save",
+      "d": "Parse incoming ETag and save to a file"
+    },
+    {
+      "t": "curl",
+      "f": "--expect100-timeout",
+      "d": "How long to wait for 100-continue"
+    },
+    {
+      "t": "curl",
+      "f": "--fail, -f",
+      "d": "Fail fast with no output on HTTP errors"
+    },
+    {
+      "t": "curl",
+      "f": "--fail-early",
+      "d": "Fail on first transfer error"
+    },
+    {
+      "t": "curl",
+      "f": "--fail-with-body",
+      "d": "Fail on HTTP errors but save the body"
+    },
+    {
+      "t": "curl",
+      "f": "--false-start",
+      "d": "Enable TLS False Start"
+    },
+    {
+      "t": "curl",
+      "f": "--form, -F",
+      "d": "Specify multipart MIME data"
+    },
+    {
+      "t": "curl",
+      "f": "--form-escape",
+      "d": "Escape form fields using backslash"
+    },
+    {
+      "t": "curl",
+      "f": "--form-string",
+      "d": "Specify multipart MIME data"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-account",
+      "d": "Account data string"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-alternative-to-user",
+      "d": "String to replace USER [name]"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-create-dirs",
+      "d": "Create the remote dirs if not present"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-method",
+      "d": "Control CWD usage"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-pasv",
+      "d": "Send PASV/EPSV instead of PORT"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-port, -P",
+      "d": "Send PORT instead of PASV"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-pret",
+      "d": "Send PRET before PASV"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-skip-pasv-ip",
+      "d": "Skip the IP address for PASV"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-ssl-ccc",
+      "d": "Send CCC after authenticating"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-ssl-ccc-mode",
+      "d": "Set CCC mode"
+    },
+    {
+      "t": "curl",
+      "f": "--ftp-ssl-control",
+      "d": "Require TLS for login, clear for transfer"
+    },
+    {
+      "t": "curl",
+      "f": "--get, -G",
+      "d": "Put the post data in the URL and use GET"
+    },
+    {
+      "t": "curl",
+      "f": "--globoff, -g",
+      "d": "Disable URL globbing with {} and []"
+    },
+    {
+      "t": "curl",
+      "f": "--happy-eyeballs-timeout-ms",
+      "d": "Time for IPv6 before IPv4"
+    },
+    {
+      "t": "curl",
+      "f": "--haproxy-clientip",
+      "d": "Set address in HAProxy PROXY"
+    },
+    {
+      "t": "curl",
+      "f": "--haproxy-protocol",
+      "d": "Send HAProxy PROXY protocol v1 header"
+    },
+    {
+      "t": "curl",
+      "f": "--head, -I",
+      "d": "Show document info only"
+    },
+    {
+      "t": "curl",
+      "f": "--header, -H",
+      "d": "Pass custom header(s) to server"
+    },
+    {
+      "t": "curl",
+      "f": "--help, -h",
+      "d": "Get help for commands"
+    },
+    {
+      "t": "curl",
+      "f": "--hostpubmd5",
+      "d": "Acceptable MD5 hash of host public key"
+    },
+    {
+      "t": "curl",
+      "f": "--hostpubsha256",
+      "d": "Acceptable SHA256 hash of host public key"
+    },
+    {
+      "t": "curl",
+      "f": "--hsts",
+      "d": "Enable HSTS with this cache file"
+    },
+    {
+      "t": "curl",
+      "f": "--http0.9",
+      "d": "Allow HTTP 0.9 responses"
+    },
+    {
+      "t": "curl",
+      "f": "--http1.0, -0",
+      "d": "Use HTTP 1.0"
+    },
+    {
+      "t": "curl",
+      "f": "--http1.1",
+      "d": "Use HTTP 1.1"
+    },
+    {
+      "t": "curl",
+      "f": "--http2",
+      "d": "Use HTTP/2"
+    },
+    {
+      "t": "curl",
+      "f": "--http2-prior-knowledge",
+      "d": "Use HTTP 2 without HTTP/1.1 Upgrade"
+    },
+    {
+      "t": "curl",
+      "f": "--http3",
+      "d": "Use HTTP v3"
+    },
+    {
+      "t": "curl",
+      "f": "--http3-only",
+      "d": "Use HTTP v3 only"
+    },
+    {
+      "t": "curl",
+      "f": "--ignore-content-length",
+      "d": "Ignore the size of the remote resource"
+    },
+    {
+      "t": "curl",
+      "f": "--include, -i",
+      "d": "Include response headers in output"
+    },
+    {
+      "t": "curl",
+      "f": "--insecure, -k",
+      "d": "Allow insecure server connections"
+    },
+    {
+      "t": "curl",
+      "f": "--interface",
+      "d": "Use network INTERFACE (or address)"
+    },
+    {
+      "t": "curl",
+      "f": "--ipfs-gateway",
+      "d": "Gateway for IPFS"
+    },
+    {
+      "t": "curl",
+      "f": "--ipv4, -4",
+      "d": "Resolve names to IPv4 addresses"
+    },
+    {
+      "t": "curl",
+      "f": "--ipv6, -6",
+      "d": "Resolve names to IPv6 addresses"
+    },
+    {
+      "t": "curl",
+      "f": "--json",
+      "d": "HTTP POST JSON"
+    },
+    {
+      "t": "curl",
+      "f": "--junk-session-cookies, -j",
+      "d": "Ignore session cookies read from file"
+    },
+    {
+      "t": "curl",
+      "f": "--keepalive-time",
+      "d": "Interval time for keepalive probes"
+    },
+    {
+      "t": "curl",
+      "f": "--key",
+      "d": "Private key filename"
+    },
+    {
+      "t": "curl",
+      "f": "--key-type",
+      "d": "Private key file type (DER/PEM/ENG)"
+    },
+    {
+      "t": "curl",
+      "f": "--krb",
+      "d": "Enable Kerberos with security <level>"
+    },
+    {
+      "t": "curl",
+      "f": "--libcurl",
+      "d": "Generate libcurl code for this command line"
+    },
+    {
+      "t": "curl",
+      "f": "--limit-rate",
+      "d": "Limit transfer speed to RATE"
+    },
+    {
+      "t": "curl",
+      "f": "--list-only, -l",
+      "d": "List only mode"
+    },
+    {
+      "t": "curl",
+      "f": "--local-port",
+      "d": "Use a local port number within RANGE"
+    },
+    {
+      "t": "curl",
+      "f": "--location, -L",
+      "d": "Follow redirects"
+    },
+    {
+      "t": "curl",
+      "f": "--location-trusted",
+      "d": "Like --location, but send auth to other hosts"
+    },
+    {
+      "t": "curl",
+      "f": "--login-options",
+      "d": "Server login options"
+    },
+    {
+      "t": "curl",
+      "f": "--mail-auth",
+      "d": "Originator address of the original email"
+    },
+    {
+      "t": "curl",
+      "f": "--mail-from",
+      "d": "Mail from this address"
+    },
+    {
+      "t": "curl",
+      "f": "--mail-rcpt",
+      "d": "Mail to this address"
+    },
+    {
+      "t": "curl",
+      "f": "--mail-rcpt-allowfails",
+      "d": "Allow RCPT TO command to fail"
+    },
+    {
+      "t": "curl",
+      "f": "--manual, -M",
+      "d": "Display the full manual"
+    },
+    {
+      "t": "curl",
+      "f": "--max-filesize",
+      "d": "Maximum file size to download"
+    },
+    {
+      "t": "curl",
+      "f": "--max-redirs",
+      "d": "Maximum number of redirects allowed"
+    },
+    {
+      "t": "curl",
+      "f": "--max-time, -m",
+      "d": "Maximum time allowed for transfer"
+    },
+    {
+      "t": "curl",
+      "f": "--metalink",
+      "d": "Process given URLs as metalink XML file"
+    },
+    {
+      "t": "curl",
+      "f": "--negotiate",
+      "d": "Use HTTP Negotiate (SPNEGO) authentication"
+    },
+    {
+      "t": "curl",
+      "f": "--netrc, -n",
+      "d": "Must read .netrc for username and password"
+    },
+    {
+      "t": "curl",
+      "f": "--netrc-file",
+      "d": "Specify FILE for netrc"
+    },
+    {
+      "t": "curl",
+      "f": "--netrc-optional",
+      "d": "Use either .netrc or URL"
+    },
+    {
+      "t": "curl",
+      "f": "--next, -:",
+      "d": "Make next URL use its separate set of options"
+    },
+    {
+      "t": "curl",
+      "f": "--no-alpn",
+      "d": "Disable the ALPN TLS extension"
+    },
+    {
+      "t": "curl",
+      "f": "--no-buffer, -N",
+      "d": "Disable buffering of the output stream"
+    },
+    {
+      "t": "curl",
+      "f": "--no-clobber",
+      "d": "Do not overwrite files that already exist"
+    },
+    {
+      "t": "curl",
+      "f": "--no-keepalive",
+      "d": "Disable TCP keepalive on the connection"
+    },
+    {
+      "t": "curl",
+      "f": "--no-npn",
+      "d": "Disable the NPN TLS extension"
+    },
+    {
+      "t": "curl",
+      "f": "--no-progress-meter",
+      "d": "Do not show the progress meter"
+    },
+    {
+      "t": "curl",
+      "f": "--no-sessionid",
+      "d": "Disable SSL session-ID reusing"
+    },
+    {
+      "t": "curl",
+      "f": "--noproxy",
+      "d": "List of hosts which do not use proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--ntlm",
+      "d": "HTTP NTLM authentication"
+    },
+    {
+      "t": "curl",
+      "f": "--ntlm-wb",
+      "d": "HTTP NTLM authentication with winbind"
+    },
+    {
+      "t": "curl",
+      "f": "--oauth2-bearer",
+      "d": "OAuth 2 Bearer Token"
+    },
+    {
+      "t": "curl",
+      "f": "--output, -o",
+      "d": "Write to file instead of stdout"
+    },
+    {
+      "t": "curl",
+      "f": "--output-dir",
+      "d": "Directory to save files in"
+    },
+    {
+      "t": "curl",
+      "f": "--parallel, -Z",
+      "d": "Perform transfers in parallel"
+    },
+    {
+      "t": "curl",
+      "f": "--parallel-immediate",
+      "d": "Do not wait for multiplexing (with --parallel)"
+    },
+    {
+      "t": "curl",
+      "f": "--parallel-max",
+      "d": "Maximum concurrency for parallel transfers"
+    },
+    {
+      "t": "curl",
+      "f": "--pass",
+      "d": "Pass phrase for the private key"
+    },
+    {
+      "t": "curl",
+      "f": "--path-as-is",
+      "d": "Do not squash .. sequences in URL path"
+    },
+    {
+      "t": "curl",
+      "f": "--pinnedpubkey",
+      "d": "FILE/HASHES Public key to verify peer against"
+    },
+    {
+      "t": "curl",
+      "f": "--post301",
+      "d": "Do not switch to GET after a 301 redirect"
+    },
+    {
+      "t": "curl",
+      "f": "--post302",
+      "d": "Do not switch to GET after a 302 redirect"
+    },
+    {
+      "t": "curl",
+      "f": "--post303",
+      "d": "Do not switch to GET after a 303 redirect"
+    },
+    {
+      "t": "curl",
+      "f": "--preproxy",
+      "d": "Use this proxy first"
+    },
+    {
+      "t": "curl",
+      "f": "--progress-bar, -#",
+      "d": "Display transfer progress as a bar"
+    },
+    {
+      "t": "curl",
+      "f": "--proto",
+      "d": "Enable/disable PROTOCOLS"
+    },
+    {
+      "t": "curl",
+      "f": "--proto-default",
+      "d": "Use PROTOCOL for any URL missing a scheme"
+    },
+    {
+      "t": "curl",
+      "f": "--proto-redir",
+      "d": "Enable/disable PROTOCOLS on redirect"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy, -x",
+      "d": "Use this proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-anyauth",
+      "d": "Pick any proxy authentication method"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-basic",
+      "d": "Use Basic authentication on the proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-ca-native",
+      "d": "Load CA certs from the OS to verify proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-cacert",
+      "d": "CA certificates to verify proxy against"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-capath",
+      "d": "CA directory to verify proxy against"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-cert",
+      "d": "Set client certificate for proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-cert-type",
+      "d": "Client certificate type for HTTPS proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-ciphers",
+      "d": "SSL ciphers to use for proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-crlfile",
+      "d": "Set a CRL list for proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-digest",
+      "d": "Digest auth with the proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-header",
+      "d": "Pass custom header(s) to proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-http2",
+      "d": "Use HTTP/2 with HTTPS proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-insecure",
+      "d": "Skip HTTPS proxy cert verification"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-key",
+      "d": "Private key for HTTPS proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-key-type",
+      "d": "Private key file type for proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-negotiate",
+      "d": "HTTP Negotiate (SPNEGO) auth with the proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-ntlm",
+      "d": "NTLM authentication with the proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-pass",
+      "d": "Pass phrase for the private key for HTTPS proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-pinnedpubkey",
+      "d": "FILE/HASHES public key to verify proxy with"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-service-name",
+      "d": "SPNEGO proxy service name"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-ssl-allow-beast",
+      "d": "Allow security flaw for interop for HTTPS proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-ssl-auto-client-cert",
+      "d": "Auto client certificate for proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-tls13-ciphers",
+      "d": "TLS 1.3 proxy cipher suites"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-tlsauthtype",
+      "d": "TLS authentication type for HTTPS proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-tlspassword",
+      "d": "TLS password for HTTPS proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-tlsuser",
+      "d": "TLS username for HTTPS proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-tlsv1",
+      "d": "TLSv1 for HTTPS proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy-user, -U",
+      "d": "Proxy user and password"
+    },
+    {
+      "t": "curl",
+      "f": "--proxy1.0",
+      "d": "Use HTTP/1.0 proxy on given port"
+    },
+    {
+      "t": "curl",
+      "f": "--proxytunnel, -p",
+      "d": "HTTP proxy tunnel (using CONNECT)"
+    },
+    {
+      "t": "curl",
+      "f": "--pubkey",
+      "d": "SSH Public key filename"
+    },
+    {
+      "t": "curl",
+      "f": "--quote, -Q",
+      "d": "Send command(s) to server before transfer"
+    },
+    {
+      "t": "curl",
+      "f": "--random-file",
+      "d": "File for reading random data from"
+    },
+    {
+      "t": "curl",
+      "f": "--range, -r",
+      "d": "Retrieve only the bytes within RANGE"
+    },
+    {
+      "t": "curl",
+      "f": "--rate",
+      "d": "Request rate for serial transfers"
+    },
+    {
+      "t": "curl",
+      "f": "--raw",
+      "d": "Do HTTP raw; no transfer decoding"
+    },
+    {
+      "t": "curl",
+      "f": "--referer, -e",
+      "d": "Referrer URL"
+    },
+    {
+      "t": "curl",
+      "f": "--remote-header-name, -J",
+      "d": "Use the header-provided filename"
+    },
+    {
+      "t": "curl",
+      "f": "--remote-name, -O",
+      "d": "Write output to file named as remote file"
+    },
+    {
+      "t": "curl",
+      "f": "--remote-name-all",
+      "d": "Use the remote filename for all URLs"
+    },
+    {
+      "t": "curl",
+      "f": "--remote-time, -R",
+      "d": "Set remote file's time on local output"
+    },
+    {
+      "t": "curl",
+      "f": "--remove-on-error",
+      "d": "Remove output file on errors"
+    },
+    {
+      "t": "curl",
+      "f": "--request, -X",
+      "d": "Specify request method to use"
+    },
+    {
+      "t": "curl",
+      "f": "--request-target",
+      "d": "Specify the target for this request"
+    },
+    {
+      "t": "curl",
+      "f": "--resolve",
+      "d": "Resolve host+port to address"
+    },
+    {
+      "t": "curl",
+      "f": "--retry",
+      "d": "Retry request if transient problems occur"
+    },
+    {
+      "t": "curl",
+      "f": "--retry-all-errors",
+      "d": "Retry all errors (with --retry)"
+    },
+    {
+      "t": "curl",
+      "f": "--retry-connrefused",
+      "d": "Retry on connection refused (with --retry)"
+    },
+    {
+      "t": "curl",
+      "f": "--retry-delay",
+      "d": "Wait time between retries"
+    },
+    {
+      "t": "curl",
+      "f": "--retry-max-time",
+      "d": "Retry only within this period"
+    },
+    {
+      "t": "curl",
+      "f": "--sasl-authzid",
+      "d": "Identity for SASL PLAIN authentication"
+    },
+    {
+      "t": "curl",
+      "f": "--sasl-ir",
+      "d": "Initial response in SASL authentication"
+    },
+    {
+      "t": "curl",
+      "f": "--service-name",
+      "d": "SPNEGO service name"
+    },
+    {
+      "t": "curl",
+      "f": "--show-error, -S",
+      "d": "Show error even when -s is used"
+    },
+    {
+      "t": "curl",
+      "f": "--silent, -s",
+      "d": "Silent mode"
+    },
+    {
+      "t": "curl",
+      "f": "--socks4",
+      "d": "SOCKS4 proxy on given host + port"
+    },
+    {
+      "t": "curl",
+      "f": "--socks4a",
+      "d": "SOCKS4a proxy on given host + port"
+    },
+    {
+      "t": "curl",
+      "f": "--socks5",
+      "d": "SOCKS5 proxy on given host + port"
+    },
+    {
+      "t": "curl",
+      "f": "--socks5-basic",
+      "d": "Username/password auth for SOCKS5 proxies"
+    },
+    {
+      "t": "curl",
+      "f": "--socks5-gssapi",
+      "d": "Enable GSS-API auth for SOCKS5 proxies"
+    },
+    {
+      "t": "curl",
+      "f": "--socks5-gssapi-nec",
+      "d": "Compatibility with NEC SOCKS5 server"
+    },
+    {
+      "t": "curl",
+      "f": "--socks5-hostname",
+      "d": "SOCKS5 proxy, pass hostname to proxy"
+    },
+    {
+      "t": "curl",
+      "f": "--speed-limit, -Y",
+      "d": "Stop transfers slower than this"
+    },
+    {
+      "t": "curl",
+      "f": "--speed-time, -y",
+      "d": "Trigger 'speed-limit' abort after this time"
+    },
+    {
+      "t": "curl",
+      "f": "--ssl",
+      "d": "Try enabling TLS"
+    },
+    {
+      "t": "curl",
+      "f": "--ssl-allow-beast",
+      "d": "Allow security flaw to improve interop"
+    },
+    {
+      "t": "curl",
+      "f": "--ssl-auto-client-cert",
+      "d": "Use auto client certificate (Schannel)"
+    },
+    {
+      "t": "curl",
+      "f": "--ssl-no-revoke",
+      "d": "Disable cert revocation checks (Schannel)"
+    },
+    {
+      "t": "curl",
+      "f": "--ssl-reqd",
+      "d": "Require SSL/TLS"
+    },
+    {
+      "t": "curl",
+      "f": "--ssl-revoke-best-effort",
+      "d": "Ignore missing cert CRL dist points"
+    },
+    {
+      "t": "curl",
+      "f": "--sslv2, -2",
+      "d": "SSLv2"
+    },
+    {
+      "t": "curl",
+      "f": "--sslv3, -3",
+      "d": "SSLv3"
+    },
+    {
+      "t": "curl",
+      "f": "--stderr",
+      "d": "Where to redirect stderr"
+    },
+    {
+      "t": "curl",
+      "f": "--styled-output",
+      "d": "Enable styled output for HTTP headers"
+    },
+    {
+      "t": "curl",
+      "f": "--suppress-connect-headers",
+      "d": "Suppress proxy CONNECT response headers"
+    },
+    {
+      "t": "curl",
+      "f": "--tcp-fastopen",
+      "d": "Use TCP Fast Open"
+    },
+    {
+      "t": "curl",
+      "f": "--tcp-nodelay",
+      "d": "Set TCP_NODELAY"
+    },
+    {
+      "t": "curl",
+      "f": "--telnet-option, -t",
+      "d": "Set telnet option"
+    },
+    {
+      "t": "curl",
+      "f": "--tftp-blksize",
+      "d": "Set TFTP BLKSIZE option"
+    },
+    {
+      "t": "curl",
+      "f": "--tftp-no-options",
+      "d": "Do not send any TFTP options"
+    },
+    {
+      "t": "curl",
+      "f": "--time-cond, -z",
+      "d": "Transfer based on a time condition"
+    },
+    {
+      "t": "curl",
+      "f": "--tls-max",
+      "d": "Maximum allowed TLS version"
+    },
+    {
+      "t": "curl",
+      "f": "--tls13-ciphers",
+      "d": "TLS 1.3 cipher suites to use"
+    },
+    {
+      "t": "curl",
+      "f": "--tlsauthtype",
+      "d": "TLS authentication type"
+    },
+    {
+      "t": "curl",
+      "f": "--tlspassword",
+      "d": "TLS password"
+    },
+    {
+      "t": "curl",
+      "f": "--tlsuser",
+      "d": "TLS username"
+    },
+    {
+      "t": "curl",
+      "f": "--tlsv1, -1",
+      "d": "TLSv1.0 or greater"
+    },
+    {
+      "t": "curl",
+      "f": "--tlsv1.0",
+      "d": "TLSv1.0 or greater"
+    },
+    {
+      "t": "curl",
+      "f": "--tlsv1.1",
+      "d": "TLSv1.1 or greater"
+    },
+    {
+      "t": "curl",
+      "f": "--tlsv1.2",
+      "d": "TLSv1.2 or greater"
+    },
+    {
+      "t": "curl",
+      "f": "--tlsv1.3",
+      "d": "TLSv1.3 or greater"
+    },
+    {
+      "t": "curl",
+      "f": "--tr-encoding",
+      "d": "Request compressed transfer encoding"
+    },
+    {
+      "t": "curl",
+      "f": "--trace",
+      "d": "Write a debug trace to FILE"
+    },
+    {
+      "t": "curl",
+      "f": "--trace-ascii",
+      "d": "Like --trace, but without hex output"
+    },
+    {
+      "t": "curl",
+      "f": "--trace-config",
+      "d": "Details to log in trace/verbose output"
+    },
+    {
+      "t": "curl",
+      "f": "--trace-ids",
+      "d": "Transfer + connection ids in verbose output"
+    },
+    {
+      "t": "curl",
+      "f": "--trace-time",
+      "d": "Add time stamps to trace/verbose output"
+    },
+    {
+      "t": "curl",
+      "f": "--unix-socket",
+      "d": "Connect through this Unix domain socket"
+    },
+    {
+      "t": "curl",
+      "f": "--upload-file, -T",
+      "d": "Transfer local FILE to destination"
+    },
+    {
+      "t": "curl",
+      "f": "--url",
+      "d": "URL to work with"
+    },
+    {
+      "t": "curl",
+      "f": "--url-query",
+      "d": "Add a URL query part"
+    },
+    {
+      "t": "curl",
+      "f": "--use-ascii, -B",
+      "d": "Use ASCII/text transfer"
+    },
+    {
+      "t": "curl",
+      "f": "--user, -u",
+      "d": "Server user and password"
+    },
+    {
+      "t": "curl",
+      "f": "--user-agent, -A",
+      "d": "Send User-Agent <name> to server"
+    },
+    {
+      "t": "curl",
+      "f": "--variable",
+      "d": "Set variable"
+    },
+    {
+      "t": "curl",
+      "f": "--verbose, -v",
+      "d": "Make the operation more talkative"
+    },
+    {
+      "t": "curl",
+      "f": "--version, -V",
+      "d": "Show version number and quit"
+    },
+    {
+      "t": "curl",
+      "f": "--write-out, -w",
+      "d": "Output FORMAT after completion"
+    },
+    {
+      "t": "curl",
+      "f": "--xattr",
+      "d": "Store metadata in extended file attributes"
+    },
     {
       "t": "ffuf",
       "f": "-H",

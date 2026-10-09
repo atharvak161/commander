@@ -189,3 +189,23 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .slot textarea{width:100%;background:var(--bg-input);border:1px solid var(--border-2);border-radius:6px;
   padding:7px 10px;color:var(--text);font-family:var(--mono);font-size:12.5px;resize:vertical;min-height:38px}
 .slot textarea::placeholder{color:var(--text-faint)}
+
+/* ---------- how-to guide, above the tool grid ---------- */
+.guide{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:18px 20px;margin:26px 0 4px}
+.guide h2{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 14px}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.steps li{position:relative;padding-left:30px}
+.steps .n{position:absolute;left:0;top:0;width:21px;height:21px;border-radius:50%;
+  background:var(--accent-glow);border:1px solid var(--accent-dim);color:var(--accent);
+  font-family:var(--mono);font-size:11px;display:flex;align-items:center;justify-content:center}
+.steps b{display:block;color:var(--text);font-size:13.5px;margin-bottom:3px}
+.steps p{margin:0;font-size:12.5px;color:var(--text-dim);line-height:1.5}
+.guide code{font-family:var(--mono);font-size:11.5px;color:var(--accent);
+  background:var(--surface-2);border-radius:4px;padding:1px 5px}
+.guide-foot{margin:15px 0 0;padding-top:13px;border-top:1px solid var(--border);
+  font-size:12.5px;color:var(--text-dim);line-height:1.55}
+.guide-foot b{color:var(--text);font-weight:600}
+@media (max-width:620px){.guide{padding:15px 16px}.steps{gap:13px}}

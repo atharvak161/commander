@@ -89,6 +89,12 @@ for (const file of files) {
     if (!f.source) fail.push(`${at}: has no source.`);
     if (f.warn && !WARNS.has(f.warn)) fail.push(`${at}: warn "${f.warn}" is not a known warning.`);
     if (f.note != null && typeof f.note !== 'string') fail.push(`${at}: note must be a string.`);
+    if (f.enumEnforced !== undefined && typeof f.enumEnforced !== 'boolean')
+      fail.push(`${at}: enumEnforced must be true or false.`);
+    if (f.enumEnforced !== undefined && f.takes !== 'enum')
+      fail.push(`${at}: enumEnforced is set but takes is "${f.takes}", so there is no set to enforce.`);
+    if (f.repeatable && f.takes === 'none')
+      fail.push(`${at}: repeatable but takes no value, so there is nothing to repeat in the interface.`);
 
     /* perMode may only name modes this tool actually has, or a flag would carry
        an override that never applies and nobody would notice. */

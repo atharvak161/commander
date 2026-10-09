@@ -32,11 +32,12 @@ const PROBE = {
   nmap:     flag => ['nmap', [flag]],
   sqlmap:   flag => ['sqlmap', [flag]],
   gobuster: flag => ['gobuster', ['dir', flag]],
+  curl:     flag => ['curl', [flag]],
 };
 
 /* "This is not a flag." Anything else — including a complaint that the flag
    needs a value, or that it needs root — means the tool knows the flag. */
-const NOT_A_FLAG = /flag provided but not defined|unknown (?:flag|option|shorthand)|unrecognized option|no such option|invalid option|not defined:|deprecated option in a dangerous way|invalid argument to|is ambiguous/i;
+const NOT_A_FLAG = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized option|no such option|invalid option|not defined:|deprecated option in a dangerous way|invalid argument to|is ambiguous/i;
 
 /* Tokens a binary accepts that are deliberately NOT offered. Each one was run
    and read before it was put here; the quote is what the tool said. The gate
@@ -46,6 +47,20 @@ const NOT_A_FLAG = /flag provided but not defined|unknown (?:flag|option|shortha
    "option requires an argument -- X" means getopt knows X as a legacy short
    option, so these are real in the parser and absent from every document. They
    are nmap's pre-modern spellings, superseded by the -o* and -i* families. */
+/* Reviewed as a PATTERN, where a tool has a systematic form rather than a
+   list. Writing out 86 near-identical entries would bury the ones that matter.
+   Each pattern was checked the same way a single entry is. */
+const REVIEWED_PATTERNS = {
+  curl: [
+    [/^--no-/, 'curl negates any boolean by prefixing --no-, as its manual says: '
+             + '"you use the same option name but prefix it with no-". '
+             + 'We carry whichever spelling curl\'s own help lists; the other always works too.'],
+    [/^--(alpn|buffer|clobber|eprt|epsv|sessionid|npn|progress-meter|ftp-ssl-reqd)$/,
+      'the positive half of a pair curl lists only in its --no- form; same feature, carried once'],
+    [/^--expand-/, 'variable-expansion form of another option, added by --variable; not a separate option'],
+  ],
+};
+
 const REVIEWED = {
   nmap: {
     '-y': 'easter egg: prints "LEEROY JENKINS!!!"',
@@ -64,6 +79,12 @@ const REVIEWED = {
   ffuf: {
     '-i': 'ffuf reports only the missing -u, so acceptance here proves nothing; absent from its help',
     '-k': 'ffuf reports only the missing -u, so acceptance here proves nothing; absent from its help',
+  },
+  curl: {
+    '-M': 'alias of --manual, which prints the whole manual',
+    '-h': 'prints help and exits',
+    '-symbol': 'prose: a word in the manual, not an option',
+    '--socks5-gssapi-service': 'accepts the name bare but refuses it with a value on this build; dropped by tools/probe.mjs',
   },
 };
 
@@ -227,12 +248,21 @@ for (const file of files) {
   console.log(`  attached    ${attached.length} were a carried flag with a value stuck to it`);
   console.log(`  prose       ${prose.length} rejected by the binary`);
   const reviewed = REVIEWED[tool.id] || {};
-  const allGaps = [...new Set([...gaps, ...undocumented])].sort().filter(g => !reviewed[g]);
-  const noted = [...new Set([...gaps, ...undocumented])].sort().filter(g => reviewed[g]);
+  const patterns = REVIEWED_PATTERNS[tool.id] || [];
+  const why = g => reviewed[g] || (patterns.find(([re]) => re.test(g)) || [])[1];
+  const all = [...new Set([...gaps, ...undocumented])].sort();
+  const allGaps = all.filter(g => !why(g));
+  const noted = all.filter(g => why(g));
   console.log(`  probed      62 single-character flags, ${undocumented.length} accepted but not carried`);
   if (noted.length) {
     console.log(`  reviewed    ${noted.length} accepted but deliberately not offered:`);
-    noted.forEach(n => console.log(`     - ${n.padEnd(6)} ${reviewed[n]}`));
+    /* One line per reason, not per token: 86 --no- flags share one. */
+    const byReason = new Map();
+    noted.forEach(n => { const r = why(n); byReason.set(r, [...(byReason.get(r) || []), n]); });
+    for (const [reason, toks] of byReason) {
+      const shown = toks.length > 4 ? `${toks.slice(0, 4).join(', ')} and ${toks.length - 4} more` : toks.join(', ');
+      console.log(`     - ${shown}\n       ${reason}`);
+    }
   }
   console.log(`  GAPS        ${allGaps.length}${allGaps.length ? '  <- real flags we are missing' : ''}`);
   if (allGaps.length) allGaps.forEach(g => console.log(`     + ${g}${undocumented.includes(g) ? '   (accepted by the binary, absent from the docs)' : ''}`));

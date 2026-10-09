@@ -2,7 +2,7 @@
   "id": "ffuf",
   "name": "ffuf",
   "summary": "Fast web fuzzer for content discovery, parameters, vhosts and more.",
-  "category": "recon",
+  "category": "enumeration",
   "homepage": "https://github.com/ffuf/ffuf",
   "manual": "data/manuals/ffuf.txt",
   "helpCommand": "ffuf -h",
@@ -10,7 +10,7 @@
     "toolVersion": "2.1.0-dev",
     "source": "help",
     "tier": "A",
-    "verifiedAt": "2026-10-08",
+    "verifiedAt": "2026-10-09",
     "host": "darwin-arm64"
   },
   "modes": [

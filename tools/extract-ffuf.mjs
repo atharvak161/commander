@@ -228,7 +228,7 @@ const doc = {
   id: 'ffuf',
   name: 'ffuf',
   summary: 'Fast web fuzzer for content discovery, parameters, vhosts and more.',
-  category: 'recon',
+  category: 'enumeration',   // same work as gobuster; they belong together on the home grid
   homepage: 'https://github.com/ffuf/ffuf',
   manual: 'data/manuals/ffuf.txt',
   helpCommand: 'ffuf -h',

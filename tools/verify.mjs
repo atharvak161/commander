@@ -80,7 +80,11 @@ const AWKWARD = ['a b', "it's", 'a$b', 'a\\b', 'a"b', 'a;b'];
 
 /* A rejection of the SYNTAX. A connection error or a usage dump from missing
    required args is not a failure of our data. */
-const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|unrecognized option|invalid option|not defined:|no such option/i;
+/* Every wording a tool here uses to say "that is not an option".
+   curl puts the words the other way round — "option --x: is unknown" — and
+   matching only "unknown option" meant curl's rejections were never detected
+   at all: its verification passed because nothing could ever fail. */
+const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized option|invalid option|not defined:|no such option/i;
 
 function valueFor(f) {
   if (f.takes === 'none') return null;
@@ -146,6 +150,7 @@ const SIDE_EFFECTS_ONLY = new Set([
   'fp-test',           // sqlmap: fingerprint test suite, never finished inside the timeout
   'payload-lint',      // sqlmap: lints its whole payload set, same
   'api',               // sqlmap: starts a server
+  'manual',            // curl: prints its entire 6,000-line manual, per probe
 ]);
 
 /* Slow BY DESIGN, so excluded from the pairs pass only. nmap's -T0 (paranoid)
@@ -220,7 +225,8 @@ function check(label, picked, override, modeId) {
     .map(f => resolveFlag(f, mid));
   const { slots, adhoc } = slotsAndAdhoc(flags, override);
   const built = buildCommand(tool, mid, picked, slots, adhoc);
-  jobs.push({ label, built });
+  const tokens = flags.map(f => f.short || f.long).filter(Boolean);
+  jobs.push({ label, built, tokens });
 }
 
 /* pass 1 — each flag alone, in EVERY mode that has it.
@@ -314,10 +320,22 @@ await pool(jobs, WIDTH, async job => {
   /* A probe that never finished proves nothing. Counting it as a pass is how
      a verifier reports success for commands it never actually tested. */
   if (timedOut) { stalled.push({ label: job.label, cmd: job.built.text }); return; }
-  if (REJECT.test(out)) {
-    const line = out.split('\n').find(l => REJECT.test(l)) || '';
-    bad.push({ label: job.label, cmd: job.built.text, why: line.trim() });
-  }
+  /* A rejection must NAME the flag. curl's --manual prints curl's entire
+     manual, and that manual contains the sentence "Unknown option specified
+     to libcurl" as documentation — so matching the pattern anywhere in the
+     output reported a perfectly good flag as rejected. Every tool here names
+     the offending token in its error ("no such option: --x", "unrecognized
+     option `--x'", "flag provided but not defined: -x"), so requiring it
+     costs nothing and removes a whole class of false alarm. */
+  /* Match the token WITH its dashes, allowing either dash count.
+     Go's flag package echoes "--bogus" back as "-bogus", so both spellings
+     have to be accepted — but matching the bare NAME was too loose: curl's
+     manual contains the words "you passed a", and "pass" is a flag, so
+     --manual + --pass reported itself rejected. */
+  const spellings = t => { const n = t.replace(/^-+/, ''); return ['-' + n, '--' + n]; };
+  const line = out.split('\n').find(l =>
+    REJECT.test(l) && job.tokens.some(t => spellings(t).some(sp => l.includes(sp))));
+  if (line) bad.push({ label: job.label, cmd: job.built.text, why: line.trim() });
 });
 
 console.log(`\nverify ${tool.id} ${tool.provenance.toolVersion}`);

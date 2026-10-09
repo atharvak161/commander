@@ -71,7 +71,7 @@ function run(name, argv) {
   }
 }
 
-let accepted = 0, rejectedBad = 0;
+let accepted = 0, rejectedBad = 0, documentedOnly = 0;
 const fail = [];
 
 for (const file of readdirSync('data/tools').filter(f => f.endsWith('.json'))) {
@@ -84,6 +84,10 @@ for (const file of readdirSync('data/tools').filter(f => f.endsWith('.json'))) {
   console.log(`\n${tool.id} ${tool.provenance.toolVersion} — ${enums.length} enum flag(s)`);
 
   for (const f of enums) {
+    /* A set the tool documents but does not police at parse time cannot be
+       proved closed here, and pretending otherwise would make the test lie.
+       The declared values are still checked for acceptance below. */
+    const enforced = f.enumEnforced !== false;
     /* Every declared value must be accepted. */
     for (const v of f.enum) {
       const slots = {}; const adhoc = {};
@@ -123,12 +127,19 @@ for (const file of readdirSync('data/tools').filter(f => f.endsWith('.json'))) {
        proof is not proving anything. */
     const clean = r.out.replace(/\x1B\[[0-9;?]*[A-Za-z]/g, '');
     const sent = sentinelFor(f);
-    const complained = /invalid|unknown|unsupported|not a valid|not recognis|not recogniz|unrecognis|unrecogniz|must be|accepts one of|out of range|bad value|\[critical\]/i.test(clean)
+    const complained = !enforced || /invalid|unknown|unsupported|not a valid|not recognis|not recogniz|unrecognis|unrecogniz|must be|accepts one of|out of range|bad value|\[critical\]/i.test(clean)
       && (clean.includes(f.short) || (f.long && clean.includes(f.long)) || clean.includes(sent));
-    if (complained) { rejectedBad++; console.log(`  ok  ${f.short.padEnd(18)} ${f.enum.join(', ')}`); }
+    if (complained) {
+      if (enforced) rejectedBad++; else documentedOnly++;
+      console.log(`  ok  ${f.short.padEnd(18)} ${f.enum.join(', ')}${enforced ? '' : '   (documented, not enforced at parse time)'}`);
+    }
     else fail.push(`${tool.id} ${f.short}: accepted "${sentinelFor(f)}" — the declared set is not actually closed, so enum is the wrong type for this flag`);
   }
 }
 
-console.log(`\nenums: ${accepted} declared value(s) accepted, ${rejectedBad} set(s) proved closed, ${fail.length} failed`);
+/* Say which is which. "Proved closed" must mean the binary refused a value
+   outside the set; a set the tool only documents is counted separately. */
+console.log(`\nenums: ${accepted} declared value(s) accepted, ${rejectedBad} set(s) proved closed`
+  + (documentedOnly ? `, ${documentedOnly} documented but not enforced at parse time` : '')
+  + `, ${fail.length} failed`);
 if (fail.length) { console.error('\nFAILURES:'); fail.forEach(f => console.error('  x ' + f)); process.exit(1); }

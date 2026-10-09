@@ -69,6 +69,11 @@ Designed against the three hardest real cases found before any code was written:
       "long": "--wordlist",
       "takes": "path",               // none|string|int|path|url|port|enum|host
       "enum": null,                  // values, when takes == "enum"
+      "enumEnforced": true,          // false = the tool DOCUMENTS these values but does
+                                     //   not reject others at parse time (curl's
+                                     //   --cert-type fails later, during the handshake).
+                                     //   test/enums.mjs will not claim such a set is
+                                     //   "proved closed", because it cannot be.
       "binds": "wordlist",           // which input slot fills it
       "required": true,              // within the modes that list it
       "repeatable": false,

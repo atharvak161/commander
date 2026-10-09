@@ -28,6 +28,42 @@
          once, and copy the result. Then read it back, piece by piece, so you know what you just ran.
          Everything happens in your browser &mdash; nothing is sent anywhere, and nothing is executed.</p>
     </div>
+
+    <section class="guide" aria-labelledby="guide-h">
+      <h2 id="guide-h">How to use commander</h2>
+      <ol class="steps">
+        <li>
+          <span class="n">1</span>
+          <b>Pick a tool</b>
+          <p>Choose one below. Tools with several modes &mdash; gobuster has seven &mdash; show them as
+             buttons at the top; the mode decides which flags exist.</p>
+        </li>
+        <li>
+          <span class="n">2</span>
+          <b>Choose your flags</b>
+          <p>Hover any flag to see what it does, its default, and what it clashes with, before you pick it.
+             A flag that cannot be combined with one you have already chosen is greyed out.</p>
+        </li>
+        <li>
+          <span class="n">3</span>
+          <b>Fill in your values once</b>
+          <p>Target, wordlist and anything else appear in the panel on the right as you need them.
+             Flags you may give more than once, like <code>-H</code>, take one value per line.</p>
+        </li>
+        <li>
+          <span class="n">4</span>
+          <b>Read it back, then copy</b>
+          <p>The command is broken into labelled pieces underneath, so you can see what each part does.
+             Copy stays disabled until the command would actually run.</p>
+        </li>
+      </ol>
+      <p class="guide-foot">
+        Use the search box at the top to jump straight to a tool <em>or</em> a flag &mdash; typing
+        <code>recursion</code> finds it in ffuf. Every tool also has a <b>Manual</b> tab with its real
+        <code>--help</code> output, searchable, and the command to print it yourself.
+      </p>
+    </section>
+
     <div id="cats"></div>
     <div id="results" class="res" hidden></div>
   </div>
