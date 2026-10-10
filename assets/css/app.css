@@ -267,6 +267,9 @@ a.brand{color:inherit}
 a.brand:hover{text-decoration:none}
 @media (max-width:700px){.nav{order:3;width:100%}#q{order:2}}
 
+.fw-set{margin-top:9px}
+.fw-lab{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--text-faint);margin-bottom:5px}
 .fwgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(282px,1fr));gap:10px}
 .fw{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
 .fw-h{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
@@ -302,3 +305,24 @@ a.brand:hover{text-decoration:none}
 .mcmd-c{background:var(--surface-2);border:1px solid var(--border-2);border-radius:5px;
   padding:3px 10px;cursor:pointer;font-size:11.5px;color:var(--text-dim)}
 .mcmd-c:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ---------- which framework do I use ---------- */
+.critgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px;margin-bottom:26px}
+.crit{display:flex;gap:12px;background:var(--bg-elevated);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px}
+.crit-n{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--accent-dim);
+  color:var(--accent);font-family:var(--mono);font-size:11.5px;display:flex;
+  align-items:center;justify-content:center}
+.crit b{display:block;font-size:14px;color:var(--text);margin-bottom:5px}
+.crit p{font-size:12.8px;color:var(--text-dim);line-height:1.55;margin:0}
+.scen-h{font-size:15px;color:var(--text);margin:0 0 10px}
+.scengrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:10px}
+.scen{background:var(--bg-elevated);border:1px solid var(--border);border-left:3px solid var(--accent-dim);
+  border-radius:var(--radius);padding:14px 16px}
+.scen-q{font-size:13px;color:var(--text);line-height:1.55;margin:0 0 10px}
+.scen-a{display:inline-block;font-family:var(--mono);font-size:12.5px;color:var(--accent);
+  background:var(--accent-glow);border-radius:5px;padding:4px 10px;margin-bottom:9px}
+.scen-w{font-size:12.6px;color:var(--text-dim);line-height:1.6;margin:0 0 10px}
+.scen-u{display:flex;flex-wrap:wrap;gap:5px}
+.scen-u span{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);
+  background:var(--surface-2);border:1px solid var(--border-2);border-radius:4px;padding:2px 7px}

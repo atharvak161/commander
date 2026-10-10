@@ -196,6 +196,8 @@ if (warn.length) {
 const ROOT_ALLOWED = new Set([
   '.gitignore', '.nojekyll', 'README.md', 'index.html', 'LICENSE',
   'CNAME', '.github', '.githooks', '.gstack', 'assets', 'data', 'tools', 'test', '.git',
+  // the house scratch folder for this clone: gitignored, never published
+  '_local',
 ]);
 for (const entry of readdirSync('.')) {
   if (!ROOT_ALLOWED.has(entry)) {

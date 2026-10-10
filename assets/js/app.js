@@ -47,9 +47,15 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
   function saveSlots() { try { sessionStorage.setItem(slotKey(), JSON.stringify(slots)); } catch (e) {} }
 
   /* ---------------- routing ---------------- */
+  var lastRoute = null;
   function route() {
     var h = location.hash.replace(/^#\/?/, '');
     var parts = h.split('/').filter(Boolean);
+    /* A new view starts at the top. Without this you click a tool from halfway
+       down the grid and land halfway down the tool page, with the back control
+       already scrolled up behind the sticky header. Switching tabs inside one
+       view keeps your place, which is what you want there. */
+    if (parts[0] !== lastRoute) { window.scrollTo(0, 0); lastRoute = parts[0] || null; }
     if (!parts.length) return showHome();
     if (parts[0] === 'methodology') return showMethodology(parts[1] || null);
     showTool(decodeURIComponent(parts[0]), parts[1] || null);
@@ -246,7 +252,8 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
   }
 
   function renderMethodology(which) {
-    var tabs = [{ id: 'frameworks', name: 'The frameworks' }].concat(
+    var tabs = [{ id: 'frameworks', name: 'The frameworks' },
+                { id: 'choosing', name: 'Which one do I use?' }].concat(
       METH.disciplines.map(function (d) { return { id: d.id, name: d.name }; }));
     var active = which && tabs.some(function (t) { return t.id === which; }) ? which : 'frameworks';
 
@@ -268,7 +275,21 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     });
 
     if (active === 'frameworks') renderFrameworks();
+    else if (active === 'choosing') renderChoosing();
     else renderDiscipline(METH.disciplines.find(function (d) { return d.id === active; }));
+  }
+
+  /* A framework carries a phase list, and some carry a second list that is NOT
+     phases and must not be drawn as if it were — OSSTMM's five channels,
+     ISSAF's nine steps, NIST's four execution techniques. Labelling them is the
+     whole point: the live page used to print OSSTMM's channels under "phases",
+     which is simply wrong. Any future list only needs adding here. */
+  function sublist(label, items) {
+    if (!items || !items.length) return '';
+    return '<div class="fw-set"><span class="fw-lab">' + esc(label) + '</span>' +
+      '<div class="fw-ph">' + items.map(function (p) {
+        return '<span>' + esc(p) + '</span>';
+      }).join('') + '</div></div>';
   }
 
   function renderFrameworks() {
@@ -281,8 +302,35 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
             '<span class="fw-s">' + esc(f.scope) + '</span></div>' +
           '<div class="fw-full">' + esc(f.full) + '</div>' +
           '<p>' + esc(f.summary) + '</p>' +
-          '<div class="fw-ph">' + f.phases.map(function (p) {
-            return '<span>' + esc(p) + '</span>';
+          sublist('Phases', f.phases) + sublist('Channels', f.channels) +
+          sublist('Nine steps', f.steps) + sublist('Execution techniques', f.techniques) +
+        '</div>';
+      }).join('') + '</div>';
+  }
+
+  /* The question a beginner actually arrives with. Driven entirely by
+     METH.choosing, so adding a scenario is a data edit, never a code one. */
+  function renderChoosing() {
+    var C = METH.choosing;
+    if (!C) { $('mpane').innerHTML = ''; return; }
+    var fwName = function (id) {
+      var f = METH.frameworks.find(function (x) { return x.id === id; });
+      return f ? f.name : id;
+    };
+    $('mpane').innerHTML =
+      '<p class="readyhint">' + esc(C.intro) + '</p>' +
+      '<div class="critgrid">' + C.criteria.map(function (c, i) {
+        return '<div class="crit"><span class="crit-n">' + (i + 1) + '</span>' +
+          '<div><b>' + esc(c.name) + '</b><p>' + esc(c.detail) + '</p></div></div>';
+      }).join('') + '</div>' +
+      '<h2 class="scen-h">Worked examples</h2>' +
+      '<div class="scengrid">' + C.scenarios.map(function (sc) {
+        return '<div class="scen">' +
+          '<p class="scen-q">' + esc(sc.q) + '</p>' +
+          '<div class="scen-a">' + esc(sc.a) + '</div>' +
+          '<p class="scen-w">' + esc(sc.why) + '</p>' +
+          '<div class="scen-u">' + (sc.use || []).map(function (id) {
+            return '<span>' + esc(fwName(id)) + '</span>';
           }).join('') + '</div>' +
         '</div>';
       }).join('') + '</div>';
