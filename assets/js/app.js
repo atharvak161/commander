@@ -5,10 +5,15 @@
    the verifier imports the same module, so the command the tests prove valid
    is byte-for-byte the command shown here. */
 import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
-         buildRecipe, alternativesFor } from './command.js';
+         buildRecipe, alternativesFor } from './command.js?v=f4c8b6263f';
 
 (function () {
   'use strict';
+
+  /* Written by tools/stamp.mjs from a hash of data/. Appended to every data
+     fetch so a deploy cannot be served stale JSON from a browser cache. */
+  var ASSET_V = '1a4928421f';
+  function dataUrl(path) { return ASSET_V ? path + '?v=' + ASSET_V : path; }
 
   var manifest = null;          // data/manifest.json
   var tool = null;              // the loaded tool document
@@ -164,7 +169,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
     if (tool && tool.id === id) return renderTool(tab);
 
-    fetch('data/tools/' + encodeURIComponent(id) + '.json')
+    fetch(dataUrl('data/tools/' + encodeURIComponent(id) + '.json'))
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (doc) {
         tool = doc;
@@ -173,7 +178,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
         adhoc = Object.create(null);
         mode = doc.modes[0].id;
         openPiece = null;
-        return fetch(doc.manual).then(function (r) { return r.ok ? r.text() : ''; })
+        return fetch(dataUrl(doc.manual)).then(function (r) { return r.ok ? r.text() : ''; })
           .catch(function () { return ''; });
       })
       .then(function (txt) { manual = txt || ''; renderTool(tab); })
@@ -331,7 +336,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
     if (SHELLS) return renderShells(which);
     el.shells.innerHTML = '<p class="manhint">Loading…</p>';
-    fetch('data/shells.json')
+    fetch(dataUrl('data/shells.json'))
       .then(function (r) { return r.json(); })
       .then(function (d) { SHELLS = d; loadShellCfg(); renderShells(which); })
       .catch(function () {
@@ -484,7 +489,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
     if (METH) return renderMethodology(which);
     el.meth.innerHTML = '<p class="manhint">Loading…</p>';
-    fetch('data/methodology.json')
+    fetch(dataUrl('data/methodology.json'))
       .then(function (r) { return r.json(); })
       .then(function (d) { METH = d; renderMethodology(which); })
       .catch(function () { el.meth.innerHTML = '<div class="empty">Could not load the methodology data.</div>'; });
@@ -1021,7 +1026,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
       if (!tool) { v ? renderSearch(v) : renderGrid(); }
     });
 
-    fetch('data/manifest.json')
+    fetch(dataUrl('data/manifest.json'))
       .then(function (r) { return r.json(); })
       .then(function (m) { manifest = m; route(); })
       .catch(function () { el.cats.innerHTML = '<div class="empty">Could not load the tool list.</div>'; });

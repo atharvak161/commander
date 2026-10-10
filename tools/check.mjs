@@ -8,6 +8,7 @@
  * New checks go ABOVE the verdict block at the bottom. A check appended after it
  * runs but can never report, which is a lesson learned the hard way elsewhere.
  */
+import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -238,6 +239,14 @@ for (const entry of readdirSync('.')) {
     fail.push('shells.json: {b64ps} is used but the powershell-tcp payload it reads is missing');
   }
   console.log(`  shells.json: ${seen.size} payloads and listeners, placeholders all known`);
+}
+
+/* Asset URLs must carry a current content hash, or a deploy reaches people
+   running the previous app.js against the new markup. See tools/stamp.mjs. */
+try {
+  execFileSync('node', ['tools/stamp.mjs', '--check'], { stdio: 'inherit' });
+} catch {
+  fail.push('asset stamps are stale — run node tools/stamp.mjs and commit the result');
 }
 
 if (fail.length) {
