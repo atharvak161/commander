@@ -34,6 +34,13 @@
       "category": "exploitation",
       "summary": "Automatic SQL injection detection and exploitation.",
       "flagCount": 271
+    },
+    {
+      "id": "tshark",
+      "name": "tshark",
+      "category": "traffic",
+      "summary": "Wireshark on the command line: capture packets, or read a capture and pull it apart.",
+      "flagCount": 76
     }
   ],
   "flagIndex": [
@@ -4061,6 +4068,386 @@
       "t": "sqlmap",
       "f": "--database",
       "d": "SUPPRESSHELP"
+    },
+    {
+      "t": "tshark",
+      "f": "-a, --autostop",
+      "d": "duration:NUM - stop after NUM seconds"
+    },
+    {
+      "t": "tshark",
+      "f": "-b, --ring-buffer",
+      "d": "duration:NUM - switch to next file after NUM secs"
+    },
+    {
+      "t": "tshark",
+      "f": "-B, --buffer-size",
+      "d": "size of kernel buffer in MiB"
+    },
+    {
+      "t": "tshark",
+      "f": "-c",
+      "d": "stop after n packets"
+    },
+    {
+      "t": "tshark",
+      "f": "-D, --list-interfaces",
+      "d": "print list of interfaces and exit"
+    },
+    {
+      "t": "tshark",
+      "f": "-f",
+      "d": "packet filter in libpcap filter syntax"
+    },
+    {
+      "t": "tshark",
+      "f": "-i, --interface",
+      "d": "name or idx of interface"
+    },
+    {
+      "t": "tshark",
+      "f": "-I, --monitor-mode",
+      "d": "capture in monitor mode, if available"
+    },
+    {
+      "t": "tshark",
+      "f": "-L, --list-data-link-types",
+      "d": "print list of link-layer types of iface and exit"
+    },
+    {
+      "t": "tshark",
+      "f": "--list-time-stamp-types",
+      "d": "print list of timestamp types for iface and exit"
+    },
+    {
+      "t": "tshark",
+      "f": "-p, --no-promiscuous-mode",
+      "d": "don't capture in promiscuous mode"
+    },
+    {
+      "t": "tshark",
+      "f": "-s, --snapshot-length",
+      "d": "packet snapshot length"
+    },
+    {
+      "t": "tshark",
+      "f": "--time-stamp-type",
+      "d": "timestamp method for interface"
+    },
+    {
+      "t": "tshark",
+      "f": "--update-interval",
+      "d": "interval between updates with new packets, in milliseconds"
+    },
+    {
+      "t": "tshark",
+      "f": "-y, --linktype",
+      "d": "link layer type"
+    },
+    {
+      "t": "tshark",
+      "f": "--log-debug",
+      "d": "list of domains with \"debug\" level"
+    },
+    {
+      "t": "tshark",
+      "f": "--log-domains",
+      "d": "comma-separated list of the active log domains"
+    },
+    {
+      "t": "tshark",
+      "f": "--log-fatal",
+      "d": "sets level to abort the program (\"critical\" or \"warning\")"
+    },
+    {
+      "t": "tshark",
+      "f": "--log-fatal-domains",
+      "d": "list of domains that cause the program to abort"
+    },
+    {
+      "t": "tshark",
+      "f": "--log-file",
+      "d": "file to output messages to (in addition to stderr)"
+    },
+    {
+      "t": "tshark",
+      "f": "--log-level",
+      "d": "sets the active log level (\"critical\", \"warning\", etc.)"
+    },
+    {
+      "t": "tshark",
+      "f": "--log-noisy",
+      "d": "list of domains with \"noisy\" level"
+    },
+    {
+      "t": "tshark",
+      "f": "-r, --read-file",
+      "d": "set the filename to read from (or '-' for stdin)"
+    },
+    {
+      "t": "tshark",
+      "f": "-G",
+      "d": "dump one of several available reports and exit"
+    },
+    {
+      "t": "tshark",
+      "f": "-h, --help",
+      "d": "display this help and exit"
+    },
+    {
+      "t": "tshark",
+      "f": "-K",
+      "d": "keytab file to use for kerberos decryption"
+    },
+    {
+      "t": "tshark",
+      "f": "-o",
+      "d": "override preference setting"
+    },
+    {
+      "t": "tshark",
+      "f": "--print-timers",
+      "d": "Output JSON containing elapsed times for each pass tshark does to process a capture file and the sum elapsed time for all passes."
+    },
+    {
+      "t": "tshark",
+      "f": "-v, --version",
+      "d": "display version info and exit"
+    },
+    {
+      "t": "tshark",
+      "f": "-C",
+      "d": "start with specified configuration profile"
+    },
+    {
+      "t": "tshark",
+      "f": "--capture-comment",
+      "d": "add a capture file comment, if supported"
+    },
+    {
+      "t": "tshark",
+      "f": "--color",
+      "d": "color output text similarly to the Wireshark GUI,"
+    },
+    {
+      "t": "tshark",
+      "f": "--compress",
+      "d": "compress the output file using the type compression format"
+    },
+    {
+      "t": "tshark",
+      "f": "-e",
+      "d": "field to print if -Tfields selected (e.g. tcp.port,"
+    },
+    {
+      "t": "tshark",
+      "f": "-E",
+      "d": "set options for output when -Tfields selected:"
+    },
+    {
+      "t": "tshark",
+      "f": "--elastic-mapping-filter",
+      "d": "If -G elastic-mapping is specified, put only the"
+    },
+    {
+      "t": "tshark",
+      "f": "--export-objects",
+      "d": "save exported objects for a protocol to a directory"
+    },
+    {
+      "t": "tshark",
+      "f": "--export-tls-session-keys",
+      "d": "export TLS Session Keys to a file named \"keyfile\""
+    },
+    {
+      "t": "tshark",
+      "f": "-F",
+      "d": "set the output file type; default is pcapng."
+    },
+    {
+      "t": "tshark",
+      "f": "-g",
+      "d": "enable group read access on the output file(s)"
+    },
+    {
+      "t": "tshark",
+      "f": "--global-profile",
+      "d": "use the global profile instead of personal profile"
+    },
+    {
+      "t": "tshark",
+      "f": "--hexdump",
+      "d": "add hexdump, set options for data source and ASCII dump"
+    },
+    {
+      "t": "tshark",
+      "f": "-j",
+      "d": "protocols layers filter if -T ek|pdml|json selected"
+    },
+    {
+      "t": "tshark",
+      "f": "-J",
+      "d": "top level protocol filter if -T ek|pdml|json selected"
+    },
+    {
+      "t": "tshark",
+      "f": "-l",
+      "d": "flush standard output after each packet"
+    },
+    {
+      "t": "tshark",
+      "f": "--no-duplicate-keys",
+      "d": "If -T json is specified, merge duplicate keys in an object"
+    },
+    {
+      "t": "tshark",
+      "f": "-O",
+      "d": "Only show packet details of these protocols, comma"
+    },
+    {
+      "t": "tshark",
+      "f": "-P, --print",
+      "d": "print packet summary even when writing to a file"
+    },
+    {
+      "t": "tshark",
+      "f": "-q",
+      "d": "be more quiet on stdout (e.g. when using statistics)"
+    },
+    {
+      "t": "tshark",
+      "f": "-Q",
+      "d": "only log true errors to stderr (quieter than -q)"
+    },
+    {
+      "t": "tshark",
+      "f": "-S",
+      "d": "the line separator to print between packets"
+    },
+    {
+      "t": "tshark",
+      "f": "-t",
+      "d": "output format of time stamps"
+    },
+    {
+      "t": "tshark",
+      "f": "-T",
+      "d": "format of text output"
+    },
+    {
+      "t": "tshark",
+      "f": "--temp-dir",
+      "d": "write temporary files to this directory"
+    },
+    {
+      "t": "tshark",
+      "f": "-u",
+      "d": "output format of seconds"
+    },
+    {
+      "t": "tshark",
+      "f": "-U",
+      "d": "tap_name              PDUs export mode, see the man page for details"
+    },
+    {
+      "t": "tshark",
+      "f": "-V",
+      "d": "add output of packet tree        (Packet Details)"
+    },
+    {
+      "t": "tshark",
+      "f": "-w",
+      "d": "write packets to a pcapng-format file named \"outfile\""
+    },
+    {
+      "t": "tshark",
+      "f": "-W",
+      "d": "n                     Save extra information in the file, if supported."
+    },
+    {
+      "t": "tshark",
+      "f": "-x",
+      "d": "add output of hex and ASCII dump (Packet Bytes)"
+    },
+    {
+      "t": "tshark",
+      "f": "-X",
+      "d": "eXtension options, see the man page for details"
+    },
+    {
+      "t": "tshark",
+      "f": "-z",
+      "d": "various statistics, see the man page for details"
+    },
+    {
+      "t": "tshark",
+      "f": "-2",
+      "d": "perform a two-pass analysis"
+    },
+    {
+      "t": "tshark",
+      "f": "-d",
+      "d": "\"Decode As\", see the man page for details"
+    },
+    {
+      "t": "tshark",
+      "f": "--disable-all-protocols",
+      "d": "Disable dissection of all protocols"
+    },
+    {
+      "t": "tshark",
+      "f": "--disable-heuristic",
+      "d": "disable dissection of heuristic protocol"
+    },
+    {
+      "t": "tshark",
+      "f": "--disable-protocol",
+      "d": "disable dissection of proto_name"
+    },
+    {
+      "t": "tshark",
+      "f": "--enable-heuristic",
+      "d": "enable dissection of heuristic protocol"
+    },
+    {
+      "t": "tshark",
+      "f": "--enable-protocol",
+      "d": "enable dissection of proto_name"
+    },
+    {
+      "t": "tshark",
+      "f": "-H",
+      "d": "read a list of entries from a hosts file, which will"
+    },
+    {
+      "t": "tshark",
+      "f": "-M",
+      "d": "perform session auto reset"
+    },
+    {
+      "t": "tshark",
+      "f": "-n",
+      "d": "disable all name resolutions (def: \"mNd\" enabled, or"
+    },
+    {
+      "t": "tshark",
+      "f": "-N",
+      "d": "enable specific name resolution(s): \"mtndsNvg\""
+    },
+    {
+      "t": "tshark",
+      "f": "--only-protocols",
+      "d": "Only enable dissection of these protocols, comma"
+    },
+    {
+      "t": "tshark",
+      "f": "-R, --read-filter",
+      "d": "packet Read filter in Wireshark display filter syntax"
+    },
+    {
+      "t": "tshark",
+      "f": "-Y, --display-filter",
+      "d": "packet displaY filter in Wireshark display filter"
     }
   ]
 }

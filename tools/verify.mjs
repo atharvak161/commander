@@ -36,6 +36,14 @@ const PROBE_DIR = _mkdtemp(_join(_tmpdir(), 'commander-probe-'));
    and tools do not agree on what it means: gobuster's fuzz mode waits forever
    on one (859 probes stalled), while its dir mode returns at once. One word
    costs nothing and is what a user would actually pass. */
+/* An empty capture file: a 24-byte pcap header and no packets.
+   tshark is the one tool here that is dangerous to probe naively — with no
+   arguments it starts capturing live traffic off the default interface, so
+   "no target means it does nothing" is false for it. Reading a file never
+   touches the network, so every tshark probe is prefixed with -r and this. */
+const SAMPLE_PCAP = _join(PROBE_DIR, 'empty.pcap');
+_writeFile(SAMPLE_PCAP, Buffer.from('d4c3b2a1020004000000000000000000ffff000001000000', 'hex'));
+
 const SAMPLE_FILE = _join(PROBE_DIR, 'commander-sample.txt');
 _writeFile(SAMPLE_FILE, 'admin\n');
 /* Read-only, deliberately. A flag that WRITES must never be handed the file a
@@ -187,8 +195,13 @@ function stripPlaceholders(argv) {
 
    execFile could not fix it. Its stdio option is overridden so it can capture
    output, so the pipe stayed open whatever was asked for. */
+/* Arguments forced onto every probe of a tool, because without them the tool
+   would do something the verifier must never do. */
+const FORCED = { tshark: () => ['-r', SAMPLE_PCAP] };
+
 function run(argv) {
-  const safe = stripPlaceholders(argv);
+  const forced = FORCED[tool.id] ? FORCED[tool.id]() : [];
+  const safe = [...forced, ...stripPlaceholders(argv)];
   return new Promise(resolve => {
     const child = spawn(tool.id, safe, { stdio: ['ignore', 'pipe', 'pipe'], cwd: PROBE_DIR });
     let out = '';

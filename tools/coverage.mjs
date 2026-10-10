@@ -18,12 +18,15 @@
  *   node tools/coverage.mjs            every tool
  *   node tools/coverage.mjs nmap       one tool
  */
-import { readFileSync, readdirSync, existsSync, mkdtempSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
+import { writeEmptyPcap } from './probe-safety.mjs';
 import { join } from 'node:path';
 
 const PROBE_DIR = mkdtempSync(join(tmpdir(), 'commander-coverage-'));
+/* Shared with verify.mjs and probe.mjs so the safety rules cannot drift. */
+const PCAP = writeEmptyPcap(PROBE_DIR);
 
 /* How to put a candidate flag to each tool, and nothing that scans or connects.
    Every one of these exits after parsing when given no target. */
@@ -33,11 +36,13 @@ const PROBE = {
   sqlmap:   flag => ['sqlmap', [flag]],
   gobuster: flag => ['gobuster', ['dir', flag]],
   curl:     flag => ['curl', [flag]],
+  /* Read an empty capture, never an interface — see tools/verify.mjs. */
+  tshark:   flag => ['tshark', ['-r', PCAP, flag]],
 };
 
 /* "This is not a flag." Anything else — including a complaint that the flag
    needs a value, or that it needs root — means the tool knows the flag. */
-const NOT_A_FLAG = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized option|no such option|invalid option|not defined:|deprecated option in a dangerous way|invalid argument to|is ambiguous/i;
+const NOT_A_FLAG = /unrecognized option:|flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized option|no such option|invalid option|not defined:|deprecated option in a dangerous way|invalid argument to|is ambiguous/i;
 
 /* Tokens a binary accepts that are deliberately NOT offered. Each one was run
    and read before it was put here; the quote is what the tool said. The gate
@@ -79,6 +84,11 @@ const REVIEWED = {
   ffuf: {
     '-i': 'ffuf reports only the missing -u, so acceptance here proves nothing; absent from its help',
     '-k': 'ffuf reports only the missing -u, so acceptance here proves nothing; absent from its help',
+  },
+  tshark: {
+    '-D': 'lists network interfaces; not a command-building flag and it touches the hardware',
+    '-h': 'prints help and exits',
+    '-v': 'prints the version and exits',
   },
   curl: {
     '-M': 'alias of --manual, which prints the whole manual',

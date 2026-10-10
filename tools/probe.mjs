@@ -18,6 +18,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdtempSync, writeFileSync as wf, chmodSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { writeEmptyPcap, forcedArgs, UNSAFE } from './probe-safety.mjs';
 
 const id = process.argv[2];
 const apply = !process.argv.includes('--dry-run');
@@ -29,18 +30,23 @@ const DIR = mkdtempSync(join(tmpdir(), `commander-probe-${id}-`));
 const SAMPLE = join(DIR, 'sample.txt');
 wf(SAMPLE, 'admin\n'); chmodSync(SAMPLE, 0o444);
 
-const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized option|invalid option|not defined:|no such option/i;
+const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized option:?|invalid option|not defined:|no such option/i;
+
+/* The safety rules, shared with verify.mjs and coverage.mjs so they cannot
+   drift apart. This runner used to have none of its own, and ran bare tshark
+   commands that opened a network interface. */
+const PCAP = writeEmptyPcap(DIR);
+const FORCED = forcedArgs(tool.id, PCAP);
 
 /* Flags that would reach the network or change this machine. Their membership
    is established by the help text alone; running them is not worth it. */
-const SKIP = new Set(['manual', 'help', 'version', 'g', 'gpage', 'check-internet',
-  'tor', 'update', 'dependencies', 'iR', 'iL', 'dns-servers', 'purge', 'wizard']);
+const SKIP = new Set([...UNSAFE, 'help', 'version']);
 
 const VALUE = { none: null, string: 'x', int: '1', path: SAMPLE,
   url: 'http://127.0.0.1:1/', port: '80', host: '127.0.0.1', enum: null };
 
 function run(argv) {
-  const r = spawnSync(tool.name, argv, { stdio: ['ignore', 'pipe', 'pipe'], timeout: 15000, cwd: DIR, encoding: 'utf8' });
+  const r = spawnSync(tool.name, [...FORCED, ...argv], { stdio: ['ignore', 'pipe', 'pipe'], timeout: 15000, cwd: DIR, encoding: 'utf8' });
   return `${r.stdout || ''}${r.stderr || ''}`;
 }
 

@@ -24,7 +24,7 @@ security model.
 
 ## Status
 
-**ffuf, nmap, sqlmap, gobuster and curl are live**, 805 flags.
+**ffuf, nmap, sqlmap, gobuster, curl and tshark are live**, 881 flags and 78 ready-made commands.
 
 | Piece | State |
 |---|---|
@@ -42,6 +42,7 @@ security model.
 | sqlmap | done — 271 flags read from sqlmap's own option objects |
 | gobuster | done — 59 flags across 7 modes, with per-mode overrides |
 | curl | done — 257 flags, 27 repeatable, read from help + man |
+| tshark | done — 76 flags, probed without ever opening an interface |
 | Interface | done — picker, slots, command bar, explainer |
 
 ## How the data is trusted
@@ -272,6 +273,24 @@ Recipes are **built without their examples** when verified. A recipe's example
 target is a real host — `scanme.nmap.org`, a `/24` — and running one as written
 would scan it. With the examples withheld the target becomes a placeholder the
 verifier strips, and the flags are still proved with nothing to aim at.
+
+### tshark is the one that bites
+
+Every other tool here, given no target, prints its help and exits — which is
+what makes probing safe. **tshark given no arguments starts capturing live
+traffic off the default interface.** The assumption the whole approach rests on
+is false for exactly one tool, and it is not obvious until you run it.
+
+The safe mode is `-r <file>`: reading a capture never touches the network. So
+every tshark probe is prefixed with `-r` and a 24-byte empty pcap, and the
+flags are parsed and rejected exactly as normal with nothing captured.
+
+That rule first lived in `verify.mjs` alone — and `probe.mjs`, which has its
+own runner, therefore ran bare `tshark` commands that opened an interface.
+Nothing was captured, but it was luck rather than design. The rules now live in
+`tools/probe-safety.mjs` and all three probing tools import them, so they
+cannot drift apart again. Proved by watching the process table through a full
+run: no `tshark` without `-r`.
 
 ## Rebuilding the data
 
