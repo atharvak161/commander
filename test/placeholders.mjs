@@ -10,7 +10,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
-import { buildCommand } from '../assets/js/command.js';
+import { buildCommand, resolveFlag } from '../assets/js/command.js';
 
 function shellSplit(text) {
   const script = `set -- ${text}\nfor a in "$@"; do printf '%s\\0' "$a"; done`;
@@ -44,7 +44,11 @@ for (const file of readdirSync('data/tools').filter(f => f.endsWith('.json'))) {
       /* No valued flag may be followed by another flag token. */
       for (let i = 0; i < built.argv.length; i++) {
         const t = built.argv[i];
-        const def = tool.flags.find(x => (x.short || x.long) === t);
+        /* Resolved for THIS mode. docker's --pull takes a value in run and
+           none in build; reading the raw flag reported a correct command as
+           missing a value. */
+        const rawDef = tool.flags.find(x => (x.short || x.long) === t);
+        const def = rawDef ? resolveFlag(rawDef, mode.id) : null;
         if (!def || def.takes === 'none') continue;
         const next = built.argv[i + 1];
         if (next === undefined) {
@@ -62,7 +66,9 @@ for (const file of readdirSync('data/tools').filter(f => f.endsWith('.json'))) {
       } else pass++;
 
       /* And it must be reported as an error, not offered as ready. */
-      if (f.takes !== 'none' && !built.issues.some(i => i.err)) {
+      /* Resolved here too: docker's --pull takes no value in build, so no
+         complaint is the correct behaviour. */
+      if (resolveFlag(f, mode.id).takes !== 'none' && !built.issues.some(i => i.err)) {
         fail.push(`${tool.id}/${mode.id} picking ${f.id}: no value given but no error raised`);
       }
     }

@@ -38,11 +38,14 @@ const PROBE = {
   curl:     flag => ['curl', [flag]],
   /* Read an empty capture, never an interface — see tools/verify.mjs. */
   tshark:   flag => ['tshark', ['-r', PCAP, flag]],
+  /* `docker run <flag>` with no image answers "requires at least 1 argument"
+     and starts nothing — the positional is the safety mechanism. */
+  docker:   flag => ['docker', ['run', flag]],
 };
 
 /* "This is not a flag." Anything else — including a complaint that the flag
    needs a value, or that it needs root — means the tool knows the flag. */
-const NOT_A_FLAG = /unrecognized option:|flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized option|no such option|invalid option|not defined:|deprecated option in a dangerous way|invalid argument to|is ambiguous/i;
+const NOT_A_FLAG = /unknown flag:|unrecognized option:|flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized option|no such option|invalid option|not defined:|deprecated option in a dangerous way|invalid argument to|is ambiguous/i;
 
 /* Tokens a binary accepts that are deliberately NOT offered. Each one was run
    and read before it was put here; the quote is what the tool said. The gate
@@ -60,8 +63,13 @@ const REVIEWED_PATTERNS = {
     [/^--no-/, 'curl negates any boolean by prefixing --no-, as its manual says: '
              + '"you use the same option name but prefix it with no-". '
              + 'We carry whichever spelling curl\'s own help lists; the other always works too.'],
+    /* The positive half of a negation pair, worked out rather than listed:
+       --keepalive is real because --no-keepalive is carried. Listing them by
+       hand missed --keepalive, which only surfaced once a wrong abbreviation
+       rule stopped hiding it. */
     [/^--(alpn|buffer|clobber|eprt|epsv|sessionid|npn|progress-meter|ftp-ssl-reqd)$/,
       'the positive half of a pair curl lists only in its --no- form; same feature, carried once'],
+    [/^--ftp-ssl$/, 'curl\'s pre-7.20 name for --ssl, still accepted; --ssl is the carried spelling'],
     [/^--expand-/, 'variable-expansion form of another option, added by --variable; not a separate option'],
   ],
 };
@@ -89,6 +97,12 @@ const REVIEWED = {
     '-D': 'lists network interfaces; not a command-building flag and it touches the hardware',
     '-h': 'prints help and exits',
     '-v': 'prints the version and exits',
+  },
+  docker: {
+    '-h': 'prints help and exits',
+    '-v': 'prints the version and exits',
+    '-D': 'global debug switch, not a command-building flag',
+    '-l': 'ambiguous abbreviation across subcommands',
   },
   curl: {
     '-M': 'alias of --manual, which prints the whole manual',
@@ -175,12 +189,18 @@ for (const file of files) {
      build no command. Their absence is a decision, not a gap. */
   const EXCLUDED = new Set(['-h', '--help', '-hh', '--version']);
 
-  /* An unambiguous PREFIX of a long flag is an abbreviation, not a new flag:
-     optparse resolves "--user" to "--user-agent". These turn up because
-     sqlmap's help truncates long names, so the docs literally contain "--hea"
-     and "--met". */
+  /* An unambiguous PREFIX of a long flag is an abbreviation ONLY where the
+     parser does prefix matching. Python's optparse does, which is why sqlmap's
+     truncated "--hea" and "--met" resolve; Go's pflag does NOT, so for docker
+     and gobuster a prefix is a different flag entirely. Applying the rule
+     everywhere hid docker's --all, which is a real flag that happens to be a
+     prefix of --all-tags: removing it from the data produced no gap at all.
+
+     Keyed by parser, established per tool, not assumed. */
+  const PREFIX_MATCHING = new Set(['sqlmap']);
   const longNames = [...have].filter(n => n.startsWith('--'));
-  const isAbbrev = t => t.startsWith('--') && longNames.some(n => n !== t && n.startsWith(t));
+  const isAbbrev = t => PREFIX_MATCHING.has(tool.id)
+    && t.startsWith('--') && longNames.some(n => n !== t && n.startsWith(t));
 
   /* Go's flag package treats -name and --name as the same option, and ffuf
      spells its long flags with ONE dash. So "--input-num" in the docs is the
@@ -227,7 +247,20 @@ for (const file of files) {
   for (const c of candidates) {
     const [cmd, argv] = PROBE[tool.id](c);
     const out = run(cmd, argv);
-    if (NOT_A_FLAG.test(out)) { prose.push(c); continue; }
+    if (NOT_A_FLAG.test(out)) {
+      /* A multi-mode tool rejects another subcommand's flag, which looks
+         identical to "not a flag". So before writing it off, try the other
+         modes — docker's --all belongs to ps, not run. */
+      let realElsewhere = false;
+      if ((tool.modes || []).length > 1 && tool.id === 'docker') {
+        for (const mode of tool.modes) {
+          const o2 = run('docker', [mode.id, c]);
+          if (!NOT_A_FLAG.test(o2)) { realElsewhere = true; break; }
+        }
+      }
+      if (!realElsewhere) { prose.push(c); continue; }
+      gaps.push(c); continue;
+    }
 
     /* Some parsers swallow trailing characters silently: nmap takes "-r4d"
        (which comes from ASCII art in the man page) and behaves exactly as if
@@ -259,7 +292,11 @@ for (const file of files) {
   console.log(`  prose       ${prose.length} rejected by the binary`);
   const reviewed = REVIEWED[tool.id] || {};
   const patterns = REVIEWED_PATTERNS[tool.id] || [];
-  const why = g => reviewed[g] || (patterns.find(([re]) => re.test(g)) || [])[1];
+  /* A flag whose --no- twin we already carry is that flag's other half. */
+  const negated = g => g.startsWith('--') && have.has('--no-' + g.slice(2))
+    ? 'the positive half of a negation pair; the --no- spelling is carried and either works'
+    : null;
+  const why = g => reviewed[g] || (patterns.find(([re]) => re.test(g)) || [])[1] || negated(g);
   const all = [...new Set([...gaps, ...undocumented])].sort();
   const allGaps = all.filter(g => !why(g));
   const noted = all.filter(g => why(g));

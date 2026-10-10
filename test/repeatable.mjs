@@ -49,7 +49,10 @@ for (const file of readdirSync('data/tools').filter(f => f.endsWith('.json'))) {
   const installed = (() => { try { execFileSync('which', [tool.id], { stdio: 'pipe' }); return true; } catch { return false; } })();
 
   for (const mode of tool.modes) {
-    for (const raw of tool.flags.filter(f => f.repeatable && mode.flags.includes(f.id))) {
+    /* Resolved first: a flag that is a list in one mode and a boolean in
+       another is only repeatable where it takes a value. */
+    for (const raw of tool.flags.filter(f => mode.flags.includes(f.id)
+          && resolveFlag(f, mode.id).repeatable && resolveFlag(f, mode.id).takes !== 'none')) {
       const f = resolveFlag(raw, mode.id);
       const tok = f.short || f.long;
 

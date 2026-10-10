@@ -42,10 +42,20 @@ export function forcedArgs(toolId, pcapPath) {
  * it generates random PUBLIC IP addresses and scans them.
  * SIDE_EFFECTS: these change the machine, hang, or take minutes.
  */
+/* docker is the most dangerous tool in the catalogue, and not because of the
+   network: the daemon is running, so `docker run` starts a container and the
+   prune family deletes things. It is safe to probe for exactly two reasons —
+   the CLI parses flags before it contacts the daemon, and almost every
+   subcommand requires a positional that the verifier withholds. The two
+   subcommands that act with no argument (ps, images) only read and print.
+   Everything that would act is excluded from the data entirely, with a reason,
+   in tools/extract-docker.mjs. */
+
 export const NETWORK = new Set([
   'g', 'gpage', 'check-internet', 'tor', 'update', 'dependencies',  // sqlmap
   'iR', 'iL', 'dns-servers',                                        // nmap
   'D', 'i',                                                         // tshark: list/open interfaces
+  'pull', 'push',                                                   // docker: registry traffic
 ]);
 
 export const SIDE_EFFECTS = new Set([

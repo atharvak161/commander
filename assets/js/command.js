@@ -148,7 +148,14 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
      `requiredUnless` covers the real case that the positional is not always
      needed: nmap wants a target, unless -iL reads one from a file or -iR
      generates random ones. Demanding a target then would be wrong. */
-  for (const i of (tool.inputs || []).filter(x => x.trailing)) {
+  /* `trailing` is either true (every mode) or a list of the modes where this
+     input is the positional. docker needs the list: `docker run IMAGE` and
+     `docker exec CONTAINER` take different things in the same position, and
+     `docker ps` takes none at all. */
+  const trails = i => i.trailing === true
+    || (Array.isArray(i.trailing) && i.trailing.includes(m.id));
+
+  for (const i of (tool.inputs || []).filter(trails)) {
     let val = slots[i.id] || '';
     let missing = false;
     if (!val) {

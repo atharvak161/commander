@@ -147,6 +147,9 @@ const NETWORK = new Set([
    database, so these are checked for membership by probe-nmap.mjs and skipped
    here. */
 const SIDE_EFFECTS_ONLY = new Set([
+  /* docker: flags that would make the daemon act even with the positional
+     withheld, or that wait for input. */
+  'detach-keys', 'sig-proxy',
   'script-updatedb',   // nmap: rewrites the installed NSE script database
   'purge',             // sqlmap: erases sqlmap's own data directory
   'dependencies',      // sqlmap: tries to install things
