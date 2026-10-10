@@ -205,6 +205,41 @@ for (const entry of readdirSync('.')) {
   }
 }
 
+/* data/shells.json is not a tool document, but it ships payload strings that the
+   page substitutes into. Two things can break silently: a typo'd placeholder
+   renders as literal {ip} in a command someone pastes into a shell, and a
+   duplicate id makes one payload unreachable. Both are cheap to catch here. */
+{
+  const KNOWN = new Set(['ip', 'port', 'shell', 'b64ps']);
+  const sh = JSON.parse(readFileSync('data/shells.json', 'utf8'));
+  const seen = new Set();
+  const every = [
+    ...sh.groups.flatMap(g => g.payloads.map(p => [`${g.id}/${p.id}`, p.text])),
+    ...sh.listeners.map(l => [`listeners/${l.id}`, l.text]),
+    ...sh.upgrade.flatMap((u, i) => u.cmds.map((c, j) => [`upgrade/${i}.${j}`, c])),
+  ];
+  for (const [where, text] of every) {
+    /* Must start with a letter: PowerShell's own 0..65535|%{0} is not a
+       placeholder, and neither is awk's ${1}. Substitution never touches them. */
+    for (const m of String(text).matchAll(/\{([a-z][a-z0-9]*)\}/g)) {
+      if (!KNOWN.has(m[1])) fail.push(`shells.json ${where}: unknown placeholder {${m[1]}}`);
+    }
+  }
+  for (const g of sh.groups) for (const pl of g.payloads) {
+    if (seen.has(pl.id)) fail.push(`shells.json: duplicate payload id "${pl.id}"`);
+    seen.add(pl.id);
+  }
+  for (const l of sh.listeners) {
+    if (seen.has(l.id)) fail.push(`shells.json: duplicate id "${l.id}"`);
+    seen.add(l.id);
+  }
+  /* {b64ps} is resolved from the powershell-tcp payload, so that id must exist. */
+  if (every.some(([, t]) => String(t).includes('{b64ps}')) && !seen.has('powershell-tcp')) {
+    fail.push('shells.json: {b64ps} is used but the powershell-tcp payload it reads is missing');
+  }
+  console.log(`  shells.json: ${seen.size} payloads and listeners, placeholders all known`);
+}
+
 if (fail.length) {
   console.error(`\nFAIL — ${fail.length} problem(s):`);
   fail.forEach(f => console.error(`  x ${f}`));

@@ -326,3 +326,36 @@ a.brand:hover{text-decoration:none}
 .scen-u{display:flex;flex-wrap:wrap;gap:5px}
 .scen-u span{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);
   background:var(--surface-2);border:1px solid var(--border-2);border-radius:4px;padding:2px 7px}
+
+/* ---------- reverse shells ---------- */
+.shcfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;
+  background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;margin:0 0 18px}
+.shf{display:flex;flex-direction:column;gap:5px}
+.shf>span{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--text-faint)}
+.shf input,.shf select{background:var(--bg-input);border:1px solid var(--border-2);
+  border-radius:6px;padding:7px 10px;color:var(--text);font-family:var(--mono);font-size:13px;width:100%}
+.shf input:focus,.shf select:focus{outline:none;border-color:var(--accent-dim)}
+.shgrid{display:grid;gap:10px}
+.shp{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);
+  padding:13px 15px}
+.shp-h{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.shp-n{font-size:14px;color:var(--text);font-weight:500}
+.shp-p{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-dim);background:var(--surface-2);border:1px solid var(--border-2);
+  border-radius:4px;padding:2px 7px}
+.shp-c{margin-left:auto;background:var(--surface-2);border:1px solid var(--border-2);
+  border-radius:5px;padding:4px 12px;cursor:pointer;font-size:12px;color:var(--text-dim);flex:none}
+.shp-c:hover{border-color:var(--accent);color:var(--accent)}
+.shp-t{margin:0;background:var(--bg);border:1px solid var(--border-2);border-radius:6px;
+  padding:10px 12px;overflow-x:auto}
+.shp-t code{font-family:var(--mono);font-size:12.5px;color:var(--accent);
+  white-space:pre-wrap;word-break:break-all;line-height:1.6}
+.shp-d{font-size:12.6px;color:var(--text-dim);line-height:1.55;margin:9px 0 0}
+.shup{background:var(--bg-elevated);border:1px solid var(--border);
+  border-left:3px solid var(--accent-dim);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+.shup-h{font-size:14.5px;color:var(--text);margin-bottom:6px}
+.shup-w{font-size:12.8px;color:var(--text-dim);line-height:1.55;margin:0 0 10px}
+.shup-t{margin:0;background:var(--bg);border:1px solid var(--border-2);border-radius:6px;padding:10px 12px;overflow-x:auto}
+.shup-t code{font-family:var(--mono);font-size:12.5px;color:var(--accent);white-space:pre-wrap;line-height:1.7}

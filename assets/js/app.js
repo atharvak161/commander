@@ -58,14 +58,17 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     if (parts[0] !== lastRoute) { window.scrollTo(0, 0); lastRoute = parts[0] || null; }
     if (!parts.length) return showHome();
     if (parts[0] === 'methodology') return showMethodology(parts[1] || null);
+    if (parts[0] === 'shells') return showShells(parts[1] || null);
     showTool(decodeURIComponent(parts[0]), parts[1] || null);
   }
 
   /* ---------------- home ---------------- */
+  var NAV = { tools: 'nav-tools', meth: 'nav-meth', shells: 'nav-shells' };
   function setNav(which) {
-    var t = $('nav-tools'), m = $('nav-meth');
-    if (t) t.setAttribute('aria-current', which === 'tools' ? 'page' : 'false');
-    if (m) m.setAttribute('aria-current', which === 'meth' ? 'page' : 'false');
+    Object.keys(NAV).forEach(function (k) {
+      var a = $(NAV[k]);
+      if (a) a.setAttribute('aria-current', k === which ? 'page' : 'false');
+    });
   }
 
   /* Every view that is not the home grid gets one back control, in the same
@@ -88,6 +91,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     el.home.hidden = false;
     el.tool.hidden = true;
     if (el.meth) el.meth.hidden = true;
+    if (el.shells) el.shells.hidden = true;
     document.title = 'commander';
     if (el.q.value.trim()) return renderSearch(el.q.value.trim());
     renderGrid();
@@ -152,6 +156,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     }
     el.home.hidden = true;
     if (el.meth) el.meth.hidden = true;
+    if (el.shells) el.shells.hidden = true;
     setNav('tools');
     el.tool.hidden = false;
     setBack('All tools', '#/');
@@ -228,6 +233,239 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     else renderBuild();
   }
 
+
+  /* ---------------- shells ---------------- */
+  /* Nothing here runs. The browser substitutes three values into published
+     payload strings and hands you text, exactly like the command builders.
+     Payload text lives in data/shells.json, so a new payload is a data edit. */
+  var SHELLS = null;
+  var shellCfg = { ip: '10.10.14.1', port: '4444', shell: '/bin/sh', enc: 'none' };
+
+  function loadShellCfg() {
+    try {
+      var v = JSON.parse(sessionStorage.getItem('commander.shell') || 'null');
+      if (v && typeof v === 'object') Object.keys(shellCfg).forEach(function (k) {
+        if (typeof v[k] === 'string') shellCfg[k] = v[k];
+      });
+    } catch (e) {}
+  }
+  function saveShellCfg() {
+    try { sessionStorage.setItem('commander.shell', JSON.stringify(shellCfg)); } catch (e) {}
+  }
+
+  /* btoa throws on anything above U+00FF and apply() on a long array can blow
+     the stack, so chunk it. Payloads are ASCII, but a pasted target name might
+     not be, and a thrown exception would take the whole page down. */
+  function b64(str) {
+    try {
+      var out = '';
+      for (var i = 0; i < str.length; i += 4096) {
+        out += String.fromCharCode.apply(null, Array.prototype.map.call(
+          str.slice(i, i + 4096), function (c) { return c.charCodeAt(0) & 0xff; }));
+      }
+      return btoa(out);
+    } catch (e) { return ''; }
+  }
+  /* powershell -e wants UTF-16LE, not UTF-8. Getting this wrong is the single
+     most common reason an encoded PowerShell payload silently does nothing. */
+  function b64utf16le(str) {
+    var bytes = [];
+    for (var i = 0; i < str.length; i++) {
+      var c = str.charCodeAt(i);
+      bytes.push(c & 0xff, (c >> 8) & 0xff);
+    }
+    var out = '';
+    for (var j = 0; j < bytes.length; j += 4096) {
+      out += String.fromCharCode.apply(null, bytes.slice(j, j + 4096));
+    }
+    try { return btoa(out); } catch (e) { return ''; }
+  }
+
+  function fillShell(text, payload) {
+    var sh = (payload && payload.fixedShell) || shellCfg.shell;
+    return String(text)
+      .replace(/\{ip\}/g, shellCfg.ip || '{ip}')
+      .replace(/\{port\}/g, shellCfg.port || '{port}')
+      .replace(/\{shell\}/g, sh);
+  }
+
+  /* {b64ps} is the PowerShell TCP payload, encoded. It is resolved from the
+     data rather than duplicated here, so editing that payload updates both. */
+  function resolveB64ps(text) {
+    if (text.indexOf('{b64ps}') === -1) return text;
+    var src = '';
+    SHELLS.groups.some(function (g) {
+      return g.payloads.some(function (pl) {
+        if (pl.id !== 'powershell-tcp') return false;
+        src = fillShell(pl.text, pl);
+        return true;
+      });
+    });
+    var inner = src.replace(/^powershell\s+-nop\s+-w\s+hidden\s+-c\s+"/, '').replace(/"$/, '');
+    return text.replace(/\{b64ps\}/g, b64utf16le(inner) || '<powershell payload unavailable>');
+  }
+
+  function encodePayload(cmd) {
+    if (shellCfg.enc === 'url') return encodeURIComponent(cmd);
+    if (shellCfg.enc === 'double') return encodeURIComponent(encodeURIComponent(cmd));
+    if (shellCfg.enc === 'b64') {
+      var e = b64(cmd);
+      return e ? 'echo ' + e + ' | base64 -d | ' + (shellCfg.shell || '/bin/sh') : cmd;
+    }
+    return cmd;
+  }
+
+  function payloadText(pl) {
+    return encodePayload(resolveB64ps(fillShell(pl.text, pl)));
+  }
+
+  function showShells(which) {
+    tool = null;
+    el.home.hidden = true;
+    el.tool.hidden = true;
+    if (el.meth) el.meth.hidden = true;
+    el.shells.hidden = false;
+    setNav('shells');
+    setBack('All tools', '#/');
+    document.title = 'Reverse shells — commander';
+
+    if (SHELLS) return renderShells(which);
+    el.shells.innerHTML = '<p class="manhint">Loading…</p>';
+    fetch('data/shells.json')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { SHELLS = d; loadShellCfg(); renderShells(which); })
+      .catch(function () {
+        el.shells.innerHTML = '<div class="empty">Could not load the shell data.</div>';
+      });
+  }
+
+  function renderShells(which) {
+    var tabs = SHELLS.groups.map(function (g) { return { id: g.id, name: g.name }; })
+      .concat([{ id: 'listeners', name: 'Listeners' }, { id: 'upgrade', name: 'Upgrade a shell' }]);
+    var active = which && tabs.some(function (t) { return t.id === which; }) ? which : tabs[0].id;
+
+    el.shells.innerHTML =
+      '<div class="tool-h"><h1>Reverse shells</h1>' +
+        '<p class="sum">Fill in your address and port once. Every payload below updates. ' +
+        'Nothing is executed and nothing leaves your browser — this page does string ' +
+        'substitution and hands you text.</p></div>' +
+      '<div class="shcfg">' +
+        field('sh-ip', 'Your IP (LHOST)', shellCfg.ip, 'text', '10.10.14.1') +
+        field('sh-port', 'Port (LPORT)', shellCfg.port, 'text', '4444') +
+        select('sh-shell', 'Shell', SHELLS.shells, shellCfg.shell) +
+        select('sh-enc', 'Encoding', SHELLS.encodings.map(function (e) { return e.id; }),
+               shellCfg.enc, SHELLS.encodings) +
+      '</div>' +
+      '<div class="tabs" role="tablist">' + tabs.map(function (t) {
+        return '<button class="tab" role="tab" data-m="' + esc(t.id) + '" aria-selected="' +
+          (t.id === active) + '">' + esc(t.name) + '</button>';
+      }).join('') + '</div>' +
+      '<div id="shpane"></div>';
+
+    el.shells.querySelectorAll('.tab').forEach(function (b) {
+      b.addEventListener('click', function () { location.hash = '#/shells/' + b.dataset.m; });
+    });
+    bindShellCfg(active);
+    renderShellPane(active);
+  }
+
+  function field(id, label, val, type, ph) {
+    return '<label class="shf"><span>' + esc(label) + '</span>' +
+      '<input id="' + id + '" type="' + type + '" value="' + esc(val) +
+      '" placeholder="' + esc(ph) + '" spellcheck="false" autocomplete="off"></label>';
+  }
+  function select(id, label, values, cur, meta) {
+    return '<label class="shf"><span>' + esc(label) + '</span><select id="' + id + '">' +
+      values.map(function (v) {
+        var name = v;
+        if (meta) { var m = meta.find(function (x) { return x.id === v; }); if (m) name = m.name; }
+        return '<option value="' + esc(v) + '"' + (v === cur ? ' selected' : '') + '>' +
+          esc(name) + '</option>';
+      }).join('') + '</select></label>';
+  }
+
+  function bindShellCfg(active) {
+    [['sh-ip', 'ip'], ['sh-port', 'port'], ['sh-shell', 'shell'], ['sh-enc', 'enc']]
+      .forEach(function (pair) {
+        var node = $(pair[0]);
+        if (!node) return;
+        node.addEventListener('input', function () {
+          shellCfg[pair[1]] = node.value;
+          saveShellCfg();
+          renderShellPane(active);     // re-render the list, never the inputs
+        });
+      });
+  }
+
+  function cmdRow(pl, idx) {
+    var text = payloadText(pl);
+    return '<div class="shp">' +
+      '<div class="shp-h"><span class="shp-n">' + esc(pl.name) + '</span>' +
+        (pl.platform && pl.platform !== 'linux'
+          ? '<span class="shp-p">' + esc(pl.platform) + '</span>' : '') +
+        '<button class="shp-c" data-i="' + idx + '">Copy</button></div>' +
+      '<pre class="shp-t"><code></code></pre>' +
+      (pl.note ? '<p class="shp-d">' + esc(pl.note) + '</p>' : '') +
+      (pl.warn ? '<div class="mwarn">' + esc(pl.warn) + '</div>' : '') +
+    '</div>';
+  }
+
+  function renderShellPane(active) {
+    var pane = $('shpane');
+    if (!pane) return;
+    var list, intro = '';
+
+    if (active === 'listeners') {
+      list = SHELLS.listeners;
+      intro = 'Run one of these on your own machine first. The payload has nowhere to connect ' +
+              'to until something is listening.';
+    } else if (active === 'upgrade') {
+      return renderUpgrade(pane);
+    } else {
+      var g = SHELLS.groups.find(function (x) { return x.id === active; });
+      if (!g) return;
+      list = g.payloads;
+      intro = g.intro;
+    }
+
+    pane.innerHTML = '<p class="readyhint">' + esc(intro) + '</p>' +
+      '<div class="shgrid">' + list.map(cmdRow).join('') + '</div>';
+
+    /* Command text goes in through textContent, never innerHTML: it is full of
+       angle brackets and quotes, and a payload is exactly the kind of string
+       that must never be parsed as markup. */
+    var codes = pane.querySelectorAll('.shp-t code');
+    list.forEach(function (pl, i) { if (codes[i]) codes[i].textContent = payloadText(pl); });
+
+    pane.querySelectorAll('.shp-c').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var txt = payloadText(list[Number(b.dataset.i)]);
+        navigator.clipboard.writeText(txt).then(function () {
+          b.textContent = 'Copied';
+          setTimeout(function () { b.textContent = 'Copy'; }, 1200);
+        }, function () { b.textContent = 'Press Cmd-C'; });
+      });
+    });
+  }
+
+  function renderUpgrade(pane) {
+    pane.innerHTML =
+      '<p class="readyhint">A reverse shell is not a terminal. No job control, no tab ' +
+      'completion, Ctrl-C kills your listener instead of the remote process, and sudo and ' +
+      'ssh refuse to run at all. Three steps fix it.</p>' +
+      SHELLS.upgrade.map(function (st) {
+        return '<div class="shup"><div class="shup-h">' + esc(st.name) + '</div>' +
+          '<p class="shup-w">' + esc(st.why) + '</p>' +
+          '<pre class="shup-t"><code></code></pre></div>';
+      }).join('');
+    var codes = pane.querySelectorAll('.shup-t code');
+    SHELLS.upgrade.forEach(function (st, i) {
+      if (codes[i]) codes[i].textContent = st.cmds.map(function (c) {
+        return fillShell(c, null);
+      }).join('\n');
+    });
+  }
+
   /* ---------------- methodology ---------------- */
   /* Nine published standards, turned into something you can follow. The data
      is data: every command here is one the tools in this catalogue produce,
@@ -239,6 +477,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     el.home.hidden = true;
     el.tool.hidden = true;
     el.meth.hidden = false;
+    if (el.shells) el.shells.hidden = true;
     setNav('meth');
     setBack(which ? 'All methodologies' : 'All tools', which ? '#/methodology' : '#/');
     document.title = 'Methodology — commander';
@@ -774,7 +1013,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   /* ---------------- boot ---------------- */
   document.addEventListener('DOMContentLoaded', function () {
-    el.home = $('home'); el.tool = $('toolview'); el.meth = $('methview'); el.cats = $('cats'); el.res = $('results'); el.q = $('q');
+    el.home = $('home'); el.tool = $('toolview'); el.meth = $('methview'); el.shells = $('shellview'); el.cats = $('cats'); el.res = $('results'); el.q = $('q');
 
     el.q.addEventListener('input', function () {
       var v = this.value.trim();

