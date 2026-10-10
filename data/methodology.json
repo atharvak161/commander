@@ -1,0 +1,495 @@
+{
+  "version": 1,
+  "updated": "2026-10-10",
+  "note": "Phases follow the published standards named in each discipline. Commands are the ones the tools in this catalogue actually produce; where a tool is not yet built, the command is still correct but has no page to link to.",
+  "frameworks": [
+    {
+      "id": "ptes",
+      "name": "PTES",
+      "full": "Penetration Testing Execution Standard",
+      "scope": "End-to-end engagement",
+      "summary": "Seven phases covering a whole engagement, from the pre-engagement conversation to the report. The most widely used general structure, and the one most other methodologies slot into.",
+      "phases": ["Pre-engagement", "Intelligence gathering", "Threat modelling", "Vulnerability analysis", "Exploitation", "Post-exploitation", "Reporting"]
+    },
+    {
+      "id": "osstmm",
+      "name": "OSSTMM 3",
+      "full": "Open Source Security Testing Methodology Manual",
+      "scope": "Measurable security testing",
+      "summary": "ISECOM's standard. Unusual because it is about measurement rather than findings: it defines RAV (Risk Assessment Values) so two tests of the same target are comparable. Covers five channels, not just networks.",
+      "phases": ["Human", "Physical", "Wireless", "Telecommunications", "Data networks"]
+    },
+    {
+      "id": "owasp-wstg",
+      "name": "OWASP WSTG",
+      "full": "Web Security Testing Guide",
+      "scope": "Web applications",
+      "summary": "The reference for web testing. Every test has an identifier — WSTG-INFO-02, WSTG-ATHN-03 — which is what you cite in a report so a reader can look up exactly what you did.",
+      "phases": ["Information gathering", "Configuration", "Identity", "Authentication", "Authorisation", "Session", "Input validation", "Error handling", "Cryptography", "Business logic", "Client side", "API"]
+    },
+    {
+      "id": "owasp-mastg",
+      "name": "OWASP MASTG",
+      "full": "Mobile Application Security Testing Guide",
+      "scope": "iOS and Android",
+      "summary": "The mobile counterpart, paired with MASVS which sets the requirement levels. Split by platform because the tooling barely overlaps.",
+      "phases": ["Storage", "Cryptography", "Authentication", "Network", "Platform interaction", "Code quality", "Resilience"]
+    },
+    {
+      "id": "nist",
+      "name": "NIST SP 800-115",
+      "full": "Technical Guide to Information Security Testing",
+      "scope": "US federal baseline",
+      "summary": "Four phases, deliberately simple. Often the framework named in a contract because it is a free public standard a procurement team can point at.",
+      "phases": ["Planning", "Discovery", "Attack", "Reporting"]
+    },
+    {
+      "id": "crest",
+      "name": "CREST",
+      "full": "CREST penetration testing guidance",
+      "scope": "Accredited UK and international engagements",
+      "summary": "Less a test methodology than a standard for how the engagement is run: scoping, consent, tester competence, evidence handling, reporting quality. What a client buys when they buy a CREST-accredited test.",
+      "phases": ["Preparation", "Scoping and consent", "Testing", "Evidence handling", "Reporting", "Remediation support"]
+    },
+    {
+      "id": "pci",
+      "name": "PCI DSS 4.0",
+      "full": "Requirement 11.4 penetration testing",
+      "scope": "Cardholder data environments",
+      "summary": "Compliance-driven, so the rules are specific: at least annually and after any significant change, internal and external, network and application layer, plus explicit segmentation testing at least every six months.",
+      "phases": ["Scope the CDE", "Segmentation testing", "External testing", "Internal testing", "Application layer", "Remediate and retest"]
+    },
+    {
+      "id": "issaf",
+      "name": "ISSAF",
+      "full": "Information Systems Security Assessment Framework",
+      "scope": "Detailed technical assessment",
+      "summary": "Very detailed and now largely unmaintained, but still useful as a checklist — it goes deeper on individual technologies than the actively maintained standards do.",
+      "phases": ["Planning", "Assessment", "Treatment", "Accreditation", "Maintenance"]
+    },
+    {
+      "id": "attack",
+      "name": "MITRE ATT&CK",
+      "full": "Adversarial Tactics, Techniques and Common Knowledge",
+      "scope": "Technique taxonomy",
+      "summary": "Not a test methodology — a shared vocabulary for what attackers do. You map findings to it so a blue team can say which techniques they would have caught.",
+      "phases": ["Reconnaissance", "Initial access", "Execution", "Persistence", "Privilege escalation", "Defence evasion", "Credential access", "Discovery", "Lateral movement", "Collection", "Exfiltration", "Impact"]
+    }
+  ],
+  "disciplines": [
+    {
+      "id": "web",
+      "name": "Web application",
+      "governs": ["owasp-wstg", "ptes"],
+      "summary": "Follows the OWASP Web Security Testing Guide. Each phase cites its WSTG identifier so a finding can be traced back to a published test.",
+      "phases": [
+        {
+          "name": "Map the application",
+          "ref": "WSTG-INFO",
+          "goal": "Know what exists before testing any of it. Most missed findings are on pages nobody knew were there.",
+          "steps": [
+            {
+              "what": "Fingerprint the server, framework and technologies",
+              "why": "Version information narrows everything that follows, and sometimes is the finding.",
+              "cmds": [
+                { "tool": "curl", "text": "curl -I -L https://target.example.com" },
+                { "tool": "curl", "text": "curl -s -D - -o /dev/null https://target.example.com" },
+                { "tool": "nmap", "text": "nmap -sV -p 80,443 --script http-headers,http-title target.example.com" }
+              ]
+            },
+            {
+              "what": "Find content that is not linked",
+              "why": "Admin panels, backups, old versions and .git directories are found here or not at all.",
+              "cmds": [
+                { "tool": "ffuf", "text": "ffuf -u https://target.example.com/FUZZ -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -mc 200,204,301,302,307,401,403 -c" },
+                { "tool": "gobuster", "text": "gobuster dir --url https://target.example.com/ --wordlist /usr/share/seclists/Discovery/Web-Content/common.txt --extensions php,bak,old,zip --threads 40" }
+              ]
+            },
+            {
+              "what": "Enumerate virtual hosts and subdomains",
+              "why": "One address often serves several sites, and the forgotten one is usually the weak one.",
+              "cmds": [
+                { "tool": "gobuster", "text": "gobuster vhost --url https://target.example.com/ --wordlist /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt --append-domain" },
+                { "tool": "ffuf", "text": "ffuf -u https://target.example.com/ -H 'Host: FUZZ.target.example.com' -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -fs 0 -c" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Configuration and deployment",
+          "ref": "WSTG-CONF",
+          "goal": "The platform underneath the application, which is frequently where the real issue is.",
+          "steps": [
+            {
+              "what": "Check TLS and certificates",
+              "why": "Expired, self-signed and weak-cipher findings are easy to prove and easy to fix.",
+              "cmds": [
+                { "tool": "curl", "text": "curl -vI https://target.example.com" },
+                { "tool": "nmap", "text": "nmap -sV -p 443 --script ssl-enum-ciphers,ssl-cert target.example.com" }
+              ]
+            },
+            {
+              "what": "Look for exposed files and methods",
+              "why": "Backup files, version control and dangerous HTTP methods are configuration mistakes, not code bugs.",
+              "cmds": [
+                { "tool": "curl", "text": "curl -s -X OPTIONS -i https://target.example.com/" },
+                { "tool": "curl", "text": "curl -s -o /dev/null -w '%{http_code}\\n' https://target.example.com/.git/HEAD" },
+                { "tool": "ffuf", "text": "ffuf -u https://target.example.com/FUZZ -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt -e .bak,.old,.zip,.sql -mc 200 -c" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Authentication and session",
+          "ref": "WSTG-ATHN, WSTG-SESS",
+          "goal": "How the application decides who you are, and whether it keeps deciding correctly.",
+          "steps": [
+            {
+              "what": "Examine the login and session cookies",
+              "why": "Missing Secure, HttpOnly or SameSite flags are findings on their own.",
+              "cmds": [
+                { "tool": "curl", "text": "curl -s -i -c cookies.txt -d 'username=test&password=test' https://target.example.com/login" },
+                { "tool": "curl", "text": "curl -s -i -b cookies.txt https://target.example.com/account" }
+              ]
+            },
+            {
+              "what": "Test credential handling, with permission",
+              "why": "Rate limiting and lockout behaviour is part of the control, not an obstacle to testing it.",
+              "warn": "Will lock accounts. Agree this in scope first, in writing.",
+              "cmds": [
+                { "tool": "ffuf", "text": "ffuf -u https://target.example.com/login -X POST -d 'username=admin&password=FUZZ' -H 'Content-Type: application/x-www-form-urlencoded' -w /usr/share/seclists/Passwords/Common-Credentials/10k-most-common.txt -fc 401 -c" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Input validation",
+          "ref": "WSTG-INPV",
+          "goal": "Everything the application accepts from outside, which is where injection lives.",
+          "steps": [
+            {
+              "what": "Find parameters that are not advertised",
+              "why": "Debug and legacy parameters survive long after the UI that used them.",
+              "cmds": [
+                { "tool": "ffuf", "text": "ffuf -u 'https://target.example.com/page.php?FUZZ=test' -w /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt -fs 0 -c" }
+              ]
+            },
+            {
+              "what": "Test for SQL injection",
+              "why": "Still among the highest-impact findings when it is there.",
+              "warn": "Intrusive. --risk 3 can modify data. Only in scope, only with written permission.",
+              "cmds": [
+                { "tool": "sqlmap", "text": "sqlmap --url 'https://target.example.com/page.php?id=1' --batch" },
+                { "tool": "sqlmap", "text": "sqlmap --url 'https://target.example.com/page.php?id=1' --level 3 --risk 2 --batch" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Report",
+          "ref": "PTES — Reporting",
+          "goal": "A finding nobody can reproduce is not a finding.",
+          "steps": [
+            {
+              "what": "Record the exact command, output and timestamp for every finding",
+              "why": "Reproducibility is what separates a report from an assertion, and CREST assesses you on it.",
+              "cmds": [
+                { "tool": "nmap", "text": "nmap -sV -p- -oA scans/target-full target.example.com" },
+                { "tool": "ffuf", "text": "ffuf -u https://target.example.com/FUZZ -w wordlist.txt -o findings.json -of json -c" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "name": "Network and infrastructure",
+      "governs": ["ptes", "nist", "osstmm"],
+      "summary": "PTES for the shape of the engagement, NIST SP 800-115 for the four-phase structure clients recognise, OSSTMM where measurement matters.",
+      "phases": [
+        {
+          "name": "Discovery",
+          "ref": "NIST 800-115 §4",
+          "goal": "What is alive, and what is listening on it.",
+          "steps": [
+            {
+              "what": "Find live hosts without scanning everything",
+              "why": "Scanning a /16 port by port wastes hours. Sweep first, then scan what answered.",
+              "cmds": [
+                { "tool": "nmap", "text": "nmap -sn 10.0.0.0/24" },
+                { "tool": "nmap", "text": "nmap -sL 10.0.0.0/24" }
+              ]
+            },
+            {
+              "what": "Enumerate ports and services",
+              "why": "The service and its version drive everything after this.",
+              "cmds": [
+                { "tool": "nmap", "text": "nmap -sS --top-ports 1000 -T4 10.0.0.5" },
+                { "tool": "nmap", "text": "nmap -sS -p- -T4 -Pn 10.0.0.5" },
+                { "tool": "nmap", "text": "nmap -sS -sV -sC -O --top-ports 1000 -T4 10.0.0.5" },
+                { "tool": "nmap", "text": "nmap -sU --top-ports 100 -T4 10.0.0.5" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Vulnerability analysis",
+          "ref": "PTES — Vulnerability analysis",
+          "goal": "Turn a service list into a list of things worth trying.",
+          "steps": [
+            {
+              "what": "Run the script checks against what you found",
+              "why": "NSE covers a large amount of known ground cheaply.",
+              "cmds": [
+                { "tool": "nmap", "text": "nmap -sV --script vuln --top-ports 1000 10.0.0.5" },
+                { "tool": "nmap", "text": "nmap -p 139,445 --script smb-enum-shares,smb-enum-users,smb-os-discovery 10.0.0.5" }
+              ]
+            },
+            {
+              "what": "Inspect traffic where the protocol matters",
+              "why": "Plaintext protocols are proved by capture, not by assertion.",
+              "cmds": [
+                { "tool": "tshark", "text": "tshark -r capture.pcapng -z credentials -q" },
+                { "tool": "tshark", "text": "tshark -r capture.pcapng -z conv,ip -q" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Attack",
+          "ref": "NIST 800-115 §5",
+          "goal": "Prove the finding, take only what the scope allows.",
+          "warn": "Everything in this phase needs written authorisation naming the systems in scope.",
+          "steps": [
+            {
+              "what": "Validate credentials and access",
+              "why": "A theoretical finding and a demonstrated one land very differently in a report.",
+              "cmds": [
+                { "tool": null, "text": "hydra -L users.txt -P passwords.txt ssh://10.0.0.5 -t 4" },
+                { "tool": null, "text": "netexec smb 10.0.0.0/24 -u user -p pass --shares" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Report",
+          "ref": "NIST 800-115 §6",
+          "goal": "Evidence a third party can re-run.",
+          "steps": [
+            {
+              "what": "Save machine-readable output alongside the narrative",
+              "why": "XML and JSON feed the report; the normal output is what a reader checks.",
+              "cmds": [
+                { "tool": "nmap", "text": "nmap -sS -sV --top-ports 1000 -T4 -oA scans/internal 10.0.0.0/24" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mobile",
+      "name": "Mobile",
+      "governs": ["owasp-mastg"],
+      "summary": "OWASP MASTG, with MASVS setting the level you are testing against. Android and iOS share a structure and almost no tooling.",
+      "phases": [
+        {
+          "name": "Gather the artefacts",
+          "ref": "MASTG — Preparation",
+          "goal": "Get the package and know what is inside it before testing anything.",
+          "steps": [
+            {
+              "what": "Pull the application package from a device",
+              "why": "You test the build that ships, not the one in the repository.",
+              "cmds": [
+                { "tool": null, "text": "adb shell pm list packages | grep target" },
+                { "tool": null, "text": "adb shell pm path com.example.target" },
+                { "tool": null, "text": "adb pull /data/app/com.example.target/base.apk" }
+              ]
+            },
+            {
+              "what": "Unpack and read the manifest",
+              "why": "Exported components, permissions, backup and cleartext settings are all declared here.",
+              "cmds": [
+                { "tool": null, "text": "apktool d base.apk -o unpacked" },
+                { "tool": null, "text": "jadx -d decompiled base.apk" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Storage and cryptography",
+          "ref": "MASTG-STORAGE, MASTG-CRYPTO",
+          "goal": "What the application keeps, and how badly it keeps it.",
+          "steps": [
+            {
+              "what": "Look for secrets in the package and on disk",
+              "why": "Hard-coded keys and tokens are still among the most common mobile findings.",
+              "cmds": [
+                { "tool": null, "text": "grep -rE '(api[_-]?key|secret|password|token)' unpacked/ --include='*.xml' --include='*.json'" },
+                { "tool": null, "text": "adb shell run-as com.example.target ls -la /data/data/com.example.target/shared_prefs" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Network",
+          "ref": "MASTG-NETWORK",
+          "goal": "What it sends, to whom, and whether anyone can read it.",
+          "steps": [
+            {
+              "what": "Intercept and inspect the traffic",
+              "why": "Certificate pinning, cleartext endpoints and over-collection all show up here.",
+              "cmds": [
+                { "tool": "tshark", "text": "tshark -i en0 -f 'host 10.0.0.50' -w mobile.pcapng" },
+                { "tool": "tshark", "text": "tshark -r mobile.pcapng -Y 'http.request' -T fields -e http.host -e http.request.uri" },
+                { "tool": "curl", "text": "curl -i --insecure --proxy http://127.0.0.1:8080 https://api.target.example.com/v1/user" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cloud",
+      "name": "Cloud and containers",
+      "governs": ["ptes", "attack"],
+      "summary": "No single standard owns this yet. PTES gives the shape; the provider's own benchmark gives the checks; ATT&CK gives the vocabulary for what you demonstrate.",
+      "phases": [
+        {
+          "name": "Enumerate what is exposed",
+          "ref": "PTES — Intelligence gathering",
+          "goal": "Public storage and forgotten endpoints, found from outside.",
+          "steps": [
+            {
+              "what": "Look for readable buckets",
+              "why": "Open object storage remains one of the most common and most serious cloud findings.",
+              "cmds": [
+                { "tool": "gobuster", "text": "gobuster s3 --wordlist /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt --threads 20" },
+                { "tool": "gobuster", "text": "gobuster gcs --wordlist /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt --threads 20" },
+                { "tool": "curl", "text": "curl -s -i https://target-bucket.s3.amazonaws.com/" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Container and image review",
+          "ref": "ATT&CK — Containers",
+          "goal": "What a container can reach, and what it was built from.",
+          "steps": [
+            {
+              "what": "Inspect how containers are run",
+              "why": "Privileged containers, mounted sockets and host networking are the usual escapes.",
+              "cmds": [
+                { "tool": "docker", "text": "docker ps --all --format 'table {{.Names}}\\t{{.Status}}\\t{{.Ports}}'" },
+                { "tool": "docker", "text": "docker inspect my-container" },
+                { "tool": "docker", "text": "docker history myimage:latest" }
+              ]
+            },
+            {
+              "what": "Show what hardening looks like",
+              "why": "A finding is more useful next to the configuration that fixes it.",
+              "cmds": [
+                { "tool": "docker", "text": "docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --user 1000:1000 nginx:alpine" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wireless",
+      "name": "Wireless",
+      "governs": ["osstmm"],
+      "summary": "OSSTMM treats wireless as its own channel, which is the right model — the medium is shared, so scope and legality are tighter than anywhere else.",
+      "phases": [
+        {
+          "name": "Survey",
+          "ref": "OSSTMM — Wireless channel",
+          "goal": "What is broadcasting, and which of it is yours to test.",
+          "warn": "Capturing traffic you are not authorised to capture is an offence in most jurisdictions. Scope wireless in writing, with SSIDs and physical boundaries named.",
+          "steps": [
+            {
+              "what": "Enumerate networks and clients",
+              "why": "You cannot scope what you have not surveyed.",
+              "cmds": [
+                { "tool": null, "text": "airmon-ng start wlan0" },
+                { "tool": null, "text": "airodump-ng wlan0mon" }
+              ]
+            },
+            {
+              "what": "Analyse a capture you are entitled to",
+              "why": "Reading a capture is where the finding is proved.",
+              "cmds": [
+                { "tool": "tshark", "text": "tshark -r wireless.pcapng -Y 'wlan.fc.type_subtype == 8' -T fields -e wlan.ssid" },
+                { "tool": "tshark", "text": "tshark -r wireless.pcapng -z io,phs -q" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pci",
+      "name": "PCI DSS",
+      "governs": ["pci", "nist"],
+      "summary": "Requirement 11.4. The structure is set by the standard rather than by you, and the segmentation test is the part people forget.",
+      "phases": [
+        {
+          "name": "Define the cardholder data environment",
+          "ref": "PCI DSS 11.4.2",
+          "goal": "Everything that stores, processes or transmits card data, plus everything connected to it.",
+          "steps": [
+            {
+              "what": "Inventory the in-scope hosts and their services",
+              "why": "The scope boundary is the finding if it is wrong.",
+              "cmds": [
+                { "tool": "nmap", "text": "nmap -sn 10.20.0.0/24" },
+                { "tool": "nmap", "text": "nmap -sS -sV --top-ports 1000 -T4 -oA pci/cde-inventory 10.20.0.0/24" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Segmentation testing",
+          "ref": "PCI DSS 11.4.5",
+          "goal": "Prove the CDE is isolated from everything out of scope. Required at least every six months.",
+          "steps": [
+            {
+              "what": "Attempt to reach the CDE from an out-of-scope segment",
+              "why": "The requirement is to demonstrate isolation, which means showing the attempt and the failure.",
+              "cmds": [
+                { "tool": "nmap", "text": "nmap -sS -Pn -p- --open -T4 -oA pci/segmentation 10.20.0.0/24" },
+                { "tool": "nmap", "text": "nmap -sU -Pn --top-ports 100 -oA pci/segmentation-udp 10.20.0.0/24" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "External and internal testing",
+          "ref": "PCI DSS 11.4.3, 11.4.4",
+          "goal": "Both perspectives, at network and application layer, annually and after significant change.",
+          "steps": [
+            {
+              "what": "Test the external perimeter",
+              "why": "Required separately from the internal test; findings differ.",
+              "cmds": [
+                { "tool": "nmap", "text": "nmap -sS -sV -p- -T4 -oA pci/external target.example.com" },
+                { "tool": "nmap", "text": "nmap -p 443 --script ssl-enum-ciphers target.example.com" }
+              ]
+            },
+            {
+              "what": "Test the application layer",
+              "why": "11.4.3 and 11.4.4 both require application-layer testing, not just a port scan.",
+              "cmds": [
+                { "tool": "ffuf", "text": "ffuf -u https://target.example.com/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -mc 200,301,401,403 -c" },
+                { "tool": "sqlmap", "text": "sqlmap --url 'https://target.example.com/page.php?id=1' --batch --level 2" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

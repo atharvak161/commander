@@ -51,6 +51,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     var h = location.hash.replace(/^#\/?/, '');
     var parts = h.split('/').filter(Boolean);
     if (!parts.length) return showHome();
+    if (parts[0] === 'methodology') return showMethodology(parts[1] || null);
     showTool(decodeURIComponent(parts[0]), parts[1] || null);
   }
 
@@ -59,6 +60,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     tool = null;
     el.home.hidden = false;
     el.tool.hidden = true;
+    if (el.meth) el.meth.hidden = true;
     document.title = 'commander';
     if (el.q.value.trim()) return renderSearch(el.q.value.trim());
     renderGrid();
@@ -121,6 +123,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
       return;
     }
     el.home.hidden = true;
+    if (el.meth) el.meth.hidden = true;
     el.tool.hidden = false;
     document.title = id + ' — commander';
 
@@ -193,6 +196,111 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     if (tab === 'manual') renderManual();
     else if (tab === 'ready') renderReady();
     else renderBuild();
+  }
+
+  /* ---------------- methodology ---------------- */
+  /* Nine published standards, turned into something you can follow. The data
+     is data: every command here is one the tools in this catalogue produce,
+     and where a tool has a page the command links to it. */
+  var METH = null;
+
+  function showMethodology(which) {
+    tool = null;
+    el.home.hidden = true;
+    el.tool.hidden = true;
+    el.meth.hidden = false;
+    document.title = 'Methodology — commander';
+
+    if (METH) return renderMethodology(which);
+    el.meth.innerHTML = '<p class="manhint">Loading…</p>';
+    fetch('data/methodology.json')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { METH = d; renderMethodology(which); })
+      .catch(function () { el.meth.innerHTML = '<div class="empty">Could not load the methodology data.</div>'; });
+  }
+
+  function renderMethodology(which) {
+    var tabs = [{ id: 'frameworks', name: 'The frameworks' }].concat(
+      METH.disciplines.map(function (d) { return { id: d.id, name: d.name }; }));
+    var active = which && tabs.some(function (t) { return t.id === which; }) ? which : 'frameworks';
+
+    el.meth.innerHTML =
+      '<div class="tool-h"><h1>Methodology</h1>' +
+        '<p class="sum">Which test to run, in what order, with the command for each stage. ' +
+        'Phases follow the published standard named in each section.</p></div>' +
+      '<div class="prov">updated <b>' + esc(METH.updated) + '</b> &middot; ' +
+        Number(METH.frameworks.length) + ' frameworks &middot; ' +
+        Number(METH.disciplines.length) + ' disciplines</div>' +
+      '<div class="tabs" role="tablist">' + tabs.map(function (t) {
+        return '<button class="tab" role="tab" data-m="' + esc(t.id) + '" aria-selected="' +
+          (t.id === active) + '">' + esc(t.name) + '</button>';
+      }).join('') + '</div>' +
+      '<div id="mpane"></div>';
+
+    el.meth.querySelectorAll('.tab').forEach(function (b) {
+      b.addEventListener('click', function () { location.hash = '#/methodology/' + b.dataset.m; });
+    });
+
+    if (active === 'frameworks') renderFrameworks();
+    else renderDiscipline(METH.disciplines.find(function (d) { return d.id === active; }));
+  }
+
+  function renderFrameworks() {
+    $('mpane').innerHTML =
+      '<p class="readyhint">What each standard is for. They are not alternatives — most engagements ' +
+      'use one for structure and another for the specific tests.</p>' +
+      '<div class="fwgrid">' + METH.frameworks.map(function (f) {
+        return '<div class="fw">' +
+          '<div class="fw-h"><span class="fw-n">' + esc(f.name) + '</span>' +
+            '<span class="fw-s">' + esc(f.scope) + '</span></div>' +
+          '<div class="fw-full">' + esc(f.full) + '</div>' +
+          '<p>' + esc(f.summary) + '</p>' +
+          '<div class="fw-ph">' + f.phases.map(function (p) {
+            return '<span>' + esc(p) + '</span>';
+          }).join('') + '</div>' +
+        '</div>';
+      }).join('') + '</div>';
+  }
+
+  function renderDiscipline(d) {
+    if (!d) return;
+    var govern = d.governs.map(function (id) {
+      var f = METH.frameworks.find(function (x) { return x.id === id; });
+      return f ? f.name : id;
+    });
+
+    $('mpane').innerHTML =
+      '<p class="readyhint">' + esc(d.summary) + ' <b>Governed by ' + esc(govern.join(', ')) + '.</b></p>' +
+      d.phases.map(function (ph, i) {
+        return '<div class="mph">' +
+          '<div class="mph-h"><span class="mph-n">' + (i + 1) + '</span>' +
+            '<span class="mph-t">' + esc(ph.name) + '</span>' +
+            '<span class="mph-r">' + esc(ph.ref) + '</span></div>' +
+          '<p class="mph-g">' + esc(ph.goal) + '</p>' +
+          (ph.warn ? '<div class="mwarn">' + esc(ph.warn) + '</div>' : '') +
+          ph.steps.map(function (st) {
+            return '<div class="mstep">' +
+              '<div class="mstep-w">' + esc(st.what) + '</div>' +
+              '<div class="mstep-y">' + esc(st.why) + '</div>' +
+              (st.warn ? '<div class="mwarn">' + esc(st.warn) + '</div>' : '') +
+              st.cmds.map(function (c, ci) {
+                var id = d.id + '-' + i + '-' + Math.random().toString(36).slice(2, 7);
+                return '<div class="mcmd">' +
+                  '<code>' + esc(c.text) + '</code>' +
+                  '<div class="mcmd-a">' +
+                    (c.tool ? '<a class="mcmd-t" href="#/' + esc(c.tool) + '">' + esc(c.tool) + ' &rarr;</a>'
+                            : '<span class="mcmd-t none">not yet built</span>') +
+                    '<button class="mcmd-c" data-cmd="' + esc(c.text) + '">Copy</button>' +
+                  '</div></div>';
+              }).join('') +
+            '</div>';
+          }).join('') +
+        '</div>';
+      }).join('');
+
+    $('mpane').querySelectorAll('.mcmd-c').forEach(function (b) {
+      b.addEventListener('click', function () { copy(b.dataset.cmd, b, 'Copy'); });
+    });
   }
 
   /* ---------------- ready-made tab ---------------- */
@@ -592,7 +700,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   /* ---------------- boot ---------------- */
   document.addEventListener('DOMContentLoaded', function () {
-    el.home = $('home'); el.tool = $('toolview'); el.cats = $('cats'); el.res = $('results'); el.q = $('q');
+    el.home = $('home'); el.tool = $('toolview'); el.meth = $('methview'); el.cats = $('cats'); el.res = $('results'); el.q = $('q');
 
     el.q.addEventListener('input', function () {
       var v = this.value.trim();
