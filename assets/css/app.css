@@ -33,6 +33,11 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .top .sp{flex:1 1 auto}
 .top a.ext{font-size:12.5px;color:var(--text-dim)}
 
+/* back control — same shape as the portfolio link, one per non-home view */
+.back{display:inline-block;margin:0 0 16px;font-size:13px;color:var(--text-dim);
+  border:1px solid var(--border-2);border-radius:var(--radius);padding:6px 12px;background:var(--bg-elevated)}
+.back:hover{color:var(--accent);border-color:var(--accent-dim);text-decoration:none}
+
 #q{flex:1 1 280px;min-width:180px;background:var(--bg-input);border:1px solid var(--border-2);border-radius:var(--radius);
   padding:7px 11px;color:var(--text);font-family:var(--mono);font-size:13px}
 #q::placeholder{color:var(--text-faint)}
@@ -252,16 +257,15 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 @media (max-width:900px){.rec-head{padding-right:14px}.rec-copy{position:static;margin:0 14px 12px}}
 
 /* ---------- methodology ---------- */
-.methcard{display:flex;align-items:center;gap:18px;background:var(--bg-elevated);
-  border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius-lg);
-  padding:16px 18px;margin:12px 0 4px;color:inherit;transition:border-color .15s,transform .15s}
-.methcard:hover{border-color:var(--accent);text-decoration:none;transform:translateY(-1px)}
-.mc-l{flex:1 1 auto;min-width:0}
-.mc-eyebrow{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--accent);margin-bottom:4px}
-.methcard b{display:block;font-size:15px;color:var(--text);margin-bottom:4px}
-.mc-d{display:block;font-size:12.8px;color:var(--text-dim);line-height:1.5}
-.mc-go{font-family:var(--mono);font-size:12.5px;color:var(--accent);white-space:nowrap;flex:none}
+.nav{display:flex;gap:2px;flex:none}
+.navtab{font-size:13px;color:var(--text-dim);padding:6px 12px;border-radius:6px;
+  border:1px solid transparent;white-space:nowrap}
+.navtab:hover{color:var(--text);background:var(--surface-2);text-decoration:none}
+.navtab[aria-current="page"]{color:var(--accent);background:var(--accent-glow);
+  border-color:var(--accent-dim)}
+a.brand{color:inherit}
+a.brand:hover{text-decoration:none}
+@media (max-width:700px){.nav{order:3;width:100%}#q{order:2}}
 
 .fwgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(282px,1fr));gap:10px}
 .fw{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
@@ -298,4 +302,3 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .mcmd-c{background:var(--surface-2);border:1px solid var(--border-2);border-radius:5px;
   padding:3px 10px;cursor:pointer;font-size:11.5px;color:var(--text-dim)}
 .mcmd-c:hover{border-color:var(--accent);color:var(--accent)}
-@media (max-width:620px){.methcard{flex-direction:column;align-items:flex-start;gap:10px}}

@@ -56,7 +56,28 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
   }
 
   /* ---------------- home ---------------- */
+  function setNav(which) {
+    var t = $('nav-tools'), m = $('nav-meth');
+    if (t) t.setAttribute('aria-current', which === 'tools' ? 'page' : 'false');
+    if (m) m.setAttribute('aria-current', which === 'meth' ? 'page' : 'false');
+  }
+
+  /* Every view that is not the home grid gets one back control, in the same
+     shape as the link out to the portfolio. Browser back only works if you
+     arrived by a link; this works however you got here, including a pasted
+     deep link or a reload. */
+  function setBack(label, href) {
+    var b = $('back');
+    if (!b) return;
+    if (!label) { b.hidden = true; return; }
+    b.hidden = false;
+    b.textContent = '\u2190 ' + label;
+    b.setAttribute('href', href);
+  }
+
   function showHome() {
+    setNav('tools');
+    setBack(null);
     tool = null;
     el.home.hidden = false;
     el.tool.hidden = true;
@@ -119,12 +140,15 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     if (!manifest.tools.some(function (t) { return t.id === id; })) {
       el.home.hidden = false; el.tool.hidden = true;
       el.cats.hidden = true; el.res.hidden = false;
+      setBack('All tools', '#/');
       el.res.innerHTML = '<div class="empty">No tool called &ldquo;' + esc(id) + '&rdquo;.</div>';
       return;
     }
     el.home.hidden = true;
     if (el.meth) el.meth.hidden = true;
+    setNav('tools');
     el.tool.hidden = false;
+    setBack('All tools', '#/');
     document.title = id + ' — commander';
 
     if (tool && tool.id === id) return renderTool(tab);
@@ -209,6 +233,8 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     el.home.hidden = true;
     el.tool.hidden = true;
     el.meth.hidden = false;
+    setNav('meth');
+    setBack(which ? 'All methodologies' : 'All tools', which ? '#/methodology' : '#/');
     document.title = 'Methodology — commander';
 
     if (METH) return renderMethodology(which);
