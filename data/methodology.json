@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-10-10",
+  "updated": "2026-10-11",
   "note": "Phases follow the published standards named in each discipline. Commands are the ones the tools in this catalogue actually produce; where a tool is not yet built, the command is still correct but has no page to link to.",
   "frameworks": [
     {
@@ -79,7 +79,7 @@
     {
       "id": "nist",
       "name": "NIST SP 800-115",
-      "full": "Technical Guide to Information Security Testing",
+      "full": "Technical Guide to Information Security Testing and Assessment",
       "scope": "US federal baseline",
       "summary": "Technical Guide to Information Security Testing and Assessment. Broader than a pentest standard: a pentest is one technique among several. Execution runs four technique categories in order of impact, passive to active, and not every engagement needs to reach the last one. Guidance, not regulation — it mandates no testing frequency, unlike PCI DSS.",
       "phases": [
@@ -97,7 +97,7 @@
     {
       "id": "crest",
       "name": "CREST",
-      "full": "CREST penetration testing guidance",
+      "full": "Council of Registered Ethical Security Testers",
       "scope": "Accredited UK and international engagements",
       "summary": "Less a test methodology than a standard for how the engagement is run: scoping, consent, tester competence, evidence handling, reporting quality. What a client buys when they buy a CREST-accredited test.",
       "phases": [
@@ -155,15 +155,17 @@
       "summary": "Not a test methodology — a shared vocabulary for what attackers do. You map findings to it so a blue team can say which techniques they would have caught.",
       "phases": [
         "Reconnaissance",
+        "Resource development",
         "Initial access",
         "Execution",
         "Persistence",
         "Privilege escalation",
-        "Defence evasion",
+        "Defense evasion",
         "Credential access",
         "Discovery",
         "Lateral movement",
         "Collection",
+        "Command and control",
         "Exfiltration",
         "Impact"
       ]
@@ -514,7 +516,7 @@
         },
         {
           "name": "Report",
-          "ref": "NIST 800-115 §6",
+          "ref": "NIST 800-115 §8",
           "goal": "Evidence a third party can re-run.",
           "steps": [
             {
@@ -580,7 +582,7 @@
         },
         {
           "name": "Storage and cryptography",
-          "ref": "MASTG-STORAGE, MASTG-CRYPTO",
+          "ref": "MASVS-STORAGE, MASVS-CRYPTO",
           "goal": "What the application keeps, and how badly it keeps it.",
           "steps": [
             {
@@ -601,7 +603,7 @@
         },
         {
           "name": "Network",
-          "ref": "MASTG-NETWORK",
+          "ref": "MASVS-NETWORK",
           "goal": "What it sends, to whom, and whether anyone can read it.",
           "steps": [
             {
@@ -754,7 +756,7 @@
       "phases": [
         {
           "name": "Define the cardholder data environment",
-          "ref": "PCI DSS 11.4.2",
+          "ref": "PCI DSS 11.4.1",
           "goal": "Everything that stores, processes or transmits card data, plus everything connected to it.",
           "steps": [
             {
@@ -775,8 +777,8 @@
         },
         {
           "name": "Segmentation testing",
-          "ref": "PCI DSS 11.4.5",
-          "goal": "Prove the CDE is isolated from everything out of scope. Required at least every six months.",
+          "ref": "PCI DSS 11.4.5 · 11.4.6",
+          "goal": "Prove the CDE is isolated from everything out of scope. At least every twelve months, or every six if you are a service provider.",
           "steps": [
             {
               "what": "Attempt to reach the CDE from an out-of-scope segment",
@@ -796,7 +798,7 @@
         },
         {
           "name": "External and internal testing",
-          "ref": "PCI DSS 11.4.3, 11.4.4",
+          "ref": "PCI DSS 11.4.2, 11.4.3",
           "goal": "Both perspectives, at network and application layer, annually and after significant change.",
           "steps": [
             {
