@@ -110,7 +110,10 @@ for (let i = 0; i < lines.length; i++) {
   /* A flag with a listed value set takes a value; otherwise trust the binary
      over the help's + marking. */
   const takesValue2 = takesValue || hasEnum || OPTIONAL_VALUE.has(name) || reallyTakesValue(name);
-  const takes = !takesValue2 ? 'none' : hasEnum ? 'enum' : 'string';
+  /* A file/dir/cert flag is a path, which the awkward-value pass exercises for
+     shell-quoting robustness. nikto's help names these in the description. */
+  const isPath = /\b(file|path|dir|directory|cert|key)\b/i.test(desc) && !/certificate chain/i.test(desc);
+  const takes = !takesValue2 ? 'none' : hasEnum ? 'enum' : isPath ? 'path' : 'string';
   flags.push({
     id: name,
     short: '-' + name,
