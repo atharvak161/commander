@@ -12,7 +12,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   /* Written by tools/stamp.mjs from a hash of data/. Appended to every data
      fetch so a deploy cannot be served stale JSON from a browser cache. */
-  var ASSET_V = '586086f647';
+  var ASSET_V = '4b447ff59d';
   function dataUrl(path) { return ASSET_V ? path + '?v=' + ASSET_V : path; }
 
   var manifest = null;          // data/manifest.json
@@ -64,11 +64,12 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     if (!parts.length) return showHome();
     if (parts[0] === 'methodology') return showMethodology(parts[1] || null);
     if (parts[0] === 'shells') return showShells(parts[1] || null);
+    if (parts[0] === 'payloads') return showPayloads(parts[1] || null);
     showTool(decodeURIComponent(parts[0]), parts[1] || null);
   }
 
   /* ---------------- home ---------------- */
-  var NAV = { tools: 'nav-tools', meth: 'nav-meth', shells: 'nav-shells' };
+  var NAV = { tools: 'nav-tools', meth: 'nav-meth', shells: 'nav-shells', payloads: 'nav-payloads' };
   function setNav(which) {
     Object.keys(NAV).forEach(function (k) {
       var a = $(NAV[k]);
@@ -97,6 +98,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     el.tool.hidden = true;
     if (el.meth) el.meth.hidden = true;
     if (el.shells) el.shells.hidden = true;
+    if (el.payloads) el.payloads.hidden = true;
     document.title = 'commander';
     if (el.q.value.trim()) return renderSearch(el.q.value.trim());
     renderGrid();
@@ -162,6 +164,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     el.home.hidden = true;
     if (el.meth) el.meth.hidden = true;
     if (el.shells) el.shells.hidden = true;
+    if (el.payloads) el.payloads.hidden = true;
     setNav('tools');
     el.tool.hidden = false;
     setBack('All tools', '#/');
@@ -330,6 +333,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     el.tool.hidden = true;
     if (el.meth) el.meth.hidden = true;
     el.shells.hidden = false;
+    if (el.payloads) el.payloads.hidden = true;
     setNav('shells');
     setBack('All tools', '#/');
     document.title = 'Reverse shells — commander';
@@ -471,6 +475,66 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     });
   }
 
+
+  /* ---------------- payloads ---------------- */
+  /* Static reference vectors. No substitution: the page shows the text and a
+     copy button. Data in data/payloads.json, so a new payload is a data edit. */
+  var PAYLOADS = null;
+  function showPayloads(which) {
+    tool = null;
+    el.home.hidden = true; el.tool.hidden = true;
+    if (el.meth) el.meth.hidden = true;
+    if (el.shells) el.shells.hidden = true;
+    el.payloads.hidden = false;
+    setNav('payloads');
+    setBack('All tools', '#/');
+    document.title = 'Payloads — commander';
+    if (PAYLOADS) return renderPayloads(which);
+    el.payloads.innerHTML = '<p class="manhint">Loading…</p>';
+    fetch(dataUrl('data/payloads.json'))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { PAYLOADS = d; renderPayloads(which); })
+      .catch(function () { el.payloads.innerHTML = '<div class="empty">Could not load the payload data.</div>'; });
+  }
+  function renderPayloads(which) {
+    var tabs = PAYLOADS.groups.map(function (g) { return { id: g.id, name: g.name }; });
+    var active = which && tabs.some(function (t) { return t.id === which; }) ? which : tabs[0].id;
+    el.payloads.innerHTML =
+      '<div class="tool-h"><h1>Payloads</h1>' +
+        '<p class="sum">Proof-of-concept vectors for authorized web testing, from OWASP WSTG and ' +
+        'PayloadsAllTheThings. Paste one into your own test request. Nothing here runs.</p></div>' +
+      '<div class="tabs" role="tablist">' + tabs.map(function (t) {
+        return '<button class="tab" role="tab" data-m="' + esc(t.id) + '" aria-selected="' +
+          (t.id === active) + '">' + esc(t.name) + '</button>';
+      }).join('') + '</div><div id="plpane"></div>';
+    el.payloads.querySelectorAll('.tab').forEach(function (b) {
+      b.addEventListener('click', function () { location.hash = '#/payloads/' + b.dataset.m; });
+    });
+    renderPayloadPane(active);
+  }
+  function renderPayloadPane(active) {
+    var pane = $('plpane'); if (!pane) return;
+    var g = PAYLOADS.groups.find(function (x) { return x.id === active; });
+    if (!g) return;
+    pane.innerHTML = '<p class="readyhint">' + esc(g.intro) +
+      (g.wstg ? ' <b>' + esc(g.wstg) + '</b>' : '') + '</p>' +
+      '<div class="shgrid">' + g.payloads.map(function (pl, i) {
+        return '<div class="shp">' +
+          '<div class="shp-h"><button class="shp-c" data-i="' + i + '">Copy</button></div>' +
+          '<pre class="shp-t"><code></code></pre>' +
+          '<p class="shp-d">' + esc(pl.note) + '</p>' +
+          (pl.warn ? '<div class="mwarn">' + esc(pl.warn) + '</div>' : '') +
+        '</div>';
+      }).join('') + '</div>';
+    var codes = pane.querySelectorAll('.shp-t code');
+    g.payloads.forEach(function (pl, i) { if (codes[i]) codes[i].textContent = pl.text; });
+    pane.querySelectorAll('.shp-c').forEach(function (b) {
+      b.addEventListener('click', function () {
+        copy(g.payloads[Number(b.dataset.i)].text, b, 'Copy');
+      });
+    });
+  }
+
   /* ---------------- methodology ---------------- */
   /* Nine published standards, turned into something you can follow. The data
      is data: every command here is one the tools in this catalogue produce,
@@ -483,6 +547,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     el.tool.hidden = true;
     el.meth.hidden = false;
     if (el.shells) el.shells.hidden = true;
+    if (el.payloads) el.payloads.hidden = true;
     setNav('meth');
     setBack(which ? 'All methodologies' : 'All tools', which ? '#/methodology' : '#/');
     document.title = 'Methodology — commander';
@@ -1025,7 +1090,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   /* ---------------- boot ---------------- */
   document.addEventListener('DOMContentLoaded', function () {
-    el.home = $('home'); el.tool = $('toolview'); el.meth = $('methview'); el.shells = $('shellview'); el.cats = $('cats'); el.res = $('results'); el.q = $('q');
+    el.home = $('home'); el.tool = $('toolview'); el.meth = $('methview'); el.shells = $('shellview'); el.payloads = $('payloadview'); el.cats = $('cats'); el.res = $('results'); el.q = $('q');
 
     el.q.addEventListener('input', function () {
       var v = this.value.trim();

