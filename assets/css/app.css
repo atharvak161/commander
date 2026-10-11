@@ -385,3 +385,15 @@ a.brand:hover{text-decoration:none}
 .cmdlog{display:flex;flex-direction:column;gap:6px}
 .logrow{background:var(--bg-elevated);border:1px solid var(--border);border-radius:6px;padding:8px 12px;overflow-x:auto}
 .logrow code{font-family:var(--mono);font-size:12px;color:var(--accent);white-space:pre-wrap;word-break:break-all}
+
+/* engagement context bar */
+.ctxbar{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;background:var(--bg-elevated);
+  border:1px solid var(--border);border-left:3px solid var(--accent-dim);border-radius:var(--radius);
+  padding:12px 14px;margin:0 0 16px}
+.ctxbar-l{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-faint);align-self:center;margin-right:2px}
+.ctxf{display:flex;flex-direction:column;gap:4px}
+.ctxf>span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)}
+.ctxf input{background:var(--bg-input);border:1px solid var(--border-2);border-radius:6px;
+  padding:6px 10px;color:var(--text);font-family:var(--mono);font-size:13px;min-width:150px}
+.ctxf input:focus{outline:none;border-color:var(--accent-dim)}

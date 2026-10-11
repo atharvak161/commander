@@ -35,6 +35,50 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
      count. Command text goes to textContent, never innerHTML. */
   function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
 
+
+  /* ---- engagement context (typed, shared across tools) ----
+     Set a value once, and the tools that take that exact TYPE prefill it.
+     TYPED on purpose: a host is not a URL is not a FUZZ-url. The map below
+     only pairs an input with a context key when the shapes genuinely match,
+     so setting a host fills nmap and gobuster but never the URL-shaped inputs
+     of curl, sqlmap or ffuf. That mismatch is the bug this design avoids:
+     sqlmap's URL once leaked into nmap and produced an impossible command.
+     Prefill only ever fills an EMPTY slot; it never overwrites what you typed. */
+  var ctx = { host: '', wordlist: '', lhost: '', lport: '' };
+  var CTX_FIELDS = [
+    { key: 'host', label: 'Target host / IP', ph: '10.10.10.10' },
+    { key: 'wordlist', label: 'Wordlist', ph: '/path/to/wordlist.txt' },
+    { key: 'lhost', label: 'Your IP (LHOST)', ph: '10.10.14.1' },
+    { key: 'lport', label: 'Port (LPORT)', ph: '4444' },
+  ];
+  /* tool.id + '/' + input.id  ->  context key. Only safe, type-matched pairs. */
+  var CTX_MAP = {
+    'nmap/target': 'host',
+    'gobuster/target': 'host',
+    'ffuf/wordlist': 'wordlist',
+    'gobuster/wordlist': 'wordlist',
+  };
+  function loadCtx() {
+    try {
+      var v = JSON.parse(sessionStorage.getItem('commander.ctx') || 'null');
+      if (v && typeof v === 'object') Object.keys(ctx).forEach(function (k) {
+        if (typeof v[k] === 'string') ctx[k] = v[k];
+      });
+    } catch (e) {}
+  }
+  function saveCtx() { try { sessionStorage.setItem('commander.ctx', JSON.stringify(ctx)); } catch (e) {} }
+  /* Fill empty, type-matched slots for the current tool from the context. */
+  function applyCtxToSlots() {
+    if (!tool) return;
+    (tool.inputs || []).forEach(function (i) {
+      var key = CTX_MAP[tool.id + '/' + i.id];
+      if (key && ctx[key] && !(slots[i.id] || '').trim()) {
+        slots[i.id] = ctx[key];
+      }
+    });
+    saveSlots();
+  }
+
   /* Slot values are remembered PER TOOL, never shared between them.
      They used to be shared, on the theory that you run several tools against
      the same target in a row. In practice the tools do not want the same shape
@@ -191,6 +235,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
       .then(function (doc) {
         tool = doc;
         loadSlots();          // this tool's own values, never another tool's
+        applyCtxToSlots();     // prefill empty, type-matched slots from the context
         picked = Object.create(null);
         adhoc = Object.create(null);
         mode = doc.modes[0].id;
@@ -236,6 +281,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
         '</b> &middot; verified <b>' + esc(p.verifiedAt) + '</b>' +
         (tool.homepage ? ' &middot; <a href="' + esc(tool.homepage) + '" target="_blank" rel="noopener noreferrer">homepage</a>' : '') +
       '</div>' +
+      ctxBarHtml(tool) +
       '<div class="tabs" role="tablist">' +
         '<button class="tab" role="tab" data-tab="build" aria-selected="' + (tab === 'build') + '">Build a command</button>' +
         ((tool.recipes || []).length
@@ -250,9 +296,51 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
         location.hash = '#/' + encodeURIComponent(tool.id) + '/' + b.dataset.tab;
       });
     });
+    wireCtxBar();
     if (tab === 'manual') renderManual();
     else if (tab === 'ready') renderReady();
     else renderBuild();
+  }
+
+  /* The context bar shows only the fields that can actually fill one of this
+     tool's inputs, so it never offers a box that does nothing here. LHOST and
+     LPORT are shown on the Shells tab instead, where they belong. */
+  function ctxBarHtml(t) {
+    var keys = {};
+    (t.inputs || []).forEach(function (i) {
+      var k = CTX_MAP[t.id + '/' + i.id]; if (k) keys[k] = true;
+    });
+    var fields = CTX_FIELDS.filter(function (f) { return keys[f.key]; });
+    if (!fields.length) return '';
+    return '<div class="ctxbar"><span class="ctxbar-l">Set once, fills below:</span>' +
+      fields.map(function (f) {
+        return '<label class="ctxf"><span>' + esc(f.label) + '</span>' +
+          '<input id="ctx-' + f.key + '" value="' + esc(ctx[f.key]) + '" placeholder="' + esc(f.ph) +
+          '" spellcheck="false" autocomplete="off"></label>';
+      }).join('') + '</div>';
+  }
+  function wireCtxBar() {
+    CTX_FIELDS.forEach(function (f) {
+      var node = $('ctx-' + f.key); if (!node) return;
+      node.addEventListener('input', function () {
+        ctx[f.key] = node.value; saveCtx();
+        /* fill matching empty slots, then repaint the slot inputs and command */
+        applyCtxToSlots();
+        syncSlotInputs();
+      });
+    });
+  }
+  /* Push context-filled slot values into the visible slot inputs without a full
+     re-render, so the cursor in the context bar is not disturbed. */
+  function syncSlotInputs() {
+    (tool.inputs || []).forEach(function (i) {
+      var el2 = $('slot-' + i.id);
+      if (el2 && el2.value !== (slots[i.id] || '')) el2.value = slots[i.id] || '';
+      var el3 = $('rslot-' + i.id);
+      if (el3 && el3.value !== (slots[i.id] || '')) el3.value = slots[i.id] || '';
+    });
+    if (typeof renderCommand === 'function') try { renderCommand(); } catch (e) {}
+    if (typeof paintRecipes === 'function') try { paintRecipes(); } catch (e) {}
   }
 
 
@@ -270,6 +358,9 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
         if (typeof v[k] === 'string') shellCfg[k] = v[k];
       });
     } catch (e) {}
+    /* LHOST/LPORT are shared with the engagement context. The context wins if set. */
+    if (ctx.lhost) shellCfg.ip = ctx.lhost;
+    if (ctx.lport) shellCfg.port = ctx.lport;
   }
   function saveShellCfg() {
     try { sessionStorage.setItem('commander.shell', JSON.stringify(shellCfg)); } catch (e) {}
@@ -411,6 +502,8 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
         if (!node) return;
         node.addEventListener('input', function () {
           shellCfg[pair[1]] = node.value;
+          if (pair[1] === 'ip') { ctx.lhost = node.value; saveCtx(); }
+          if (pair[1] === 'port') { ctx.lport = node.value; saveCtx(); }
           saveShellCfg();
           renderShellPane(active);     // re-render the list, never the inputs
         });
@@ -1257,7 +1350,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
     fetch(dataUrl('data/manifest.json'))
       .then(function (r) { return r.json(); })
-      .then(function (m) { manifest = m; route(); })
+      .then(function (m) { manifest = m; loadCtx(); route(); })
       .catch(function () { el.cats.innerHTML = '<div class="empty">Could not load the tool list.</div>'; });
 
     window.addEventListener('hashchange', function () { hideTip(); route(); });
