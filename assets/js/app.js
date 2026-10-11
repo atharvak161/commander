@@ -66,11 +66,12 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     if (parts[0] === 'shells') return showShells(parts[1] || null);
     if (parts[0] === 'payloads') return showPayloads(parts[1] || null);
     if (parts[0] === 'cheatsheet') return showCheat(parts[1] || null);
+    if (parts[0] === 'notes') return showNotes();
     showTool(decodeURIComponent(parts[0]), parts[1] || null);
   }
 
   /* ---------------- home ---------------- */
-  var NAV = { tools: 'nav-tools', meth: 'nav-meth', shells: 'nav-shells', payloads: 'nav-payloads', cheat: 'nav-cheat' };
+  var NAV = { tools: 'nav-tools', meth: 'nav-meth', shells: 'nav-shells', payloads: 'nav-payloads', cheat: 'nav-cheat', notes: 'nav-notes' };
   function setNav(which) {
     Object.keys(NAV).forEach(function (k) {
       var a = $(NAV[k]);
@@ -102,6 +103,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     if (el.shells) el.shells.hidden = true;
     if (el.payloads) el.payloads.hidden = true;
     if (el.cheat) el.cheat.hidden = true;
+    if (el.notes) el.notes.hidden = true;
   }
 
   function showHome() {
@@ -457,11 +459,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
     pane.querySelectorAll('.shp-c').forEach(function (b) {
       b.addEventListener('click', function () {
-        var txt = payloadText(list[Number(b.dataset.i)]);
-        navigator.clipboard.writeText(txt).then(function () {
-          b.textContent = 'Copied';
-          setTimeout(function () { b.textContent = 'Copy'; }, 1200);
-        }, function () { b.textContent = 'Press Cmd-C'; });
+        copy(payloadText(list[Number(b.dataset.i)]), b, 'Copy');
       });
     });
   }
@@ -542,6 +540,91 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     });
   }
 
+
+
+  /* ---------------- notes / scratchpad ---------------- */
+  /* The report is the deliverable, every framework on the methodology page says
+     so, and the site helped with none of it. This keeps your findings and every
+     command you copied, in your browser only, exportable as markdown. Nothing is
+     sent anywhere; it degrades to in-memory if storage is blocked. */
+  var NOTES_KEY = 'commander.notes';
+  var LOG_KEY = 'commander.cmdlog';
+  function getNotes() { try { return localStorage.getItem(NOTES_KEY) || ''; } catch (e) { return ''; } }
+  function setNotes(v) { try { localStorage.setItem(NOTES_KEY, v); } catch (e) {} }
+  function getLog() { try { return JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch (e) { return []; } }
+  function setLog(a) { try { localStorage.setItem(LOG_KEY, JSON.stringify(a.slice(-500))); } catch (e) {} }
+
+  /* Called from copy(): every command copied anywhere on the site lands here. */
+  function logCommand(text) {
+    if (!text || text.length > 2000) return;
+    var log = getLog();
+    if (log.length && log[log.length - 1].t === text) return;   // skip an immediate repeat
+    log.push({ t: text, at: Date.now() });
+    setLog(log);
+  }
+
+  function showNotes() {
+    tool = null;
+    hideAllViews();
+    el.notes.hidden = false;
+    setNav('notes');
+    setBack('All tools', '#/');
+    document.title = 'Notes — commander';
+    renderNotes();
+  }
+  function renderNotes() {
+    var log = getLog();
+    el.notes.innerHTML =
+      '<div class="tool-h"><h1>Engagement notes</h1>' +
+        '<p class="sum">Your findings and every command you copied, kept in this browser only. ' +
+        'Export as markdown for the report. Nothing is sent anywhere.</p></div>' +
+      '<div class="notebar">' +
+        '<button class="nbtn" id="note-export">Export markdown</button>' +
+        '<button class="nbtn" id="note-copyall">Copy all</button>' +
+        '<span class="nlogc">' + log.length + ' commands logged</span>' +
+        '<button class="nbtn danger" id="note-clearlog">Clear command log</button>' +
+      '</div>' +
+      '<textarea id="note-area" class="notearea" placeholder="# Findings&#10;&#10;Write as you go. Markdown.">' +
+        esc(getNotes()) + '</textarea>' +
+      '<h2 class="chsec-h" style="margin-top:24px">Command log</h2>' +
+      '<p class="readyhint">Every command you copied, newest last. These go into the export too.</p>' +
+      '<div class="cmdlog">' + (log.length
+        ? log.slice().reverse().map(function (e) {
+            return '<div class="logrow"><code></code></div>';
+          }).join('')
+        : '<p class="manhint">Nothing yet. Copy a command from any tab and it appears here.</p>') +
+      '</div>';
+
+    var ta = $('note-area');
+    ta.addEventListener('input', function () { setNotes(ta.value); });
+
+    var codes = el.notes.querySelectorAll('.cmdlog code');
+    log.slice().reverse().forEach(function (e, i) { if (codes[i]) codes[i].textContent = e.t; });
+
+    $('note-export').addEventListener('click', function () { exportNotes(); });
+    $('note-copyall').addEventListener('click', function (ev) {
+      copy(buildMarkdown(), ev.currentTarget, 'Copy all', true);
+    });
+    $('note-clearlog').addEventListener('click', function () { setLog([]); renderNotes(); });
+  }
+
+  function buildMarkdown() {
+    var out = getNotes().trim();
+    var log = getLog();
+    if (log.length) {
+      out += '\n\n## Commands run\n\n';
+      out += log.map(function (e) { return '```\n' + e.t + '\n```'; }).join('\n\n');
+    }
+    return out + '\n';
+  }
+  function exportNotes() {
+    var blob = new Blob([buildMarkdown()], { type: 'text/markdown' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'commander-notes.md';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
 
   /* ---------------- cheatsheet ---------------- */
   var CHEAT = null;
@@ -1144,7 +1227,8 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     });
   }
 
-  function copy(text, btn, restore) {
+  function copy(text, btn, restore, noLog) {
+    if (!noLog) logCommand(text);
     var done = function () {
       var old = btn.innerHTML; btn.textContent = 'Copied';
       setTimeout(function () { btn.innerHTML = restore || old; }, 1400);
@@ -1163,7 +1247,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   /* ---------------- boot ---------------- */
   document.addEventListener('DOMContentLoaded', function () {
-    el.home = $('home'); el.tool = $('toolview'); el.meth = $('methview'); el.shells = $('shellview'); el.payloads = $('payloadview'); el.cheat = $('cheatview'); el.cats = $('cats'); el.res = $('results'); el.q = $('q');
+    el.home = $('home'); el.tool = $('toolview'); el.meth = $('methview'); el.shells = $('shellview'); el.payloads = $('payloadview'); el.cheat = $('cheatview'); el.notes = $('notesview'); el.cats = $('cats'); el.res = $('results'); el.q = $('q');
 
     el.q.addEventListener('input', function () {
       var v = this.value.trim();
