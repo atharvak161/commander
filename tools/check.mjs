@@ -241,6 +241,43 @@ for (const entry of readdirSync('.')) {
   console.log(`  shells.json: ${seen.size} payloads and listeners, placeholders all known`);
 }
 
+/* Every methodology command that starts with a tool we have built must use
+   flags that tool actually has. Nothing automated caught the three wrong
+   framework phase lists — reading did — but a flag that quietly stops existing
+   after a tool upgrade is exactly the drift a check can catch.
+
+   Two spellings are legitimate and are not failures:
+     -p-   nmap's -p with the value "-", every port. Put to the binary: nmap
+           accepts it and rejects --definitely-not-a-flag, so it is real.
+     -vI   curl bundles single-character flags. Put to the binary against a
+           closed loopback port: -vI connects, -vQ is rejected before it does. */
+{
+  const meth = JSON.parse(readFileSync('data/methodology.json', 'utf8'));
+  const spellings = {};
+  for (const f of files) {
+    const d = JSON.parse(readFileSync(`data/tools/${f}`, 'utf8'));
+    spellings[d.id] = new Set(d.flags.flatMap(x => [x.short, x.long].filter(Boolean)));
+  }
+  const cmds = meth.disciplines.flatMap(di =>
+    di.phases.flatMap(ph => ph.steps.flatMap(st => st.cmds.map(c => [di.id, c]))));
+  for (const [where, c] of cmds) {
+    if (!c.tool) continue;
+    if (!spellings[c.tool]) continue;              // tool not built yet, nothing to check
+    const parts = String(c.text).split(/\s+/);
+    if (parts[0] !== c.tool) continue;             // piped or compound, out of scope
+    for (const tok of parts.slice(1)) {
+      if (!tok.startsWith('-') || tok === '-') continue;
+      const base = tok.split('=')[0];
+      if (spellings[c.tool].has(base)) continue;
+      if (c.tool === 'nmap' && /^-[A-Za-z]{2,}$/.test(base)) continue;   // -sV, -Pn, -oA
+      if (c.tool === 'nmap' && base === '-p-') continue;                 // every port
+      if (c.tool === 'curl' && /^-[a-zA-Z]{2,}$/.test(base)) continue;   // curl bundles
+      fail.push(`methodology ${where}: ${c.tool} has no flag ${base} — "${String(c.text).slice(0, 56)}"`);
+    }
+  }
+  console.log(`  methodology: ${cmds.length} commands, flags checked against the tools we built`);
+}
+
 /* Asset URLs must carry a current content hash, or a deploy reaches people
    running the previous app.js against the new markup. See tools/stamp.mjs. */
 try {

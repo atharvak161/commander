@@ -359,3 +359,7 @@ a.brand:hover{text-decoration:none}
 .shup-w{font-size:12.8px;color:var(--text-dim);line-height:1.55;margin:0 0 10px}
 .shup-t{margin:0;background:var(--bg);border:1px solid var(--border-2);border-radius:6px;padding:10px 12px;overflow-x:auto}
 .shup-t code{font-family:var(--mono);font-size:12.5px;color:var(--accent);white-space:pre-wrap;line-height:1.7}
+.shp-v,.shp-u{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  border-radius:4px;padding:2px 7px;cursor:help}
+.shp-v{color:var(--ok,#5ed89b);background:rgba(94,216,155,.10);border:1px solid rgba(94,216,155,.28)}
+.shp-u{color:var(--text-faint);background:var(--surface-2);border:1px solid var(--border-2)}
