@@ -354,9 +354,6 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
         '<p class="sum">Fill in your address and port once. Every payload below updates. ' +
         'Nothing is executed and nothing leaves your browser — this page does string ' +
         'substitution and hands you text.</p></div>' +
-      (SHELLS.verification ? '<div class="prov">verified <b>' + esc(SHELLS.verification.date) +
-        '</b> &middot; ' + Number(SHELLS.verification.passed) + ' run against a real listener' +
-        ' &middot; ' + Number(SHELLS.verification.untested) + ' not tested, each says why</div>' : '') +
       '<div class="shcfg">' +
         field('sh-ip', 'Your IP (LHOST)', shellCfg.ip, 'text', '10.10.14.1') +
         field('sh-port', 'Port (LPORT)', shellCfg.port, 'text', '4444') +
@@ -411,11 +408,6 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
       '<div class="shp-h"><span class="shp-n">' + esc(pl.name) + '</span>' +
         (pl.platform && pl.platform !== 'linux'
           ? '<span class="shp-p">' + esc(pl.platform) + '</span>' : '') +
-        (pl.tested === 'pass'
-          ? '<span class="shp-v" title="Run against a real listener on 2026-10-11">tested</span>'
-          : pl.tested
-            ? '<span class="shp-u" title="' + esc(pl.untestedWhy || '') + '">not tested</span>'
-            : '') +
         '<button class="shp-c" data-i="' + idx + '">Copy</button></div>' +
       '<pre class="shp-t"><code></code></pre>' +
       (pl.note ? '<p class="shp-d">' + esc(pl.note) + '</p>' : '') +
