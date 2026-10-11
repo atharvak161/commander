@@ -289,7 +289,8 @@
                   "text": "curl -s https://target.example.com/.git/HEAD"
                 },
                 {
-                  "text": "nikto -h https://target.example.com"
+                  "tool": "nikto",
+                  "text": "nikto -host https://target.example.com"
                 }
               ]
             },
@@ -1245,6 +1246,7 @@
                   "text": "aws s3 ls s3://<bucket> --no-sign-request"
                 },
                 {
+                  "tool": "curl",
                   "text": "curl -s https://<account>.blob.core.windows.net/<container>?restype=container&comp=list"
                 }
               ]
@@ -1289,6 +1291,7 @@
                   "text": "docker ps --all"
                 },
                 {
+                  "tool": "curl",
                   "text": "curl -s http://<host>:2375/version   (exposed Docker API, unauthenticated)"
                 }
               ]

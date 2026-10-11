@@ -80,8 +80,14 @@ for (const file of files) {
       const eff = (f.perMode && f.perMode[mid]) ? { ...f, ...f.perMode[mid] } : f;
       if (eff.takes === 'none' && v !== true) fail.push(`${at}: gives a value to "${fid}", which takes none.`);
       if (eff.takes !== 'none' && v === true && !eff.binds) fail.push(`${at}: "${fid}" needs a value and the recipe gives none.`);
-      if (eff.takes === 'enum' && v !== true && !eff.enum.includes(String(v)))
-        fail.push(`${at}: "${fid}" is set to "${v}", which is not one of ${eff.enum.join(', ')}.`);
+      if (eff.takes === 'enum' && v !== true && !eff.enum.includes(String(v))) {
+        /* A combinable, unenforced enum (nikto's -Tuning 1234b) accepts any
+           string of single-character members. A strict enum (enumEnforced not
+           false) must match a listed value exactly. */
+        const combinable = eff.enumEnforced === false && eff.enum.every(e => e.length === 1);
+        const ok = combinable && String(v).split('').every(ch => eff.enum.includes(ch));
+        if (!ok) fail.push(`${at}: "${fid}" is set to "${v}", which is not one of ${eff.enum.join(', ')}.`);
+      }
     }
     for (const id of Object.keys(r.examples || {}))
       if (!(t.inputs || []).some(i => i.id === id)) fail.push(`${at}: example for "${id}", which is not an input.`);

@@ -78,8 +78,25 @@ const path = `data/tools/${id}.json`;
 if (!existsSync(path)) { console.error(`no such tool: ${path}`); process.exit(2); }
 const tool = JSON.parse(readFileSync(path, 'utf8'));
 
-try { execFileSync('which', [tool.id], { stdio: 'pipe' }); }
-catch { console.error(`${tool.id} is not installed locally; container path (P2) not wired yet.`); process.exit(2); }
+/* A tool read from the Kali container (provenance.host === 'kali-container')
+   is run with `docker exec commander-kali <tool> ...` instead of locally. Its
+   flags were extracted there and must be verified there, against the same
+   binary. Everything else — withholding, rejection detection, the pool — is
+   identical. */
+const KALI = 'commander-kali';
+const CONTAINERED = tool.provenance && tool.provenance.host === 'kali-container';
+if (CONTAINERED) {
+  try { execFileSync('docker', ['exec', KALI, 'sh', '-c', `command -v ${tool.id}`], { stdio: 'pipe' }); }
+  catch { console.error(`${tool.id} is not in the ${KALI} container; is it up? tools/kali.sh up`); process.exit(2); }
+} else {
+  try { execFileSync('which', [tool.id], { stdio: 'pipe' }); }
+  catch { console.error(`${tool.id} is not installed locally.`); process.exit(2); }
+}
+
+/* Target-bearing flags that must never be given a scannable value: nikto's
+   -host/-url would make it scan. Tested with no value, nikto answers "requires
+   an argument", which proves the flag is real without touching the network. */
+const WITHHELD = { nikto: new Set(['host', 'url']) };
 
 const SAMPLE = {
   none: null, string: 'x', int: '1', path: SAMPLE_FILE,
@@ -104,7 +121,9 @@ function valueFor(f) {
 
 function slotsAndAdhoc(flags, override) {
   const slots = {}, adhoc = {};
+  const withheld = WITHHELD[tool.id];
   for (const f of flags) {
+    if (withheld && withheld.has(f.id)) continue;   // never hand it a scannable target
     const v = override !== undefined && f.takes === 'path' ? override : valueFor(f);
     if (v === null) continue;
     if (f.binds) slots[f.binds] = v; else adhoc[f.id] = v;
@@ -147,6 +166,10 @@ const NETWORK = new Set([
    database, so these are checked for membership by probe-nmap.mjs and skipped
    here. */
 const SIDE_EFFECTS_ONLY = new Set([
+  /* nikto: -check6 connects to ipv6.google.com to test IPv6; -dbcheck and the
+     update-related options touch files or the network. Membership for all is
+     proved by the declaration; none needs to actually run. */
+  'check6', 'dbcheck', 'update',
   /* docker: flags that would make the daemon act even with the positional
      withheld, or that wait for input. */
   'detach-keys', 'sig-proxy',
@@ -206,7 +229,9 @@ function run(argv) {
   const forced = FORCED[tool.id] ? FORCED[tool.id]() : [];
   const safe = [...forced, ...stripPlaceholders(argv)];
   return new Promise(resolve => {
-    const child = spawn(tool.id, safe, { stdio: ['ignore', 'pipe', 'pipe'], cwd: PROBE_DIR });
+    const child = CONTAINERED
+      ? spawn('docker', ['exec', KALI, tool.id, ...safe], { stdio: ['ignore', 'pipe', 'pipe'] })
+      : spawn(tool.id, safe, { stdio: ['ignore', 'pipe', 'pipe'], cwd: PROBE_DIR });
     let out = '';
     const take = d => { if (out.length < (4 << 20)) out += d; };
     child.stdout.on('data', take);

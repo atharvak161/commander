@@ -29,6 +29,13 @@
       "flagCount": 59
     },
     {
+      "id": "nikto",
+      "name": "nikto",
+      "category": "web",
+      "summary": "Web server scanner: known files, misconfigurations and version-matched issues.",
+      "flagCount": 47
+    },
+    {
       "id": "nmap",
       "name": "nmap",
       "category": "enumeration",
@@ -2795,6 +2802,241 @@
       "t": "gobuster",
       "f": "--wordlist-offset, --wo",
       "d": "Resume from a given position in the wordlist"
+    },
+    {
+      "t": "nikto",
+      "f": "-404code",
+      "d": "Ignore these HTTP codes as negative responses (always). Format is \"302,301\"."
+    },
+    {
+      "t": "nikto",
+      "f": "-404string",
+      "d": "Ignore this string in response body content as negative response (always). Can be a regular expression."
+    },
+    {
+      "t": "nikto",
+      "f": "-Add-header",
+      "d": "Add HTTP headers (can be used multiple times, one per header pair)"
+    },
+    {
+      "t": "nikto",
+      "f": "-ask",
+      "d": "Whether to ask about submitting updates"
+    },
+    {
+      "t": "nikto",
+      "f": "-Cgidirs",
+      "d": "Scan these CGI dirs: \"none\", \"all\", or values like \"/cgi/ /cgi-a/\""
+    },
+    {
+      "t": "nikto",
+      "f": "-check6",
+      "d": "Check if IPv6 is working (connects to ipv6.google.com or value set in nikto.conf)"
+    },
+    {
+      "t": "nikto",
+      "f": "-config",
+      "d": "Use this config file"
+    },
+    {
+      "t": "nikto",
+      "f": "-dbcheck",
+      "d": "Check database and other key files for syntax errors"
+    },
+    {
+      "t": "nikto",
+      "f": "-Display",
+      "d": "Turn on/off display outputs:"
+    },
+    {
+      "t": "nikto",
+      "f": "-evasion",
+      "d": "Encoding technique:"
+    },
+    {
+      "t": "nikto",
+      "f": "-followredirects",
+      "d": "Follow 3xx redirects to new location"
+    },
+    {
+      "t": "nikto",
+      "f": "-Format",
+      "d": "Save file (-o) format:"
+    },
+    {
+      "t": "nikto",
+      "f": "-Help",
+      "d": "This help information"
+    },
+    {
+      "t": "nikto",
+      "f": "-host",
+      "d": "Target host/URL"
+    },
+    {
+      "t": "nikto",
+      "f": "-id",
+      "d": "Host authentication to use, format is id:pass or id:pass:realm"
+    },
+    {
+      "t": "nikto",
+      "f": "-ipv4",
+      "d": "IPv4 Only"
+    },
+    {
+      "t": "nikto",
+      "f": "-ipv6",
+      "d": "IPv6 Only"
+    },
+    {
+      "t": "nikto",
+      "f": "-key",
+      "d": "Client certificate key file"
+    },
+    {
+      "t": "nikto",
+      "f": "-list-plugins",
+      "d": "List all available plugins, perform no testing"
+    },
+    {
+      "t": "nikto",
+      "f": "-maxtime",
+      "d": "Maximum testing time per host (e.g., 1h, 60m, 3600s)"
+    },
+    {
+      "t": "nikto",
+      "f": "-mutate",
+      "d": "Guess additional file names:"
+    },
+    {
+      "t": "nikto",
+      "f": "-mutate-options",
+      "d": "Provide information for mutates"
+    },
+    {
+      "t": "nikto",
+      "f": "-nocheck",
+      "d": "Don't check for updates on startup"
+    },
+    {
+      "t": "nikto",
+      "f": "-nocookies",
+      "d": "Do not use cookies from responses in requests"
+    },
+    {
+      "t": "nikto",
+      "f": "-nointeractive",
+      "d": "Disables interactive features"
+    },
+    {
+      "t": "nikto",
+      "f": "-nolookup",
+      "d": "Disables DNS lookups"
+    },
+    {
+      "t": "nikto",
+      "f": "-noslash",
+      "d": "Strip trailing slash from URL (e.g., '/admin/' to '/admin')"
+    },
+    {
+      "t": "nikto",
+      "f": "-nossl",
+      "d": "Disables the use of SSL"
+    },
+    {
+      "t": "nikto",
+      "f": "-nosslkeepalive",
+      "d": "Disable TLS connection reuse (keep-alive on by default)"
+    },
+    {
+      "t": "nikto",
+      "f": "-Option",
+      "d": "Over-ride an option in nikto.conf, can be issued multiple times"
+    },
+    {
+      "t": "nikto",
+      "f": "-output",
+      "d": "Write output to this file ('.' for auto-name)"
+    },
+    {
+      "t": "nikto",
+      "f": "-Pause",
+      "d": "Pause between tests (seconds)"
+    },
+    {
+      "t": "nikto",
+      "f": "-Platform",
+      "d": "Platform of target (nix, win, all)"
+    },
+    {
+      "t": "nikto",
+      "f": "-Plugins",
+      "d": "List of plugins to run (default: ALL)"
+    },
+    {
+      "t": "nikto",
+      "f": "-port",
+      "d": "Port to use (default 80)"
+    },
+    {
+      "t": "nikto",
+      "f": "-root",
+      "d": "Prepend root value to all requests, format is /directory"
+    },
+    {
+      "t": "nikto",
+      "f": "-RSAcert",
+      "d": "Client certificate file"
+    },
+    {
+      "t": "nikto",
+      "f": "-Save",
+      "d": "Save positive responses to this directory ('.' for auto-name)"
+    },
+    {
+      "t": "nikto",
+      "f": "-ssl",
+      "d": "Force ssl mode on port"
+    },
+    {
+      "t": "nikto",
+      "f": "-timeout",
+      "d": "Timeout for requests (default 10 seconds)"
+    },
+    {
+      "t": "nikto",
+      "f": "-Tuning",
+      "d": "Scan tuning:"
+    },
+    {
+      "t": "nikto",
+      "f": "-url",
+      "d": "Target host/URL (alias of -host)"
+    },
+    {
+      "t": "nikto",
+      "f": "-useproxy",
+      "d": "Use the proxy defined in nikto.conf, or argument http://server:port"
+    },
+    {
+      "t": "nikto",
+      "f": "-useragent",
+      "d": "Force User-Agent instead of pulling from database"
+    },
+    {
+      "t": "nikto",
+      "f": "-Userdbs",
+      "d": "Load only user databases, not the standard databases tests Disable only db_tests and load udb_tests"
+    },
+    {
+      "t": "nikto",
+      "f": "-Version",
+      "d": "Print plugin and database versions"
+    },
+    {
+      "t": "nikto",
+      "f": "-vhost",
+      "d": "Virtual host (for Host header)"
     },
     {
       "t": "nmap",
