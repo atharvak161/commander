@@ -86,7 +86,11 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
          a box holding two newlines produced -H '  ', a header made of
          whitespace, with no warning. */
       if (f.repeatable && !String(val).split('\n').some(v => v.trim())) val = '';
-      if (!val) {
+      /* An optional-value flag (wpscan's -e/--enumerate) is complete on its
+         own: the tool supplies a default, so a missing value is NOT an error.
+         Skipping the block below leaves val '' and the normal flow emits the
+         bare token. A typed value is still used. */
+      if (!val && !f.optionalValue) {
         const label = f.binds
           ? ((tool.inputs.find(i => i.id === f.binds) || {}).label || f.binds)
           : 'a value';

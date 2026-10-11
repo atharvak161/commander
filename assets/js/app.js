@@ -5,7 +5,7 @@
    the verifier imports the same module, so the command the tests prove valid
    is byte-for-byte the command shown here. */
 import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
-         buildRecipe, alternativesFor } from './command.js?v=f4c8b6263f';
+         buildRecipe, alternativesFor } from './command.js?v=aa98b59808';
 
 (function () {
   'use strict';
