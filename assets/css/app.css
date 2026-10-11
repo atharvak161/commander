@@ -359,3 +359,10 @@ a.brand:hover{text-decoration:none}
 .shup-w{font-size:12.8px;color:var(--text-dim);line-height:1.55;margin:0 0 10px}
 .shup-t{margin:0;background:var(--bg);border:1px solid var(--border-2);border-radius:6px;padding:10px 12px;overflow-x:auto}
 .shup-t code{font-family:var(--mono);font-size:12.5px;color:var(--accent);white-space:pre-wrap;line-height:1.7}
+
+/* methodology: manual notes and external-tool tags */
+.mnote{display:flex;gap:8px;align-items:flex-start;background:transparent;border:none;padding:4px 0 4px 2px}
+.mnote-i{color:var(--accent-dim);font-weight:700;flex:none;line-height:1.5}
+.mnote-t{font-size:12.8px;color:var(--text-dim);line-height:1.5}
+.mcmd-t.ext{color:var(--text-faint);border:1px solid var(--border-2);border-radius:4px;
+  padding:1px 6px;font-size:10px;letter-spacing:.06em;text-transform:uppercase}

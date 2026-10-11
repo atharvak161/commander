@@ -12,7 +12,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   /* Written by tools/stamp.mjs from a hash of data/. Appended to every data
      fetch so a deploy cannot be served stale JSON from a browser cache. */
-  var ASSET_V = '1ede1b3d5f';
+  var ASSET_V = '586086f647';
   function dataUrl(path) { return ASSET_V ? path + '?v=' + ASSET_V : path; }
 
   var manifest = null;          // data/manifest.json
@@ -603,11 +603,18 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
               (st.warn ? '<div class="mwarn">' + esc(st.warn) + '</div>' : '') +
               st.cmds.map(function (c, ci) {
                 var id = d.id + '-' + i + '-' + Math.random().toString(36).slice(2, 7);
+                /* Three kinds of entry: a command for a tool we built (links to its
+                   page), a command for an external tool (shown, no link, no false
+                   "not built" label), and a manual note (an instruction, no Copy). */
+                if (c.note) {
+                  return '<div class="mcmd mnote"><span class="mnote-i">&rsaquo;</span>' +
+                    '<span class="mnote-t">' + esc(c.text) + '</span></div>';
+                }
                 return '<div class="mcmd">' +
                   '<code>' + esc(c.text) + '</code>' +
                   '<div class="mcmd-a">' +
                     (c.tool ? '<a class="mcmd-t" href="#/' + esc(c.tool) + '">' + esc(c.tool) + ' &rarr;</a>'
-                            : '<span class="mcmd-t none">not yet built</span>') +
+                            : '<span class="mcmd-t ext">external</span>') +
                     '<button class="mcmd-c" data-cmd="' + esc(c.text) + '">Copy</button>' +
                   '</div></div>';
               }).join('') +
