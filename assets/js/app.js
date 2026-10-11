@@ -12,7 +12,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   /* Written by tools/stamp.mjs from a hash of data/. Appended to every data
      fetch so a deploy cannot be served stale JSON from a browser cache. */
-  var ASSET_V = '4b447ff59d';
+  var ASSET_V = 'abdc15b54b';
   function dataUrl(path) { return ASSET_V ? path + '?v=' + ASSET_V : path; }
 
   var manifest = null;          // data/manifest.json
@@ -65,11 +65,12 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     if (parts[0] === 'methodology') return showMethodology(parts[1] || null);
     if (parts[0] === 'shells') return showShells(parts[1] || null);
     if (parts[0] === 'payloads') return showPayloads(parts[1] || null);
+    if (parts[0] === 'cheatsheet') return showCheat(parts[1] || null);
     showTool(decodeURIComponent(parts[0]), parts[1] || null);
   }
 
   /* ---------------- home ---------------- */
-  var NAV = { tools: 'nav-tools', meth: 'nav-meth', shells: 'nav-shells', payloads: 'nav-payloads' };
+  var NAV = { tools: 'nav-tools', meth: 'nav-meth', shells: 'nav-shells', payloads: 'nav-payloads', cheat: 'nav-cheat' };
   function setNav(which) {
     Object.keys(NAV).forEach(function (k) {
       var a = $(NAV[k]);
@@ -90,6 +91,19 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     b.setAttribute('href', href);
   }
 
+
+  /* One place that hides every section view. Each show* calls this, then
+     reveals its own. Prevents the cross-view leaks the ad-hoc per-view hiding
+     kept reintroducing as sections were added. */
+  function hideAllViews() {
+    el.home.hidden = true;
+    el.tool.hidden = true;
+    if (el.meth) el.meth.hidden = true;
+    if (el.shells) el.shells.hidden = true;
+    if (el.payloads) el.payloads.hidden = true;
+    if (el.cheat) el.cheat.hidden = true;
+  }
+
   function showHome() {
     setNav('tools');
     setBack(null);
@@ -99,6 +113,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     if (el.meth) el.meth.hidden = true;
     if (el.shells) el.shells.hidden = true;
     if (el.payloads) el.payloads.hidden = true;
+    if (el.cheat) el.cheat.hidden = true;
     document.title = 'commander';
     if (el.q.value.trim()) return renderSearch(el.q.value.trim());
     renderGrid();
@@ -155,16 +170,13 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
   function showTool(id, tab) {
     if (!manifest) return;
     if (!manifest.tools.some(function (t) { return t.id === id; })) {
-      el.home.hidden = false; el.tool.hidden = true;
+      hideAllViews(); el.home.hidden = false;
       el.cats.hidden = true; el.res.hidden = false;
       setBack('All tools', '#/');
       el.res.innerHTML = '<div class="empty">No tool called &ldquo;' + esc(id) + '&rdquo;.</div>';
       return;
     }
-    el.home.hidden = true;
-    if (el.meth) el.meth.hidden = true;
-    if (el.shells) el.shells.hidden = true;
-    if (el.payloads) el.payloads.hidden = true;
+    hideAllViews();
     setNav('tools');
     el.tool.hidden = false;
     setBack('All tools', '#/');
@@ -329,11 +341,8 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   function showShells(which) {
     tool = null;
-    el.home.hidden = true;
-    el.tool.hidden = true;
-    if (el.meth) el.meth.hidden = true;
+    hideAllViews();
     el.shells.hidden = false;
-    if (el.payloads) el.payloads.hidden = true;
     setNav('shells');
     setBack('All tools', '#/');
     document.title = 'Reverse shells — commander';
@@ -482,9 +491,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
   var PAYLOADS = null;
   function showPayloads(which) {
     tool = null;
-    el.home.hidden = true; el.tool.hidden = true;
-    if (el.meth) el.meth.hidden = true;
-    if (el.shells) el.shells.hidden = true;
+    hideAllViews();
     el.payloads.hidden = false;
     setNav('payloads');
     setBack('All tools', '#/');
@@ -535,6 +542,75 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
     });
   }
 
+
+  /* ---------------- cheatsheet ---------------- */
+  var CHEAT = null;
+  function showCheat(which) {
+    tool = null;
+    el.home.hidden = true; el.tool.hidden = true;
+    if (el.meth) el.meth.hidden = true;
+    if (el.shells) el.shells.hidden = true;
+    if (el.payloads) el.payloads.hidden = true;
+    el.cheat.hidden = false;
+    setNav('cheat');
+    setBack('All tools', '#/');
+    document.title = 'Cheatsheet — commander';
+    if (CHEAT) return renderCheat(which);
+    el.cheat.innerHTML = '<p class="manhint">Loading…</p>';
+    fetch(dataUrl('data/cheatsheet.json'))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { CHEAT = d; renderCheat(which); })
+      .catch(function () { el.cheat.innerHTML = '<div class="empty">Could not load the cheatsheet data.</div>'; });
+  }
+  function renderCheat(which) {
+    var tabs = CHEAT.groups.map(function (g) { return { id: g.id, name: g.name }; });
+    var active = which && tabs.some(function (t) { return t.id === which; }) ? which : tabs[0].id;
+    el.cheat.innerHTML =
+      '<div class="tool-h"><h1>Cheatsheet</h1>' +
+        '<p class="sum">The stages a command builder does not cover: what to check once you have a ' +
+        'shell, and how to move files. Privilege-escalation abuses are from GTFOBins.</p></div>' +
+      '<div class="tabs" role="tablist">' + tabs.map(function (t) {
+        return '<button class="tab" role="tab" data-m="' + esc(t.id) + '" aria-selected="' +
+          (t.id === active) + '">' + esc(t.name) + '</button>';
+      }).join('') + '</div><div id="chpane"></div>';
+    el.cheat.querySelectorAll('.tab').forEach(function (b) {
+      b.addEventListener('click', function () { location.hash = '#/cheatsheet/' + b.dataset.m; });
+    });
+    renderCheatPane(active);
+  }
+  function renderCheatPane(active) {
+    var pane = $('chpane'); if (!pane) return;
+    var g = CHEAT.groups.find(function (x) { return x.id === active; });
+    if (!g) return;
+    pane.innerHTML = g.sections.map(function (sec) {
+      return '<div class="chsec"><h2 class="chsec-h">' + esc(sec.name) + '</h2>' +
+        '<p class="readyhint">' + esc(sec.intro) + '</p>' +
+        (sec.warn ? '<div class="mwarn">' + esc(sec.warn) + '</div>' : '') +
+        '<div class="shgrid">' + sec.items.map(function (it, i) {
+          return '<div class="shp">' +
+            '<div class="shp-h"><button class="shp-c" data-s="' + esc(sec.name) + '" data-i="' + i + '">Copy</button></div>' +
+            '<pre class="shp-t"><code></code></pre>' +
+            '<p class="shp-d">' + esc(it.note) + '</p>' +
+            (it.warn ? '<div class="mwarn">' + esc(it.warn) + '</div>' : '') +
+          '</div>';
+        }).join('') + '</div></div>';
+    }).join('');
+    // fill command text safely and wire copy
+    var secByName = {};
+    g.sections.forEach(function (s) { secByName[s.name] = s; });
+    var blocks = pane.querySelectorAll('.chsec');
+    g.sections.forEach(function (sec, si) {
+      var codes = blocks[si].querySelectorAll('.shp-t code');
+      sec.items.forEach(function (it, i) { if (codes[i]) codes[i].textContent = it.text; });
+    });
+    pane.querySelectorAll('.shp-c').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var sec = secByName[b.dataset.s];
+        copy(sec.items[Number(b.dataset.i)].text, b, 'Copy');
+      });
+    });
+  }
+
   /* ---------------- methodology ---------------- */
   /* Nine published standards, turned into something you can follow. The data
      is data: every command here is one the tools in this catalogue produce,
@@ -543,11 +619,8 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   function showMethodology(which) {
     tool = null;
-    el.home.hidden = true;
-    el.tool.hidden = true;
+    hideAllViews();
     el.meth.hidden = false;
-    if (el.shells) el.shells.hidden = true;
-    if (el.payloads) el.payloads.hidden = true;
     setNav('meth');
     setBack(which ? 'All methodologies' : 'All tools', which ? '#/methodology' : '#/');
     document.title = 'Methodology — commander';
@@ -1090,7 +1163,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   /* ---------------- boot ---------------- */
   document.addEventListener('DOMContentLoaded', function () {
-    el.home = $('home'); el.tool = $('toolview'); el.meth = $('methview'); el.shells = $('shellview'); el.payloads = $('payloadview'); el.cats = $('cats'); el.res = $('results'); el.q = $('q');
+    el.home = $('home'); el.tool = $('toolview'); el.meth = $('methview'); el.shells = $('shellview'); el.payloads = $('payloadview'); el.cheat = $('cheatview'); el.cats = $('cats'); el.res = $('results'); el.q = $('q');
 
     el.q.addEventListener('input', function () {
       var v = this.value.trim();
