@@ -1178,4 +1178,13 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
     window.addEventListener('hashchange', function () { hideTip(); route(); });
   });
+
+  /* Register the service worker so the site works offline after the first
+     visit. Wrapped and silent: a failure here must never affect the page. */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+
 })();

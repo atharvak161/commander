@@ -199,6 +199,7 @@ const ROOT_ALLOWED = new Set([
   'CNAME', '.github', '.githooks', '.gstack', 'assets', 'data', 'tools', 'test', '.git',
   // the house scratch folder for this clone: gitignored, never published
   '_local',
+  'sw.js',
 ]);
 for (const entry of readdirSync('.')) {
   if (!ROOT_ALLOWED.has(entry)) {
