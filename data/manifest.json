@@ -55,6 +55,13 @@
       "category": "traffic",
       "summary": "Wireshark on the command line: capture packets, or read a capture and pull it apart.",
       "flagCount": 76
+    },
+    {
+      "id": "wpscan",
+      "name": "wpscan",
+      "category": "web",
+      "summary": "WordPress security scanner: core, plugin and theme versions, users and known vulnerabilities.",
+      "flagCount": 75
     }
   ],
   "flagIndex": [
@@ -5472,6 +5479,381 @@
       "t": "tshark",
       "f": "-Y, --display-filter",
       "d": "packet displaY filter in Wireshark display filter"
+    },
+    {
+      "t": "wpscan",
+      "f": "--api-token",
+      "d": "The WPScan API Token to display vulnerability data, available at https://wpscan.com/profile"
+    },
+    {
+      "t": "wpscan",
+      "f": "--backup-folders-list",
+      "d": "List of backup folders to use"
+    },
+    {
+      "t": "wpscan",
+      "f": "--banner",
+      "d": "Whether or not to display the banner"
+    },
+    {
+      "t": "wpscan",
+      "f": "--cache-dir",
+      "d": "Default: /root/.cache/wpscan/cache"
+    },
+    {
+      "t": "wpscan",
+      "f": "--cache-ttl",
+      "d": "The cache time to live in seconds"
+    },
+    {
+      "t": "wpscan",
+      "f": "--clear-cache",
+      "d": "Clear the cache before the scan"
+    },
+    {
+      "t": "wpscan",
+      "f": "--config-backups-list",
+      "d": "List of config backups' filenames to use"
+    },
+    {
+      "t": "wpscan",
+      "f": "--connect-timeout",
+      "d": "The connection timeout in seconds"
+    },
+    {
+      "t": "wpscan",
+      "f": "--cookie-jar",
+      "d": "File to read and write cookies"
+    },
+    {
+      "t": "wpscan",
+      "f": "--cookie-string",
+      "d": "Cookie string to use in requests, format: cookie1=value1[; cookie2=value2]"
+    },
+    {
+      "t": "wpscan",
+      "f": "--db-exports-list",
+      "d": "List of DB exports' paths to use"
+    },
+    {
+      "t": "wpscan",
+      "f": "--detection-mode",
+      "d": "Default: mixed"
+    },
+    {
+      "t": "wpscan",
+      "f": "--disable-tls-checks",
+      "d": "Disables SSL/TLS certificate verification, and downgrade to TLS1.0+ (requires cURL 7.66 for the latter)"
+    },
+    {
+      "t": "wpscan",
+      "f": "--enterprise-db-token",
+      "d": "Use a local enterprise vulnerability database dump instead of the WPScan API. The plugins/themes/wordpresses dumps are downloaded from enterprise-data.wpscan.org using this token during the database update, then read locally (no per-finding API calls). Mutually exclusive with --api-token. Can also be set via the WPSCAN_ENTERPRISE_DB_TOKEN environment variable."
+    },
+    {
+      "t": "wpscan",
+      "f": "--enumerate, -e",
+      "d": "Enumeration Process vp Vulnerable plugins ap All plugins p Popular plugins vt Vulnerable themes at All themes t Popular themes tt Timthumbs cb Config backups dbe Db exports bf Backup folders u User IDs range. e.g: u1-5 Range separator to use: '-' Value if no argument supplied: 1-10 m Media IDs range. e.g m1-15 Range separator to use: '-' Value if no argument supplied: 1-100 Value if no argument supplied: vp,vt,tt,cb,dbe,bf,u,m Incompatible choices (only one of each group/s can be used): - vp, ap, p - vt, at, t"
+    },
+    {
+      "t": "wpscan",
+      "f": "--exclude-content-based",
+      "d": "Exclude all responses matching the Regexp (case insensitive) during parts of the enumeration. Both the headers and body are checked. Regexp delimiters are not required."
+    },
+    {
+      "t": "wpscan",
+      "f": "--exclude-usernames",
+      "d": "Exclude usernames matching the Regexp/string (case insensitive). Regexp delimiters are not required."
+    },
+    {
+      "t": "wpscan",
+      "f": "--exclude-vulns",
+      "d": "Comma separated list of vulnerability UUIDs to exclude."
+    },
+    {
+      "t": "wpscan",
+      "f": "--expect-saml",
+      "d": "Expect SAML authentication to be required. When the target redirects to a SAML IdP, an interactive browser is launched for login and the resulting session cookies are reused for the rest of the scan."
+    },
+    {
+      "t": "wpscan",
+      "f": "--follow-redirect",
+      "d": "Automatically update the URL to the destination of the redirect"
+    },
+    {
+      "t": "wpscan",
+      "f": "--force",
+      "d": "Do not check if the target is running WordPress or returns a 403"
+    },
+    {
+      "t": "wpscan",
+      "f": "--format, -f",
+      "d": "Output results in the format supplied"
+    },
+    {
+      "t": "wpscan",
+      "f": "--headers",
+      "d": "Additional headers to append in requests"
+    },
+    {
+      "t": "wpscan",
+      "f": "--help, -h",
+      "d": "Display the simple help and exit"
+    },
+    {
+      "t": "wpscan",
+      "f": "--hh",
+      "d": "Display the full help and exit"
+    },
+    {
+      "t": "wpscan",
+      "f": "--http-auth",
+      "d": "Basic HTTP authentication, beware that the $ character must be properly escaped."
+    },
+    {
+      "t": "wpscan",
+      "f": "--ignore-main-redirect",
+      "d": "Ignore the main redirect (if any) and scan the target url. Has no effect if --follow-redirect is set."
+    },
+    {
+      "t": "wpscan",
+      "f": "--interesting-findings-detection",
+      "d": "Use the supplied mode for the interesting findings detection."
+    },
+    {
+      "t": "wpscan",
+      "f": "--login-uri",
+      "d": "The URI of the login page if different from /wp-login.php"
+    },
+    {
+      "t": "wpscan",
+      "f": "--main-theme-detection",
+      "d": "Use the supplied mode for the Main theme detection, instead of the global (--detection-mode) mode."
+    },
+    {
+      "t": "wpscan",
+      "f": "--max-log-file-size",
+      "d": "Skip inspection of PHP log files (debug.log, error_log, ...) when their advertised or transferred size exceeds this value, in MiB. Guards against memory exhaustion on sites serving huge log files."
+    },
+    {
+      "t": "wpscan",
+      "f": "--max-retries",
+      "d": "Maximum retry attempts for failed requests due to network/proxy errors"
+    },
+    {
+      "t": "wpscan",
+      "f": "--max-scan-duration",
+      "d": "Abort the scan if it exceeds the time provided in seconds"
+    },
+    {
+      "t": "wpscan",
+      "f": "--max-threads, -t",
+      "d": "The max threads to use"
+    },
+    {
+      "t": "wpscan",
+      "f": "--multicall-max-passwords",
+      "d": "Maximum number of passwords to send by request with XMLRPC multicall"
+    },
+    {
+      "t": "wpscan",
+      "f": "--output, -o",
+      "d": "Output to FILE"
+    },
+    {
+      "t": "wpscan",
+      "f": "--password-attack",
+      "d": "Force the supplied attack to be used rather than automatically determining one. Multicall will only work against WP < 4.4"
+    },
+    {
+      "t": "wpscan",
+      "f": "--passwords, -P",
+      "d": "List of passwords to use during the password attack. If no --username/s option supplied, user enumeration will be run."
+    },
+    {
+      "t": "wpscan",
+      "f": "--plugins-detection",
+      "d": "Use the supplied mode to enumerate Plugins."
+    },
+    {
+      "t": "wpscan",
+      "f": "--plugins-list",
+      "d": "List of plugins to enumerate"
+    },
+    {
+      "t": "wpscan",
+      "f": "--plugins-threshold",
+      "d": "Raise an error when the number of detected plugins via known locations reaches the threshold. Set to 0 to ignore the threshold."
+    },
+    {
+      "t": "wpscan",
+      "f": "--plugins-version-all",
+      "d": "Check all the plugins version locations according to the choosen mode (--detection-mode, --plugins-detection and --plugins-version-detection)"
+    },
+    {
+      "t": "wpscan",
+      "f": "--plugins-version-detection",
+      "d": "Use the supplied mode to check plugins' versions."
+    },
+    {
+      "t": "wpscan",
+      "f": "--proxy",
+      "d": "Supported protocols depend on the cURL installed. Note: with socks5://, hostnames are resolved locally before being sent to the proxy; use socks5h:// to have the proxy resolve them (required for .onion addresses when proxying through Tor)."
+    },
+    {
+      "t": "wpscan",
+      "f": "--proxy-auth",
+      "d": "Credentials for the proxy set with --proxy, as login:password."
+    },
+    {
+      "t": "wpscan",
+      "f": "--proxy-target-only",
+      "d": "When used with --proxy, the proxy is only applied to requests made to the target, not to requests made to the WPScan API or database repository (data.wpscan.org). Has no effect unless --proxy is also set."
+    },
+    {
+      "t": "wpscan",
+      "f": "--random-user-agent, --rua",
+      "d": "Use a random user-agent for each scan"
+    },
+    {
+      "t": "wpscan",
+      "f": "--request-timeout",
+      "d": "The request timeout in seconds"
+    },
+    {
+      "t": "wpscan",
+      "f": "--scope",
+      "d": "Comma separated (sub-)domains to consider in scope."
+    },
+    {
+      "t": "wpscan",
+      "f": "--server",
+      "d": "Force the supplied server module to be loaded"
+    },
+    {
+      "t": "wpscan",
+      "f": "--stealthy",
+      "d": "Alias for --random-user-agent --detection-mode passive"
+    },
+    {
+      "t": "wpscan",
+      "f": "--stream",
+      "d": "Emit enumeration findings (plugins/themes/users) as they are discovered, instead of waiting until each enumeration step completes. Has no effect on the json or sarif output formats, which always batch."
+    },
+    {
+      "t": "wpscan",
+      "f": "--themes-detection",
+      "d": "Use the supplied mode to enumerate Themes, instead of the global (--detection-mode) mode."
+    },
+    {
+      "t": "wpscan",
+      "f": "--themes-list",
+      "d": "List of themes to enumerate"
+    },
+    {
+      "t": "wpscan",
+      "f": "--themes-threshold",
+      "d": "Raise an error when the number of detected themes via known locations reaches the threshold. Set to 0 to ignore the threshold."
+    },
+    {
+      "t": "wpscan",
+      "f": "--themes-version-all",
+      "d": "Check all the themes version locations according to the choosen mode (--detection-mode, --themes-detection and --themes-version-detection)"
+    },
+    {
+      "t": "wpscan",
+      "f": "--themes-version-detection",
+      "d": "Use the supplied mode to check themes versions instead of the --detection-mode or --themes-detection modes."
+    },
+    {
+      "t": "wpscan",
+      "f": "--throttle",
+      "d": "Milliseconds to wait before doing another web request. If used, the max threads will be set to 1."
+    },
+    {
+      "t": "wpscan",
+      "f": "--timthumbs-list",
+      "d": "List of timthumbs' location to use"
+    },
+    {
+      "t": "wpscan",
+      "f": "--update",
+      "d": "Whether or not to update the Database"
+    },
+    {
+      "t": "wpscan",
+      "f": "--url",
+      "d": "The URL of the blog to scan Allowed Protocols: http, https Default Protocol if none provided: http This option is mandatory unless update or help or hh or version is/are supplied"
+    },
+    {
+      "t": "wpscan",
+      "f": "--user-agent, --ua",
+      "d": "The User-Agent string to send with each request."
+    },
+    {
+      "t": "wpscan",
+      "f": "--user-agents-list",
+      "d": "List of agents to use with --random-user-agent"
+    },
+    {
+      "t": "wpscan",
+      "f": "--usernames, -U",
+      "d": "List of usernames to use during the password attack."
+    },
+    {
+      "t": "wpscan",
+      "f": "--users-detection",
+      "d": "Use the supplied mode to enumerate Users, instead of the global (--detection-mode) mode."
+    },
+    {
+      "t": "wpscan",
+      "f": "--users-list",
+      "d": "List of users to check during the users enumeration from the Login Error Messages"
+    },
+    {
+      "t": "wpscan",
+      "f": "--verbose, -v",
+      "d": "Verbose mode"
+    },
+    {
+      "t": "wpscan",
+      "f": "--version",
+      "d": "Display the version and exit"
+    },
+    {
+      "t": "wpscan",
+      "f": "--vhost",
+      "d": "The virtual host (Host header) to use in requests"
+    },
+    {
+      "t": "wpscan",
+      "f": "--wordlist-skip",
+      "d": "Skip the first N passwords in the wordlist (resume from line N+1)"
+    },
+    {
+      "t": "wpscan",
+      "f": "--wp-auth",
+      "d": "WordPress admin credentials used to query the REST API for an authoritative inventory of installed plugins and themes (/wp-json/wp/v2/plugins and /themes). When provided, plugin/theme enumeration via -e is bypassed. The password MUST be a WordPress Application Password (WP >= 5.6, created at Users -> Profile -> Application Passwords). Real account passwords are rejected by WordPress core over Basic Auth."
+    },
+    {
+      "t": "wpscan",
+      "f": "--wp-content-dir",
+      "d": "The wp-content directory if custom or not detected, such as \"wp-content\""
+    },
+    {
+      "t": "wpscan",
+      "f": "--wp-plugins-dir",
+      "d": "The plugins directory if custom or not detected, such as \"wp-content/plugins\""
+    },
+    {
+      "t": "wpscan",
+      "f": "--wp-version-all",
+      "d": "Check all the version locations"
+    },
+    {
+      "t": "wpscan",
+      "f": "--wp-version-detection",
+      "d": "Use the supplied mode for the WordPress version detection, instead of the global (--detection-mode) mode."
     }
   ]
 }

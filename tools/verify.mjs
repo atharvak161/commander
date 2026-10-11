@@ -96,7 +96,7 @@ if (CONTAINERED) {
 /* Target-bearing flags that must never be given a scannable value: nikto's
    -host/-url would make it scan. Tested with no value, nikto answers "requires
    an argument", which proves the flag is real without touching the network. */
-const WITHHELD = { nikto: new Set(['host', 'url']) };
+const WITHHELD = { nikto: new Set(['host', 'url']), wpscan: new Set(['url']) };
 
 const SAMPLE = {
   none: null, string: 'x', int: '1', path: SAMPLE_FILE,
@@ -170,6 +170,10 @@ const SIDE_EFFECTS_ONLY = new Set([
      update-related options touch files or the network. Membership for all is
      proved by the declaration; none needs to actually run. */
   'check6', 'dbcheck', 'update',
+  /* wpscan: --update downloads the vuln database; --api-token and
+     --enterprise-db-token make API calls; --expect-saml launches a browser.
+     None may run live; membership is proved by the declaration. */
+  'api-token', 'enterprise-db-token', 'expect-saml',
   /* docker: flags that would make the daemon act even with the positional
      withheld, or that wait for input. */
   'detach-keys', 'sig-proxy',

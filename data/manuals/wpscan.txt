@@ -1,0 +1,161 @@
+_______________________________________________________________
+         __          _______   _____
+         \ \        / /  __ \ / ____|
+          \ \  /\  / /| |__) | (___   ___  __ _ _ __ ®
+           \ \/  \/ / |  ___/ \___ \ / __|/ _` | '_ \
+            \  /\  /  | |     ____) | (__| (_| | | | |
+             \/  \/   |_|    |_____/ \___|\__,_|_| |_|
+
+                  WordPress Security Scanner
+                         Version 4.1.0
+                    An Automattic endeavor
+                    https://automattic.com
+_______________________________________________________________
+
+Usage: wpscan [options]
+        --url URL                                 The URL of the blog to scan
+                                                  Allowed Protocols: http, https
+                                                  Default Protocol if none provided: http
+                                                  This option is mandatory unless update or help or hh or version is/are supplied
+    -h, --help                                    Display the simple help and exit
+        --hh                                      Display the full help and exit
+        --version                                 Display the version and exit
+        --ignore-main-redirect                    Ignore the main redirect (if any) and scan the target url. Has no effect if --follow-redirect is set.
+        --follow-redirect                         Automatically update the URL to the destination of the redirect
+    -v, --verbose                                 Verbose mode
+        --[no-]banner                             Whether or not to display the banner
+                                                  Default: true
+        --max-scan-duration SECONDS               Abort the scan if it exceeds the time provided in seconds
+        --max-log-file-size MiB                   Skip inspection of PHP log files (debug.log, error_log, ...) when their advertised or transferred size exceeds this value, in MiB. Guards against memory exhaustion on sites serving huge log files.
+                                                  Default: 20
+    -o, --output FILE                             Output to FILE
+    -f, --format FORMAT                           Output results in the format supplied
+                                                  Available choices: cli-no-color, json, jsonl, cli, sarif, cli-no-colour
+        --[no-]stream                             Emit enumeration findings (plugins/themes/users) as they are discovered, instead of waiting until each enumeration step completes. Has no effect on the json or sarif output formats, which always batch.
+                                                  Default: true
+        --detection-mode MODE                     Default: mixed
+                                                  Available choices: mixed, passive, aggressive
+        --scope DOMAINS                           Comma separated (sub-)domains to consider in scope. 
+                                                  Wildcard(s) allowed in the trd of valid domains, e.g: *.target.tld
+                                                  Separator to use between the values: ','
+        --exclude-vulns UUIDs                     Comma separated list of vulnerability UUIDs to exclude. 
+                                                  Format: UUID (e.g: c099c1da-3750-4e63-8af9-929e773bbe57)
+                                                  Separator to use between the values: ','
+        --user-agent, --ua VALUE
+        --headers HEADERS                         Additional headers to append in requests
+                                                  Separator to use between the headers: '; '
+                                                  Examples: 'X-Forwarded-For: 127.0.0.1', 'X-Forwarded-For: 127.0.0.1; Another: aaa'
+        --vhost VALUE                             The virtual host (Host header) to use in requests
+        --random-user-agent, --rua                Use a random user-agent for each scan
+        --user-agents-list FILE-PATH              List of agents to use with --random-user-agent
+                                                  Default: /usr/share/rubygems-integration/all/gems/wpscan-4.1.0/app/user_agents.txt
+        --http-auth login:password                Basic HTTP authentication, beware that the $ character must be properly escaped.
+        --wp-auth login:password                  WordPress admin credentials used to query the REST API for an authoritative inventory of installed plugins and themes (/wp-json/wp/v2/plugins and /themes). When provided, plugin/theme enumeration via -e is bypassed. The password MUST be a WordPress Application Password (WP >= 5.6, created at Users -> Profile -> Application Passwords). Real account passwords are rejected by WordPress core over Basic Auth.
+    -t, --max-threads VALUE                       The max threads to use
+                                                  Default: 5
+        --throttle MilliSeconds                   Milliseconds to wait before doing another web request. If used, the max threads will be set to 1.
+        --request-timeout SECONDS                 The request timeout in seconds
+                                                  Default: 60
+        --connect-timeout SECONDS                 The connection timeout in seconds
+                                                  Default: 30
+        --disable-tls-checks                      Disables SSL/TLS certificate verification, and downgrade to TLS1.0+ (requires cURL 7.66 for the latter)
+        --proxy protocol://IP:port                Supported protocols depend on the cURL installed. Note: with socks5://, hostnames are resolved locally before being sent to the proxy; use socks5h:// to have the proxy resolve them (required for .onion addresses when proxying through Tor).
+        --proxy-auth login:password
+        --cookie-string COOKIE                    Cookie string to use in requests, format: cookie1=value1[; cookie2=value2]
+        --cookie-jar FILE-PATH                    File to read and write cookies
+                                                  Default: /root/.cache/wpscan/cookie_jar.txt
+        --expect-saml                             Expect SAML authentication to be required. When the target redirects to a SAML IdP, an interactive browser is launched for login and the resulting session cookies are reused for the rest of the scan.
+        --cache-ttl TIME_TO_LIVE                  The cache time to live in seconds
+                                                  Default: 600
+        --clear-cache                             Clear the cache before the scan
+        --cache-dir PATH                          Default: /root/.cache/wpscan/cache
+        --server SERVER                           Force the supplied server module to be loaded
+                                                  Available choices: apache, iis, nginx
+        --force                                   Do not check if the target is running WordPress or returns a 403
+        --[no-]update                             Whether or not to update the Database
+        --api-token TOKEN                         The WPScan API Token to display vulnerability data, available at https://wpscan.com/profile
+        --enterprise-db-token TOKEN               Use a local enterprise vulnerability database dump instead of the WPScan API. The plugins/themes/wordpresses dumps are downloaded from enterprise-data.wpscan.org using this token during the database update, then read locally (no per-finding API calls). Mutually exclusive with --api-token. Can also be set via the WPSCAN_ENTERPRISE_DB_TOKEN environment variable.
+        --proxy-target-only                       When used with --proxy, the proxy is only applied to requests made to the target, not to requests made to the WPScan API or database repository (data.wpscan.org). Has no effect unless --proxy is also set.
+        --wp-content-dir DIR                      The wp-content directory if custom or not detected, such as "wp-content"
+        --wp-plugins-dir DIR                      The plugins directory if custom or not detected, such as "wp-content/plugins"
+        --interesting-findings-detection MODE     Use the supplied mode for the interesting findings detection. 
+                                                  Available choices: mixed, passive, aggressive
+        --wp-version-all                          Check all the version locations
+        --wp-version-detection MODE               Use the supplied mode for the WordPress version detection, instead of the global (--detection-mode) mode.
+                                                  Available choices: mixed, passive, aggressive
+        --main-theme-detection MODE               Use the supplied mode for the Main theme detection, instead of the global (--detection-mode) mode.
+                                                  Available choices: mixed, passive, aggressive
+    -e, --enumerate [OPTS]                        Enumeration Process
+                                                  Note: --plugins-list overrides vp/ap/p; --themes-list overrides vt/at/t.
+                                                  Available Choices:
+                                                   vp   Vulnerable plugins
+                                                   ap   All plugins
+                                                   p    Popular plugins
+                                                   vt   Vulnerable themes
+                                                   at   All themes
+                                                   t    Popular themes
+                                                   tt   Timthumbs
+                                                   cb   Config backups
+                                                   dbe  Db exports
+                                                   bf   Backup folders
+                                                   u    User IDs range. e.g: u1-5
+                                                        Range separator to use: '-'
+                                                        Value if no argument supplied: 1-10
+                                                   m    Media IDs range. e.g m1-15
+                                                        Note: Permalink setting must be set to "Plain" for those to be detected
+                                                        Range separator to use: '-'
+                                                        Value if no argument supplied: 1-100
+                                                  Separator to use between the values: ','
+                                                  Value if no argument supplied: vp,vt,tt,cb,dbe,bf,u,m
+                                                  Incompatible choices (only one of each group/s can be used):
+                                                   - vp, ap, p
+                                                   - vt, at, t
+        --exclude-content-based REGEXP_OR_STRING  Exclude all responses matching the Regexp (case insensitive) during parts of the enumeration.
+                                                  Both the headers and body are checked. Regexp delimiters are not required.
+        --plugins-list LIST                       List of plugins to enumerate
+                                                  Examples: 'a1', 'a1,a2,a3', '/tmp/a.txt'
+        --plugins-detection MODE                  Use the supplied mode to enumerate Plugins.
+                                                  Available choices: mixed, passive, aggressive
+        --plugins-version-all                     Check all the plugins version locations according to the choosen mode (--detection-mode, --plugins-detection and --plugins-version-detection)
+        --plugins-version-detection MODE          Use the supplied mode to check plugins' versions.
+                                                  Available choices: mixed, passive, aggressive
+        --plugins-threshold THRESHOLD             Raise an error when the number of detected plugins via known locations reaches the threshold. Set to 0 to ignore the threshold.
+                                                  Default: 100
+        --themes-list LIST                        List of themes to enumerate
+                                                  Examples: 'a1', 'a1,a2,a3', '/tmp/a.txt'
+        --themes-detection MODE                   Use the supplied mode to enumerate Themes, instead of the global (--detection-mode) mode.
+                                                  Available choices: mixed, passive, aggressive
+        --themes-version-all                      Check all the themes version locations according to the choosen mode (--detection-mode, --themes-detection and --themes-version-detection)
+        --themes-version-detection MODE           Use the supplied mode to check themes versions instead of the --detection-mode or --themes-detection modes.
+                                                  Available choices: mixed, passive, aggressive
+        --themes-threshold THRESHOLD              Raise an error when the number of detected themes via known locations reaches the threshold. Set to 0 to ignore the threshold.
+                                                  Default: 20
+        --timthumbs-list FILE-PATH                List of timthumbs' location to use
+                                                  Default: /root/.cache/wpscan/db/timthumbs-v3.txt
+        --config-backups-list FILE-PATH           List of config backups' filenames to use
+                                                  Default: /root/.cache/wpscan/db/config_backups.txt
+        --db-exports-list FILE-PATH               List of DB exports' paths to use
+                                                  Default: /root/.cache/wpscan/db/db_exports.txt
+        --backup-folders-list FILE-PATH           List of backup folders to use
+                                                  Default: /root/.cache/wpscan/db/backup_folders.txt
+        --users-list LIST                         List of users to check during the users enumeration from the Login Error Messages
+                                                  Examples: 'a1', 'a1,a2,a3', '/tmp/a.txt'
+        --users-detection MODE                    Use the supplied mode to enumerate Users, instead of the global (--detection-mode) mode.
+                                                  Available choices: mixed, passive, aggressive
+        --exclude-usernames REGEXP_OR_STRING      Exclude usernames matching the Regexp/string (case insensitive). Regexp delimiters are not required.
+    -P, --passwords FILE-PATH                     List of passwords to use during the password attack.
+                                                  If no --username/s option supplied, user enumeration will be run.
+    -U, --usernames LIST                          List of usernames to use during the password attack.
+                                                  Examples: 'a1', 'a1,a2,a3', '/tmp/a.txt'
+        --multicall-max-passwords MAX_PWD         Maximum number of passwords to send by request with XMLRPC multicall
+                                                  Default: 500
+        --password-attack ATTACK                  Force the supplied attack to be used rather than automatically determining one.
+                                                  Multicall will only work against WP < 4.4
+                                                  Available choices: wp-login, xmlrpc, xmlrpc-multicall
+        --login-uri URI                           The URI of the login page if different from /wp-login.php
+        --wordlist-skip N                         Skip the first N passwords in the wordlist (resume from line N+1)
+                                                  Default: 0
+        --max-retries N                           Maximum retry attempts for failed requests due to network/proxy errors
+                                                  Default: 0
+        --stealthy                                Alias for --random-user-agent --detection-mode passive
+
