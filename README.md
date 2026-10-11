@@ -3,8 +3,10 @@
 **Pick flags from buttons. Get a command you can paste. Read it back with every
 piece explained.**
 
-A static, client-side reference and command builder for tools that run in a
-terminal — offensive, defensive, and plain system administration.
+A static, client-side pentest reference: a command builder for nine terminal
+tools, a methodology guide from framework to command, reverse and bind shells,
+web payloads, operator cheat sheets, and an engagement scratchpad. Offensive,
+defensive, and plain system administration.
 
 Live at <https://atharvaxsecurity.com/commander/>
 
@@ -24,26 +26,36 @@ security model.
 
 ## Status
 
-**ffuf, nmap, sqlmap, gobuster, curl and tshark are live**, 881 flags and 78 ready-made commands.
+**Nine tools live** — ffuf, nmap, sqlmap, gobuster, curl, tshark, docker, nikto
+and wpscan — 1,083 flags and 109 ready-made commands, every flag put to the real
+binary. Plus five more sections beyond the builder.
 
-| Piece | State |
+| Section | State |
 |---|---|
-| Schema | done — `data/SCHEMA.md` |
-| Checker | done — `tools/check.mjs` |
-| Verifier | done — `tools/verify.mjs`, parallel, every mode |
-| Quoting round-trip | done — `test/quoting.mjs` |
-| Enum proof | done — `test/enums.mjs` |
-| Placeholder guard | done — `test/placeholders.mjs` |
-| Relationships | done — `test/relationships.mjs` |
-| Repeatable flags | done — `test/repeatable.mjs` |
-| Coverage gate | done — `tools/coverage.mjs` |
-| ffuf | done — 78 flags, 6 enums, 5 repeatables |
-| nmap | done — 140 flags from help+man, every one put to the binary |
-| sqlmap | done — 271 flags read from sqlmap's own option objects |
-| gobuster | done — 59 flags across 7 modes, with per-mode overrides |
-| curl | done — 257 flags, 27 repeatable, read from help + man |
-| tshark | done — 76 flags, probed without ever opening an interface |
-| Interface | done — picker, slots, command bar, explainer |
+| Tools | nine, below |
+| Methodology | 6 disciplines, 39 phases, 162 commands, 12 frameworks — from OWASP WSTG/MASVS, PTES, NIST, OSSTMM, CSA CCM, PCI DSS |
+| Shells | 87 reverse/bind/web/Windows payloads, 14 listeners, TTY upgrade — GTFOBins-sourced, 47 run against a real listener |
+| Payloads | 42 web injection vectors — WSTG and PayloadsAllTheThings |
+| Cheatsheet | Linux/Windows privesc (GTFOBins), file transfer, ports |
+| Notes | markdown scratchpad + automatic command log, exportable |
+| Context bar | typed: set host/wordlist/LHOST/LPORT once, fills the tools |
+| Offline | service worker — works with no network |
+
+| Tool | Flags | Read from |
+|---|---|---|
+| ffuf | 78 | help |
+| nmap | 140 | help + man + probe |
+| sqlmap | 271 | its own option objects |
+| gobuster | 59 | help, 7 modes |
+| curl | 257 | help + man |
+| tshark | 76 | help + man, no interface opened |
+| docker | 155 | help, 33 subcommands |
+| nikto | 47 | Kali container help |
+| wpscan | 75 | Kali container help |
+
+Tools read from the Kali container (nikto, wpscan) run through `tools/kali.sh`,
+which keeps a `kalilinux/kali-rolling` container; the extractor and the verifier
+both reach the binary with `docker exec`.
 
 ## How the data is trusted
 
