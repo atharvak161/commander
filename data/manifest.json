@@ -8,6 +8,13 @@
       "flagCount": 257
     },
     {
+      "id": "dnsrecon",
+      "name": "dnsrecon",
+      "category": "network",
+      "summary": "DNS enumeration: records, zone transfers, brute force, reverse lookups and DNSSEC.",
+      "flagCount": 33
+    },
+    {
       "id": "docker",
       "name": "docker",
       "category": "containers",
@@ -1356,6 +1363,171 @@
       "t": "curl",
       "f": "--xattr",
       "d": "Store metadata in extended file attributes"
+    },
+    {
+      "t": "dnsrecon",
+      "f": "-a",
+      "d": "Perform AXFR with standard enumeration."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "-b",
+      "d": "Perform Bing enumeration with standard enumeration."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--csv, -c",
+      "d": "Save output to a comma separated value file."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--db",
+      "d": "SQLite 3 file to save found records."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--dictionary, -D",
+      "d": "Dictionary file of subdomain and hostnames to use for brute force."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--disable_check_bindversion",
+      "d": "Disables check for BIND version on name servers"
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--disable_check_nxdomain",
+      "d": "Disables check for NXDOMAIN hijacking on name servers."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--disable_check_recursion",
+      "d": "Disables check for recursion on name servers"
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--disable_recurs",
+      "d": "Disable recursion desired flag in queries."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--domain, -d",
+      "d": "Target domain."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "-f",
+      "d": "Filter out of brute force domain lookup, records that resolve to the wildcard defined IP address when saving records."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--help, -h",
+      "d": "show this help message and exit"
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--input-list, -iL",
+      "d": "File containing a list of domains to perform DNS enumeration on, one per line."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--iw",
+      "d": "Continue brute forcing a domain even if a wildcard record is discovered."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--json, -j",
+      "d": "save output to a JSON file."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "-k",
+      "d": "Perform crt.sh enumeration with standard enumeration."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--lifetime",
+      "d": "Time to wait for a server to respond to a query. default is 3.0"
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--loglevel",
+      "d": "Log level to use. default is INFO"
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--name_server, -n",
+      "d": "Domain server to use. If none is given, the SOA of the target will be used. Multiple servers can be specified using a comma separated list."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--range, -r",
+      "d": "IP range for reverse lookup brute force in formats (first-last) or in (range/bitmask)."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "-s",
+      "d": "Perform a reverse lookup of IPv4 ranges in the SPF record with standard enumeration."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--shodan",
+      "d": "Use Shodan to query netblocks discovered via SPF (-s) and/or Whois (-w) during standard enumeration."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--shodan-active",
+      "d": "Actively validate Shodan-discovered names by resolving them and confirming they still match the queried netblock."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--shodan-key",
+      "d": "Shodan API key. If omitted, SHODAN_API_KEY environment variable is used."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--tcp",
+      "d": "Use TCP protocol to make queries."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--threads",
+      "d": "Number of threads to use in reverse lookups, forward lookups, brute force and SRV record enumeration."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--type, -t",
+      "d": "Type of enumeration to perform. Possible types: std: SOA, NS, A, AAAA, MX and SRV. rvl: Reverse lookup of a given CIDR or IP range. brt: Brute force domains and hosts using a given dictionary. srv: SRV records. axfr: Test all NS servers for a zone transfer. bing: Perform Bing search for subdomains and hosts. yand: Perform Yandex search for subdomains and hosts. crt: Perform crt.sh search for subdomains and hosts. caa: CAA records. snoop: Perform cache snooping against all NS servers for a given domain, testing all with file containing the domains, file given with -D option."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--verbose, -v",
+      "d": "Enable verbosity"
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--version, -V",
+      "d": "DNSrecon version"
+    },
+    {
+      "t": "dnsrecon",
+      "f": "-w",
+      "d": "Perform deep whois record analysis and reverse lookup of IP ranges found through Whois when doing a standard enumeration."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "--xml, -x",
+      "d": "XML file to save found records."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "-y",
+      "d": "Perform Yandex enumeration with standard enumeration."
+    },
+    {
+      "t": "dnsrecon",
+      "f": "-z",
+      "d": "Performs a DNSSEC zone walk with standard enumeration."
     },
     {
       "t": "docker",

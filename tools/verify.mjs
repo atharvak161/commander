@@ -96,7 +96,7 @@ if (CONTAINERED) {
 /* Target-bearing flags that must never be given a scannable value: nikto's
    -host/-url would make it scan. Tested with no value, nikto answers "requires
    an argument", which proves the flag is real without touching the network. */
-const WITHHELD = { nikto: new Set(['host', 'url']), wpscan: new Set(['url']) };
+const WITHHELD = { nikto: new Set(['host', 'url']), wpscan: new Set(['url']), whatweb: new Set(), dnsrecon: new Set(['domain']) };
 
 const SAMPLE = {
   none: null, string: 'x', int: '1', path: SAMPLE_FILE,
@@ -110,7 +110,13 @@ const AWKWARD = ['a b', "it's", 'a$b', 'a\\b', 'a"b', 'a;b'];
    curl puts the words the other way round — "option --x: is unknown" — and
    matching only "unknown option" meant curl's rejections were never detected
    at all: its verification passed because nothing could ever fail. */
-const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized option|invalid option|not defined:|no such option/i;
+/* Python argparse says "unrecognized arguments: --x" and "invalid choice",
+   Ruby OptionParser "invalid option", Go "flag provided but not defined". A
+   tool whose rejection wording is missing here cannot fail verification — the
+   curl bug, where "option --x: is unknown" matched nothing and every probe
+   passed by default. Every new tool's exact rejection wording is confirmed
+   against the binary before it ships. */
+const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized (?:option|argument)|invalid (?:option|choice)|not defined:|no such option|Scan Aborted: invalid option/i;
 
 function valueFor(f) {
   if (f.takes === 'none') return null;
@@ -174,6 +180,10 @@ const SIDE_EFFECTS_ONLY = new Set([
      --enterprise-db-token make API calls; --expect-saml launches a browser.
      None may run live; membership is proved by the declaration. */
   'api-token', 'enterprise-db-token', 'expect-saml',
+  /* dnsrecon: -b Bing, -y Yandex, -k crt.sh, --shodan/--shodan-active and -w
+     whois all reach external services. Membership is proved by the
+     declaration and the singles pass; none runs live. */
+  'b', 'y', 'k', 'shodan', 'shodan-active', 'w',
   /* docker: flags that would make the daemon act even with the positional
      withheld, or that wait for input. */
   'detach-keys', 'sig-proxy',

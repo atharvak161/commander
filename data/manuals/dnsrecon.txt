@@ -1,0 +1,67 @@
+usage: dnsrecon [-h] [-d DOMAIN] [-iL INPUT_LIST] [-n NS_SERVER] [-r RANGE]
+                [-D DICTIONARY] [-f] [-a] [-s] [-b] [-y] [-k] [-w] [--shodan]
+                [--shodan-active] [--shodan-key SHODAN_KEY] [-z]
+                [--threads THREADS] [--lifetime LIFETIME]
+                [--loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--tcp]
+                [--db DB] [-x XML] [-c CSV] [-j JSON] [--iw]
+                [--disable_check_nxdomain] [--disable_check_recursion]
+                [--disable_recurs] [--disable_check_bindversion] [-V] [-v]
+                [-t TYPE]
+
+options:
+  -h, --help            show this help message and exit
+  -d, --domain DOMAIN   Target domain.
+  -iL, --input-list INPUT_LIST
+                        File containing a list of domains to perform DNS enumeration on, one per line.
+  -n, --name_server NS_SERVER
+                        Domain server to use. If none is given, the SOA of the target will be used. Multiple servers can be specified using a comma separated list.
+  -r, --range RANGE     IP range for reverse lookup brute force in formats (first-last) or in (range/bitmask).
+  -D, --dictionary DICTIONARY
+                        Dictionary file of subdomain and hostnames to use for brute force.
+  -f                    Filter out of brute force domain lookup, records that resolve to the wildcard defined IP address when saving records.
+  -a                    Perform AXFR with standard enumeration.
+  -s                    Perform a reverse lookup of IPv4 ranges in the SPF record with standard enumeration.
+  -b                    Perform Bing enumeration with standard enumeration.
+  -y                    Perform Yandex enumeration with standard enumeration.
+  -k                    Perform crt.sh enumeration with standard enumeration.
+  -w                    Perform deep whois record analysis and reverse lookup of IP ranges found through Whois when doing a standard enumeration.
+  --shodan              Use Shodan to query netblocks discovered via SPF (-s) and/or Whois (-w) during standard enumeration.
+  --shodan-active       Actively validate Shodan-discovered names by resolving them and confirming they still match the queried netblock.
+  --shodan-key SHODAN_KEY
+                        Shodan API key. If omitted, SHODAN_API_KEY environment variable is used.
+  -z                    Performs a DNSSEC zone walk with standard enumeration.
+  --threads THREADS     Number of threads to use in reverse lookups, forward lookups, brute force and SRV record enumeration.
+  --lifetime LIFETIME   Time to wait for a server to respond to a query. default is 3.0
+  --loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Log level to use. default is INFO
+  --tcp                 Use TCP protocol to make queries.
+  --db DB               SQLite 3 file to save found records.
+  -x, --xml XML         XML file to save found records.
+  -c, --csv CSV         Save output to a comma separated value file.
+  -j, --json JSON       save output to a JSON file.
+  --iw                  Continue brute forcing a domain even if a wildcard record is discovered.
+  --disable_check_nxdomain
+                        Disables check for NXDOMAIN hijacking on name servers.
+  --disable_check_recursion
+                        Disables check for recursion on name servers
+  --disable_recurs      Disable recursion desired flag in queries.
+  --disable_check_bindversion
+                        Disables check for BIND version on name servers
+  -V, --version         DNSrecon version
+  -v, --verbose         Enable verbosity
+  -t, --type TYPE       Type of enumeration to perform.
+                        Possible types:
+                            std:      SOA, NS, A, AAAA, MX and SRV.
+                            rvl:      Reverse lookup of a given CIDR or IP range.
+                            brt:      Brute force domains and hosts using a given dictionary.
+                            srv:      SRV records.
+                            axfr:     Test all NS servers for a zone transfer.
+                            bing:     Perform Bing search for subdomains and hosts.
+                            yand:     Perform Yandex search for subdomains and hosts.
+                            crt:      Perform crt.sh search for subdomains and hosts.
+                            caa:      CAA records.
+                            snoop:    Perform cache snooping against all NS servers for a given domain, testing
+                                      all with file containing the domains, file given with -D option.
+                        
+                            tld:      Remove the TLD of given domain and test against all TLDs registered in IANA.
+                            zonewalk: Perform a DNSSEC zone walk using NSEC records.
