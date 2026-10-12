@@ -57,6 +57,13 @@
       "flagCount": 76
     },
     {
+      "id": "whatweb",
+      "name": "whatweb",
+      "category": "web",
+      "summary": "Web technology fingerprinter: servers, frameworks, CMSes, libraries and versions.",
+      "flagCount": 52
+    },
+    {
       "id": "wpscan",
       "name": "wpscan",
       "category": "web",
@@ -5479,6 +5486,266 @@
       "t": "tshark",
       "f": "-Y, --display-filter",
       "d": "packet displaY filter in Wireshark display filter"
+    },
+    {
+      "t": "whatweb",
+      "f": "--aggression, -a",
+      "d": "Set the aggression level. Default: 1."
+    },
+    {
+      "t": "whatweb",
+      "f": "--colour, --color",
+      "d": "control whether colour is used. WHEN may be `never', `always', or `auto'."
+    },
+    {
+      "t": "whatweb",
+      "f": "--cookie, -c",
+      "d": "Use cookies, e.g. 'name=value; name2=value2'."
+    },
+    {
+      "t": "whatweb",
+      "f": "--cookie-jar",
+      "d": "Read cookies from a file and save cookies to the same file. Creates the file if it doesn't exist."
+    },
+    {
+      "t": "whatweb",
+      "f": "--custom-plugin",
+      "d": "Define a custom plugin named Custom-Plugin, Examples: \":text=>'powered by abc'\" \":version=>/powered[ ]?by ab[0-9]/\" \":ghdb=>'intitle:abc \\\"powered by abc\\\"'\" \":md5=>'8666257030b94d3bdb46e05945f60b42'\" \"{:text=>'powered by abc'}\""
+    },
+    {
+      "t": "whatweb",
+      "f": "--debug",
+      "d": "Raise errors in plugins."
+    },
+    {
+      "t": "whatweb",
+      "f": "--dorks",
+      "d": "List Google dorks for the selected plugin."
+    },
+    {
+      "t": "whatweb",
+      "f": "--follow-redirect",
+      "d": "Control when to follow redirects. WHEN may be `never', `http-only', `meta-only', `same-site', or `always'. Default: always."
+    },
+    {
+      "t": "whatweb",
+      "f": "--grep, -g",
+      "d": "Search for STRING or a Regular Expression. Shows only the results that match. Examples: --grep \"hello\""
+    },
+    {
+      "t": "whatweb",
+      "f": "--header, -H",
+      "d": "Add an HTTP header. eg \"Foo:Bar\". Specifying a default header will replace it. Specifying an empty value, e.g. \"User-Agent:\" will remove it."
+    },
+    {
+      "t": "whatweb",
+      "f": "--help, -h",
+      "d": "Complete usage help."
+    },
+    {
+      "t": "whatweb",
+      "f": "--info-plugins, -I",
+      "d": "List all plugins with detailed information. Optionally search with keywords in a comma delimited list."
+    },
+    {
+      "t": "whatweb",
+      "f": "--input-file, -i",
+      "d": "Read targets from a file. You can pipe hostnames or URLs directly with -i /dev/stdin."
+    },
+    {
+      "t": "whatweb",
+      "f": "--list-plugins, -l",
+      "d": "List all plugins."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-brief",
+      "d": "Log brief, one-line output."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-elastic-host",
+      "d": "Host:port of the elastic http interface. Default: 127.0.0.1:9200"
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-elastic-index",
+      "d": "Name of the index to store results. Default: whatweb"
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-errors",
+      "d": "Log errors."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-json",
+      "d": "Log JSON format."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-json-verbose",
+      "d": "Log JSON Verbose format."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-magictree",
+      "d": "Log MagicTree XML format."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-mongo-collection",
+      "d": "Name of the MongoDB collection. Default: whatweb."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-mongo-database",
+      "d": "Name of the MongoDB database."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-mongo-host",
+      "d": "MongoDB hostname or IP address. Default: 0.0.0.0."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-mongo-password",
+      "d": "MongoDB password. Default: nil."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-mongo-username",
+      "d": "MongoDB username. Default: nil."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-object",
+      "d": "Log Ruby object inspection format."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-sql",
+      "d": "Log SQL INSERT statements."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-sql-create",
+      "d": "Create SQL database tables."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-verbose",
+      "d": "Log verbose output."
+    },
+    {
+      "t": "whatweb",
+      "f": "--log-xml",
+      "d": "Log XML format."
+    },
+    {
+      "t": "whatweb",
+      "f": "--max-redirects",
+      "d": "Maximum number of redirects. Default: 10."
+    },
+    {
+      "t": "whatweb",
+      "f": "--max-threads, -t",
+      "d": "Number of simultaneous threads. Default: 25."
+    },
+    {
+      "t": "whatweb",
+      "f": "--no-cookies",
+      "d": "Disable automatic cookie handling (improves performance with high thread counts)."
+    },
+    {
+      "t": "whatweb",
+      "f": "--no-errors",
+      "d": "Suppress error messages."
+    },
+    {
+      "t": "whatweb",
+      "f": "--open-timeout",
+      "d": "Time in seconds. Default: 15."
+    },
+    {
+      "t": "whatweb",
+      "f": "--output-buffer-size",
+      "d": "Set output buffer size. 0=unbuffered, default=auto based on thread count."
+    },
+    {
+      "t": "whatweb",
+      "f": "--output-sync",
+      "d": "Force immediate output flushing for real-time monitoring (slower with high thread counts)."
+    },
+    {
+      "t": "whatweb",
+      "f": "--plugins, -p",
+      "d": "Select plugins. LIST is a comma delimited set of selected plugins. Default is all. Each element can be a directory, file or plugin name and can optionally have a modifier, +/-. Examples: +/tmp/moo.rb,+/tmp/foo.rb title,md5,+./plugins-disabled/ ./plugins-disabled,-md5 -p + is a shortcut for -p +plugins-disabled."
+    },
+    {
+      "t": "whatweb",
+      "f": "--proxy",
+      "d": "<hostname[:port]> Set proxy hostname and port. Default: 8080."
+    },
+    {
+      "t": "whatweb",
+      "f": "--proxy-user",
+      "d": "<username:password> Set proxy user and password."
+    },
+    {
+      "t": "whatweb",
+      "f": "--quiet, -q",
+      "d": "Do not display brief logging to STDOUT."
+    },
+    {
+      "t": "whatweb",
+      "f": "--read-timeout",
+      "d": "Time in seconds. Default: 30."
+    },
+    {
+      "t": "whatweb",
+      "f": "--search-plugins",
+      "d": "Search plugins for a keyword."
+    },
+    {
+      "t": "whatweb",
+      "f": "--short-help",
+      "d": "Short usage help."
+    },
+    {
+      "t": "whatweb",
+      "f": "--url-pattern",
+      "d": "Insert the targets into a URL. e.g. example.com/%insert%/robots.txt"
+    },
+    {
+      "t": "whatweb",
+      "f": "--url-prefix",
+      "d": "Add a prefix to target URLs."
+    },
+    {
+      "t": "whatweb",
+      "f": "--url-suffix",
+      "d": "Add a suffix to target URLs."
+    },
+    {
+      "t": "whatweb",
+      "f": "--user-agent, -U",
+      "d": "Identify as AGENT instead of WhatWeb/0.6.4."
+    },
+    {
+      "t": "whatweb",
+      "f": "--verbose, -v",
+      "d": "Verbose output includes plugin descriptions. Use twice for debugging."
+    },
+    {
+      "t": "whatweb",
+      "f": "--version",
+      "d": "Display version information."
+    },
+    {
+      "t": "whatweb",
+      "f": "--wait",
+      "d": "Wait SECONDS between connections. This is useful when using a single thread."
     },
     {
       "t": "wpscan",

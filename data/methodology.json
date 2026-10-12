@@ -265,6 +265,7 @@
                   "text": "nmap -sV -p 80,443 --script http-headers,http-title,http-server-header target.example.com"
                 },
                 {
+                  "tool": "whatweb",
                   "text": "whatweb -a 3 https://target.example.com"
                 },
                 {
