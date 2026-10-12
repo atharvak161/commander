@@ -50,6 +50,13 @@
       "flagCount": 140
     },
     {
+      "id": "nuclei",
+      "name": "nuclei",
+      "category": "web",
+      "summary": "Template-based vulnerability scanner: thousands of community checks across web, network and cloud.",
+      "flagCount": 195
+    },
+    {
       "id": "sqlmap",
       "name": "sqlmap",
       "category": "exploitation",
@@ -3923,6 +3930,981 @@
       "t": "nmap",
       "f": "--versiondb",
       "d": "Specify custom service probes file"
+    },
+    {
+      "t": "nuclei",
+      "f": "-allow-local-file-access, -lfa",
+      "d": "allows file (payload) access anywhere on the system"
+    },
+    {
+      "t": "nuclei",
+      "f": "-attack-type, -at",
+      "d": "type of payload combinations to perform (batteringram,pitchfork,clusterbomb)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-auth",
+      "d": "configure projectdiscovery cloud (pdcp) api key"
+    },
+    {
+      "t": "nuclei",
+      "f": "-author, -a",
+      "d": "templates to run based on authors (comma-separated, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-automatic-scan, -as",
+      "d": "automatic web scan using wappalyzer technology detection to tags mapping"
+    },
+    {
+      "t": "nuclei",
+      "f": "-bulk-size, -bs",
+      "d": "maximum number of hosts to be analyzed in parallel per template"
+    },
+    {
+      "t": "nuclei",
+      "f": "-cdp-endpoint, -cdpe",
+      "d": "use remote browser via Chrome DevTools Protocol (CDP) endpoint"
+    },
+    {
+      "t": "nuclei",
+      "f": "-client-ca, -ca",
+      "d": "client certificate authority file (PEM-encoded) used for authenticating against scanned hosts"
+    },
+    {
+      "t": "nuclei",
+      "f": "-client-cert, -cc",
+      "d": "client certificate file (PEM-encoded) used for authenticating against scanned hosts"
+    },
+    {
+      "t": "nuclei",
+      "f": "-client-key, -ck",
+      "d": "client key file (PEM-encoded) used for authenticating against scanned hosts"
+    },
+    {
+      "t": "nuclei",
+      "f": "-cloud-upload, -cup",
+      "d": "upload scan results to pdcp dashboard [DEPRECATED use -dashboard]"
+    },
+    {
+      "t": "nuclei",
+      "f": "-code",
+      "d": "enable loading code protocol-based templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-concurrency, -c",
+      "d": "maximum number of templates to be executed in parallel"
+    },
+    {
+      "t": "nuclei",
+      "f": "-config",
+      "d": "path to the nuclei configuration file"
+    },
+    {
+      "t": "nuclei",
+      "f": "-dashboard, -pd",
+      "d": "upload / view nuclei results in projectdiscovery cloud (pdcp) UI dashboard"
+    },
+    {
+      "t": "nuclei",
+      "f": "-dashboard-upload, -pdu",
+      "d": "upload / view nuclei results file (jsonl) in projectdiscovery cloud (pdcp) UI dashboard"
+    },
+    {
+      "t": "nuclei",
+      "f": "-dast",
+      "d": "enable / run dast (fuzz) nuclei templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-dast-report, -dtr",
+      "d": "write dast scan report to file"
+    },
+    {
+      "t": "nuclei",
+      "f": "-dast-server, -dts",
+      "d": "enable dast server mode (live fuzzing)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-dast-server-address, -dtsa",
+      "d": "dast server address"
+    },
+    {
+      "t": "nuclei",
+      "f": "-dast-server-token, -dtst",
+      "d": "dast server token (optional)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-debug",
+      "d": "show all requests and responses"
+    },
+    {
+      "t": "nuclei",
+      "f": "-debug-req, -dreq",
+      "d": "show all sent requests"
+    },
+    {
+      "t": "nuclei",
+      "f": "-debug-resp, -dresp",
+      "d": "show all received responses"
+    },
+    {
+      "t": "nuclei",
+      "f": "-dialer-keep-alive, -dka",
+      "d": "keep-alive duration for network requests."
+    },
+    {
+      "t": "nuclei",
+      "f": "-disable-clustering, -dc",
+      "d": "disable clustering of requests"
+    },
+    {
+      "t": "nuclei",
+      "f": "-disable-redirects, -dr",
+      "d": "disable redirects for http templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-disable-unsigned-templates, -dut",
+      "d": "disable running unsigned templates or templates with mismatched signature"
+    },
+    {
+      "t": "nuclei",
+      "f": "-disable-update-check, -duc",
+      "d": "disable automatic nuclei/templates update check"
+    },
+    {
+      "t": "nuclei",
+      "f": "-display-fuzz-points, -dfp",
+      "d": "display fuzz points in the output for debugging"
+    },
+    {
+      "t": "nuclei",
+      "f": "-enable-global-matchers, -egm",
+      "d": "enable loading global matchers templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-enable-pprof, -ep",
+      "d": "enable pprof debugging server"
+    },
+    {
+      "t": "nuclei",
+      "f": "-enable-self-contained, -esc",
+      "d": "enable loading self-contained templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-env-vars, -ev",
+      "d": "enable environment variables to be used in template"
+    },
+    {
+      "t": "nuclei",
+      "f": "-error-log, -elog",
+      "d": "file to write sent requests error log"
+    },
+    {
+      "t": "nuclei",
+      "f": "-exclude-hosts, -eh",
+      "d": "hosts to exclude to scan from the input list (ip, cidr, hostname)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-exclude-id, -eid",
+      "d": "templates to exclude based on template ids (comma-separated, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-exclude-matchers, -em",
+      "d": "template matchers to exclude in result"
+    },
+    {
+      "t": "nuclei",
+      "f": "-exclude-severity, -es",
+      "d": "templates to exclude based on severity. Possible values: info, low, medium, high, critical, unknown"
+    },
+    {
+      "t": "nuclei",
+      "f": "-exclude-tags, -etags",
+      "d": "templates to exclude based on tags (comma-separated, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-exclude-templates, -et",
+      "d": "path to template file or directory to exclude (comma-separated, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-exclude-type, -ept",
+      "d": "templates to exclude based on protocol type. Possible values: dns, file, http, headless, tcp, workflow, ssl, websocket, whois, code, javascript"
+    },
+    {
+      "t": "nuclei",
+      "f": "-file",
+      "d": "enable loading file templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-follow-host-redirects, -fhr",
+      "d": "follow redirects on the same host"
+    },
+    {
+      "t": "nuclei",
+      "f": "-follow-redirects, -fr",
+      "d": "enable following redirects for http templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-force-http2, -fh2",
+      "d": "force http2 connection on requests"
+    },
+    {
+      "t": "nuclei",
+      "f": "-fuzz",
+      "d": "enable loading fuzzing templates (Deprecated: use -dast instead)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-fuzz-aggression, -fa",
+      "d": "fuzzing aggression level controls payload count for fuzz (low, medium, high)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-fuzz-out-scope, -cos",
+      "d": "out of scope url regex to be excluded by fuzzer"
+    },
+    {
+      "t": "nuclei",
+      "f": "-fuzz-param-frequency",
+      "d": "frequency of uninteresting parameters for fuzzing before skipping"
+    },
+    {
+      "t": "nuclei",
+      "f": "-fuzz-scope, -cs",
+      "d": "in scope url regex to be followed by fuzzer"
+    },
+    {
+      "t": "nuclei",
+      "f": "-fuzzing-mode, -fm",
+      "d": "overrides fuzzing mode set in template (multiple, single)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-fuzzing-type, -ft",
+      "d": "overrides fuzzing type set in template (replace, prefix, postfix, infix)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-hang-monitor, -hm",
+      "d": "enable nuclei hang monitoring"
+    },
+    {
+      "t": "nuclei",
+      "f": "-header, -H",
+      "d": "custom header/cookie to include in all http request in header:value format (cli, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-headless",
+      "d": "enable templates that require headless browser support (root user on Linux will disable sandbox)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-headless-bulk-size, -hbs",
+      "d": "maximum number of headless hosts to be analyzed in parallel per template"
+    },
+    {
+      "t": "nuclei",
+      "f": "-headless-concurrency, -headc",
+      "d": "maximum number of headless templates to be executed in parallel"
+    },
+    {
+      "t": "nuclei",
+      "f": "-headless-options, -ho",
+      "d": "start headless chrome with additional options"
+    },
+    {
+      "t": "nuclei",
+      "f": "-health-check, -hc",
+      "d": "run diagnostic check up"
+    },
+    {
+      "t": "nuclei",
+      "f": "-honeypot-detect, -hpd",
+      "d": "detect potential honeypot hosts based on match concentration"
+    },
+    {
+      "t": "nuclei",
+      "f": "-honeypot-threshold, -hpt",
+      "d": "number of distinct template IDs required to flag a honeypot host"
+    },
+    {
+      "t": "nuclei",
+      "f": "-http-api-endpoint, -hae",
+      "d": "experimental http api endpoint"
+    },
+    {
+      "t": "nuclei",
+      "f": "-http-stats, -hps",
+      "d": "enable http status capturing (experimental)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-include-tags, -itags",
+      "d": "tags to be executed even if they are excluded either by default or configuration"
+    },
+    {
+      "t": "nuclei",
+      "f": "-include-templates, -it",
+      "d": "path to template file or directory to be executed even if they are excluded either by default or configuration"
+    },
+    {
+      "t": "nuclei",
+      "f": "-input-mode, -im",
+      "d": "mode of input file (list, burp, jsonl, yaml, openapi, swagger)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-input-read-timeout, -irt",
+      "d": "timeout on input read"
+    },
+    {
+      "t": "nuclei",
+      "f": "-interactions-cache-size",
+      "d": "number of requests to keep in the interactions cache"
+    },
+    {
+      "t": "nuclei",
+      "f": "-interactions-cooldown-period",
+      "d": "extra time for interaction polling before exiting"
+    },
+    {
+      "t": "nuclei",
+      "f": "-interactions-eviction",
+      "d": "number of seconds to wait before evicting requests from cache"
+    },
+    {
+      "t": "nuclei",
+      "f": "-interactions-poll-duration",
+      "d": "number of seconds to wait before each interaction poll request"
+    },
+    {
+      "t": "nuclei",
+      "f": "-interactsh-server, -iserver",
+      "d": "interactsh server url for self-hosted instance (default: oast.pro,oast.live,oast.site,oast.online,oast.fun,oast.me)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-interactsh-token, -itoken",
+      "d": "authentication token for self-hosted interactsh server"
+    },
+    {
+      "t": "nuclei",
+      "f": "-interface, -i",
+      "d": "network interface to use for network scan"
+    },
+    {
+      "t": "nuclei",
+      "f": "-ip-version, -iv",
+      "d": "IP version to scan of hostname (4,6) -"
+    },
+    {
+      "t": "nuclei",
+      "f": "-js-concurrency, -jsc",
+      "d": "maximum number of javascript runtimes to be executed in parallel"
+    },
+    {
+      "t": "nuclei",
+      "f": "-json-export, -je",
+      "d": "file to export results in JSON format"
+    },
+    {
+      "t": "nuclei",
+      "f": "-jsonl, -j",
+      "d": "write output in JSONL(ines) format"
+    },
+    {
+      "t": "nuclei",
+      "f": "-jsonl-export, -jle",
+      "d": "file to export results in JSONL(ine) format"
+    },
+    {
+      "t": "nuclei",
+      "f": "-leave-default-ports, -ldp",
+      "d": "leave default HTTP/HTTPS ports (eg. host:80,host:443)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-list, -l",
+      "d": "path to file containing a list of target URLs/hosts to scan (one per line)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-list-dsl-function, -ldf",
+      "d": "list all supported DSL function signatures"
+    },
+    {
+      "t": "nuclei",
+      "f": "-list-headless-action, -lha",
+      "d": "list available headless actions"
+    },
+    {
+      "t": "nuclei",
+      "f": "-markdown-export, -me",
+      "d": "directory to export results in markdown format"
+    },
+    {
+      "t": "nuclei",
+      "f": "-matcher-status, -ms",
+      "d": "display match failure status"
+    },
+    {
+      "t": "nuclei",
+      "f": "-max-host-error, -mhe",
+      "d": "max errors for a host before skipping from scan"
+    },
+    {
+      "t": "nuclei",
+      "f": "-max-redirects, -mr",
+      "d": "max number of redirects to follow for http templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-max-time, -mt",
+      "d": "maximum time to run before automatic termination (e.g., 1h, 30m)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-metrics-port, -mp",
+      "d": "port to expose nuclei metrics on"
+    },
+    {
+      "t": "nuclei",
+      "f": "-new-templates, -nt",
+      "d": "run only new templates added in latest nuclei-templates release"
+    },
+    {
+      "t": "nuclei",
+      "f": "-new-templates-version, -ntv",
+      "d": "run new templates added in specific version"
+    },
+    {
+      "t": "nuclei",
+      "f": "-no-color, -nc",
+      "d": "disable output content coloring (ANSI escape codes)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-no-httpx, -nh",
+      "d": "disable httpx probing for non-url input"
+    },
+    {
+      "t": "nuclei",
+      "f": "-no-interactsh, -ni",
+      "d": "disable interactsh server for OAST testing, exclude OAST based templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-no-meta, -nm",
+      "d": "disable printing result metadata in cli output"
+    },
+    {
+      "t": "nuclei",
+      "f": "-no-mhe, -nmhe",
+      "d": "disable skipping host from scan based on errors"
+    },
+    {
+      "t": "nuclei",
+      "f": "-no-stdin",
+      "d": "disable stdin processing"
+    },
+    {
+      "t": "nuclei",
+      "f": "-no-strict-syntax, -nss",
+      "d": "disable strict syntax check on templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-omit-raw, -or",
+      "d": "omit request/response pairs in the JSON, JSONL, Markdown, and PDF outputs (for findings only)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-omit-template, -ot",
+      "d": "omit encoded template in the JSON, JSONL output"
+    },
+    {
+      "t": "nuclei",
+      "f": "-output, -o",
+      "d": "output file to write found issues/vulnerabilities"
+    },
+    {
+      "t": "nuclei",
+      "f": "-page-timeout",
+      "d": "seconds to wait for each page in headless mode"
+    },
+    {
+      "t": "nuclei",
+      "f": "-passive",
+      "d": "enable passive HTTP response processing mode"
+    },
+    {
+      "t": "nuclei",
+      "f": "-payload-concurrency, -pc",
+      "d": "max payload concurrency for each template"
+    },
+    {
+      "t": "nuclei",
+      "f": "-pdf-export, -pe",
+      "d": "file to export results in PDF format"
+    },
+    {
+      "t": "nuclei",
+      "f": "-per-host-rate-limit",
+      "d": "enable per-host rate limiting (global rate limit becomes unlimited when enabled)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-prefetch-secrets, -ps",
+      "d": "prefetch secrets from the secrets file"
+    },
+    {
+      "t": "nuclei",
+      "f": "-preflight-portscan",
+      "d": "run preflight resolve + TCP portscan and filter targets before scanning (disabled by default)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-probe-concurrency, -prc",
+      "d": "http probe concurrency with httpx"
+    },
+    {
+      "t": "nuclei",
+      "f": "-profile, -tp",
+      "d": "template profile config file to run"
+    },
+    {
+      "t": "nuclei",
+      "f": "-profile-list, -tpl",
+      "d": "list community template profiles"
+    },
+    {
+      "t": "nuclei",
+      "f": "-profile-mem",
+      "d": "generate memory (heap) profile & trace files"
+    },
+    {
+      "t": "nuclei",
+      "f": "-project",
+      "d": "use a project folder to avoid sending same request multiple times"
+    },
+    {
+      "t": "nuclei",
+      "f": "-project-path",
+      "d": "set a specific project path"
+    },
+    {
+      "t": "nuclei",
+      "f": "-prompt, -ai",
+      "d": "generate and run template using ai prompt"
+    },
+    {
+      "t": "nuclei",
+      "f": "-proxy, -p",
+      "d": "list of http/socks5 proxy to use (comma separated or file input)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-proxy-internal, -pi",
+      "d": "proxy all internal requests"
+    },
+    {
+      "t": "nuclei",
+      "f": "-rate-limit, -rl",
+      "d": "maximum number of requests to send per second"
+    },
+    {
+      "t": "nuclei",
+      "f": "-rate-limit-duration, -rld",
+      "d": "maximum number of requests to send per second"
+    },
+    {
+      "t": "nuclei",
+      "f": "-rate-limit-minute, -rlm",
+      "d": "maximum number of requests to send per minute (DEPRECATED)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-redact, -rd",
+      "d": "redact given list of keys from query parameter, request header and body"
+    },
+    {
+      "t": "nuclei",
+      "f": "-report-config, -rc",
+      "d": "nuclei reporting module configuration file"
+    },
+    {
+      "t": "nuclei",
+      "f": "-report-db, -rdb",
+      "d": "nuclei reporting database (always use this to persist report data)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-required-only, -ro",
+      "d": "use only required fields in input format when generating requests"
+    },
+    {
+      "t": "nuclei",
+      "f": "-reset",
+      "d": "reset removes all nuclei configuration and data files (including nuclei-templates)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-resolvers, -r",
+      "d": "file containing resolver list for nuclei"
+    },
+    {
+      "t": "nuclei",
+      "f": "-response-size-read, -rsr",
+      "d": "max response size to read in bytes"
+    },
+    {
+      "t": "nuclei",
+      "f": "-response-size-save, -rss",
+      "d": "max response size to read in bytes"
+    },
+    {
+      "t": "nuclei",
+      "f": "-restrict-local-network-access, -lna",
+      "d": "blocks connections to the local / private network"
+    },
+    {
+      "t": "nuclei",
+      "f": "-resume",
+      "d": "resume scan from and save to specified file (clustering will be disabled)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-retries",
+      "d": "number of times to retry a failed request"
+    },
+    {
+      "t": "nuclei",
+      "f": "-sarif-export, -se",
+      "d": "file to export results in SARIF format"
+    },
+    {
+      "t": "nuclei",
+      "f": "-scan-all-ips, -sa",
+      "d": "scan all the IP's associated with dns record"
+    },
+    {
+      "t": "nuclei",
+      "f": "-scan-id, -sid",
+      "d": "upload scan results to existing scan id (optional)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-scan-name, -sname",
+      "d": "scan name to set (optional)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-scan-strategy, -ss",
+      "d": "strategy to use while scanning(auto/host-spray/template-spray)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-secret-file, -sf",
+      "d": "path to config file containing secrets for nuclei authenticated scan"
+    },
+    {
+      "t": "nuclei",
+      "f": "-severity, -s",
+      "d": "templates to run based on severity. Possible values: info, low, medium, high, critical, unknown"
+    },
+    {
+      "t": "nuclei",
+      "f": "-show-browser, -sb",
+      "d": "show the browser on the screen when running templates with headless mode"
+    },
+    {
+      "t": "nuclei",
+      "f": "-show-match-line, -sml",
+      "d": "show match lines for file templates, works with extractors only"
+    },
+    {
+      "t": "nuclei",
+      "f": "-show-var-dump, -svd",
+      "d": "show variables dump for debugging"
+    },
+    {
+      "t": "nuclei",
+      "f": "-sign",
+      "d": "signs the templates with the private key defined in NUCLEI_SIGNATURE_PRIVATE_KEY env variable"
+    },
+    {
+      "t": "nuclei",
+      "f": "-silent",
+      "d": "display findings only"
+    },
+    {
+      "t": "nuclei",
+      "f": "-skip-format-validation, -sfv",
+      "d": "skip format validation (like missing vars) when parsing input file"
+    },
+    {
+      "t": "nuclei",
+      "f": "-sni",
+      "d": "tls sni hostname to use (default: input domain name)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-source-ip, -sip",
+      "d": "source ip address to use for network scan"
+    },
+    {
+      "t": "nuclei",
+      "f": "-stats",
+      "d": "display statistics about the running scan"
+    },
+    {
+      "t": "nuclei",
+      "f": "-stats-interval, -si",
+      "d": "number of seconds to wait between showing a statistics update"
+    },
+    {
+      "t": "nuclei",
+      "f": "-stats-json, -sj",
+      "d": "display statistics in JSONL(ines) format"
+    },
+    {
+      "t": "nuclei",
+      "f": "-stop-at-first-match, -spm",
+      "d": "stop processing HTTP requests after the first match (may break template/workflow logic)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-store-resp, -sresp",
+      "d": "store all request/response passed through nuclei to output directory"
+    },
+    {
+      "t": "nuclei",
+      "f": "-store-resp-dir, -srd",
+      "d": "store all request/response passed through nuclei to custom directory"
+    },
+    {
+      "t": "nuclei",
+      "f": "-stream",
+      "d": "stream mode - start elaborating without sorting the input"
+    },
+    {
+      "t": "nuclei",
+      "f": "-suppress-honeypot, -shp",
+      "d": "suppress output for flagged honeypot hosts"
+    },
+    {
+      "t": "nuclei",
+      "f": "-system-chrome, -sc",
+      "d": "use local installed Chrome browser instead of nuclei installed"
+    },
+    {
+      "t": "nuclei",
+      "f": "-system-resolvers, -sr",
+      "d": "use system DNS resolving as error fallback"
+    },
+    {
+      "t": "nuclei",
+      "f": "-tags",
+      "d": "templates to run based on tags (comma-separated, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-target, -u",
+      "d": "target URLs/hosts to scan"
+    },
+    {
+      "t": "nuclei",
+      "f": "-targets-inline",
+      "d": "inline multiline target list (for use in template profiles)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-team-id, -tid",
+      "d": "upload scan results to given team id (optional)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-template-condition, -tc",
+      "d": "templates to run based on expression condition"
+    },
+    {
+      "t": "nuclei",
+      "f": "-template-display, -td",
+      "d": "displays the templates content"
+    },
+    {
+      "t": "nuclei",
+      "f": "-template-id, -id",
+      "d": "templates to run based on template ids (comma-separated, file, allow-wildcard)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-template-loading-concurrency, -tlc",
+      "d": "maximum number of concurrent template loading operations"
+    },
+    {
+      "t": "nuclei",
+      "f": "-template-url, -turl",
+      "d": "template url or list containing template urls to run (comma-separated, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-templates, -t",
+      "d": "list of template or template directory to run (comma-separated, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-templates-version, -tv",
+      "d": "shows the version of the installed nuclei-templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-tgl",
+      "d": "list all available tags"
+    },
+    {
+      "t": "nuclei",
+      "f": "-timeout",
+      "d": "time to wait in seconds before timeout"
+    },
+    {
+      "t": "nuclei",
+      "f": "-timestamp, -ts",
+      "d": "enables printing timestamp in cli output"
+    },
+    {
+      "t": "nuclei",
+      "f": "-tl",
+      "d": "list all templates matching current filters"
+    },
+    {
+      "t": "nuclei",
+      "f": "-tls-impersonate, -tlsi",
+      "d": "enable experimental client hello (ja3) tls randomization"
+    },
+    {
+      "t": "nuclei",
+      "f": "-trace-log, -tlog",
+      "d": "file to write sent requests trace log"
+    },
+    {
+      "t": "nuclei",
+      "f": "-track-error, -te",
+      "d": "adds given error to max-host-error watchlist (standard, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-type, -pt",
+      "d": "templates to run based on protocol type. Possible values: dns, file, http, headless, tcp, workflow, ssl, websocket, whois, code, javascript"
+    },
+    {
+      "t": "nuclei",
+      "f": "-uncover, -uc",
+      "d": "enable uncover engine"
+    },
+    {
+      "t": "nuclei",
+      "f": "-uncover-engine, -ue",
+      "d": "uncover search engine (shodan,censys,fofa,shodan-idb,quake,hunter,zoomeye,netlas,criminalip,publicwww,hunterhow,google,odin,binaryedge,onyphe,driftnet,greynoise,daydaymap,nerdydata)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-uncover-field, -uf",
+      "d": "uncover fields to return (ip,port,host)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-uncover-limit, -ul",
+      "d": "uncover results to return"
+    },
+    {
+      "t": "nuclei",
+      "f": "-uncover-query, -uq",
+      "d": "uncover search query"
+    },
+    {
+      "t": "nuclei",
+      "f": "-uncover-ratelimit, -ur",
+      "d": "override ratelimit of engines with unknown ratelimit (default 60 req/min)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-update-template-dir, -ud",
+      "d": "custom directory to install / update nuclei-templates"
+    },
+    {
+      "t": "nuclei",
+      "f": "-update-templates, -ut",
+      "d": "update nuclei-templates to latest released version"
+    },
+    {
+      "t": "nuclei",
+      "f": "-validate",
+      "d": "validate the passed templates to nuclei"
+    },
+    {
+      "t": "nuclei",
+      "f": "-var, -V",
+      "d": "custom vars in key=value format"
+    },
+    {
+      "t": "nuclei",
+      "f": "-var-dump-limit, -vdl",
+      "d": "limit the number of characters displayed in var dump"
+    },
+    {
+      "t": "nuclei",
+      "f": "-var-file-paths, -vfp",
+      "d": "list of yaml file contained vars to inject into yaml input"
+    },
+    {
+      "t": "nuclei",
+      "f": "-vars-text-templating, -vtt",
+      "d": "enable text templating for vars in input file (only for yaml input mode)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-verbose, -v",
+      "d": "show verbose output"
+    },
+    {
+      "t": "nuclei",
+      "f": "-version",
+      "d": "show nuclei version"
+    },
+    {
+      "t": "nuclei",
+      "f": "-vv",
+      "d": "display templates loaded for scan"
+    },
+    {
+      "t": "nuclei",
+      "f": "-workflow-url, -wurl",
+      "d": "workflow url or list containing workflow urls to run (comma-separated, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-workflows, -w",
+      "d": "list of workflow or workflow directory to run (comma-separated, file)"
+    },
+    {
+      "t": "nuclei",
+      "f": "-ztls",
+      "d": "use ztls library with autofallback to standard one for tls13 [Deprecated] autofallback to ztls is enabled by default"
     },
     {
       "t": "sqlmap",

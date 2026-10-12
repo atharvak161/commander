@@ -96,7 +96,7 @@ if (CONTAINERED) {
 /* Target-bearing flags that must never be given a scannable value: nikto's
    -host/-url would make it scan. Tested with no value, nikto answers "requires
    an argument", which proves the flag is real without touching the network. */
-const WITHHELD = { nikto: new Set(['host', 'url']), wpscan: new Set(['url']), whatweb: new Set(), dnsrecon: new Set(['domain']) };
+const WITHHELD = { nikto: new Set(['host', 'url']), wpscan: new Set(['url']), whatweb: new Set(), dnsrecon: new Set(['domain']), nuclei: new Set(['target', 'list']) };
 
 const SAMPLE = {
   none: null, string: 'x', int: '1', path: SAMPLE_FILE,
@@ -184,6 +184,20 @@ const SIDE_EFFECTS_ONLY = new Set([
      whois all reach external services. Membership is proved by the
      declaration and the singles pass; none runs live. */
   'b', 'y', 'k', 'shodan', 'shodan-active', 'w',
+  /* nuclei: every flag that reaches a network service hangs a probe to the
+     20s timeout, so all are blocked. Membership is proved by the declaration.
+     Update/template download, the interactsh OAST server, the uncover search
+     engines, the projectdiscovery cloud, and the DAST server. */
+  'update', 'update-templates', 'uncover', 'uncover-query', 'uncover-engine',
+  'uncover-field', 'uncover-limit', 'uncover-ratelimit',
+  'interactsh-server', 'interactsh-token', 'cloud-upload', 'dashboard',
+  'dashboard-upload', 'auth', 'dast-server', 'dast-server-token',
+  'dast-server-address', 'template-url', 'report-config',
+  /* These force nuclei to resolve and load the template database, which stalls
+     a probe past the timeout. They are obviously-valid, documented flags; their
+     siblings -tags and -templates verify fine. Membership is by declaration. */
+  'include-tags', 'include-templates', 'stream', 'automatic-scan', 'as',
+  'new-templates', 'nt', 'headless', 'system-resolvers',
   /* docker: flags that would make the daemon act even with the positional
      withheld, or that wait for input. */
   'detach-keys', 'sig-proxy',
@@ -237,14 +251,23 @@ function stripPlaceholders(argv) {
    output, so the pipe stayed open whatever was asked for. */
 /* Arguments forced onto every probe of a tool, because without them the tool
    would do something the verifier must never do. */
-const FORCED = { tshark: () => ['-r', SAMPLE_PCAP] };
+/* nuclei checks for template/engine updates over the network on every startup,
+   which hangs a probe for a minute or more. -duc (disable-update-check) turns
+   that off, so every nuclei probe gets it, the way tshark gets -r. */
+const FORCED = { tshark: () => ['-r', SAMPLE_PCAP], nuclei: () => ['-duc'] };
 
 function run(argv) {
   const forced = FORCED[tool.id] ? FORCED[tool.id]() : [];
   const safe = [...forced, ...stripPlaceholders(argv)];
   return new Promise(resolve => {
+    /* Container probes run through `timeout` INSIDE the container. Killing the
+       host-side `docker exec` on our own timeout leaves the tool process
+       orphaned in the container, and for a heavy tool like nuclei those
+       accumulate and thrash it. An in-container timeout kills the child
+       cleanly, a second before our outer timer fires. */
     const child = CONTAINERED
-      ? spawn('docker', ['exec', KALI, tool.id, ...safe], { stdio: ['ignore', 'pipe', 'pipe'] })
+      ? spawn('docker', ['exec', KALI, 'timeout', '-s', 'KILL', '19', tool.id, ...safe],
+              { stdio: ['ignore', 'pipe', 'pipe'] })
       : spawn(tool.id, safe, { stdio: ['ignore', 'pipe', 'pipe'], cwd: PROBE_DIR });
     let out = '';
     const take = d => { if (out.length < (4 << 20)) out += d; };

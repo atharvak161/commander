@@ -269,6 +269,7 @@
                   "text": "whatweb -a 3 https://target.example.com"
                 },
                 {
+                  "tool": "nuclei",
                   "text": "nuclei -u https://target.example.com -t http/technologies/"
                 }
               ]
@@ -362,6 +363,7 @@
                   "text": "ffuf -u https://target.example.com/FUZZ -w /usr/share/seclists/Discovery/Web-Content/AdminPanels.fuzz.txt -mc 200,301,302,401,403 -c"
                 },
                 {
+                  "tool": "nuclei",
                   "text": "nuclei -u https://target.example.com -t http/misconfiguration/ -t cloud/"
                 },
                 {
@@ -901,6 +903,7 @@
                   "text": "nmap -sV --script vuln 10.0.0.5"
                 },
                 {
+                  "tool": "nuclei",
                   "text": "nuclei -u 10.0.0.5 -t network/ -t cves/"
                 },
                 {
