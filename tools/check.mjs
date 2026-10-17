@@ -79,7 +79,7 @@ for (const file of files) {
       if (!mode.flags.includes(fid)) fail.push(`${at}: uses "${fid}", which is not in mode "${mid}".`);
       const eff = (f.perMode && f.perMode[mid]) ? { ...f, ...f.perMode[mid] } : f;
       if (eff.takes === 'none' && v !== true) fail.push(`${at}: gives a value to "${fid}", which takes none.`);
-      if (eff.takes !== 'none' && v === true && !eff.binds) fail.push(`${at}: "${fid}" needs a value and the recipe gives none.`);
+      if (eff.takes !== 'none' && v === true && !eff.binds && !eff.optionalValue) fail.push(`${at}: "${fid}" needs a value and the recipe gives none.`);
       if (eff.takes === 'enum' && v !== true && !eff.enum.includes(String(v))) {
         /* An unenforced enum accepts combinations: nikto's -Tuning 1234b is a
            string of single-character members, and nuclei's -severity

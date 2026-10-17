@@ -254,7 +254,14 @@ function stripPlaceholders(argv) {
 /* nuclei checks for template/engine updates over the network on every startup,
    which hangs a probe for a minute or more. -duc (disable-update-check) turns
    that off, so every nuclei probe gets it, the way tshark gets -r. */
-const FORCED = { tshark: () => ['-r', SAMPLE_PCAP], nuclei: () => ['-duc'] };
+/* enum4linux-ng needs a host positional or argparse errors before it reports a
+   bad flag. A benign loopback host (no SMB there) lets argparse reject bad
+   flags at parse time and a good flag complete instantly; -t 1 bounds it. */
+const FORCED = {
+  tshark: () => ['-r', SAMPLE_PCAP],
+  nuclei: () => ['-duc'],
+  'enum4linux-ng': () => ['-t', '1', '127.0.0.1'],
+};
 
 function run(argv) {
   const forced = FORCED[tool.id] ? FORCED[tool.id]() : [];

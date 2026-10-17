@@ -880,6 +880,7 @@
                   "text": "nmap -p 445 --script smb-os-discovery,smb-enum-shares,smb-enum-users 10.0.0.5"
                 },
                 {
+                  "tool": "enum4linux-ng",
                   "text": "enum4linux-ng -A 10.0.0.5"
                 },
                 {

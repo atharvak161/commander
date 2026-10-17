@@ -22,6 +22,13 @@
       "flagCount": 155
     },
     {
+      "id": "enum4linux-ng",
+      "name": "enum4linux-ng",
+      "category": "network",
+      "summary": "SMB and LDAP enumeration of Windows and Samba hosts: users, groups, shares, policy, OS.",
+      "flagCount": 29
+    },
+    {
       "id": "ffuf",
       "name": "ffuf",
       "category": "enumeration",
@@ -2310,6 +2317,151 @@
       "t": "docker",
       "f": "--workdir, -w",
       "d": "Working directory inside the container"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-A",
+      "d": "Do all simple enumeration including nmblookup (-U -G -S -P -O -N -I -L). This option is enabled if you don't provide any other option."
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-As",
+      "d": "Do all simple short enumeration without NetBIOS names lookup (-U -G -S -P -O -I -L)"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-C",
+      "d": "Get services via RPC"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-d",
+      "d": "Get detailed information for users and groups, applies to -U, -G and -R"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-G",
+      "d": "Get groups via RPC"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-Gm",
+      "d": "Get groups with group members via RPC"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-H",
+      "d": "Try to authenticate with hash"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-I",
+      "d": "Get printer information via RPC"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-k",
+      "d": "User(s) that exists on remote system (default: administrator,guest,krbtgt,domain admins,root,bin,none). Used to get sid with \"lookupsids\""
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-K",
+      "d": "Try to authenticate with Kerberos, only useful in Active Directory environment (Note: DNS must be setup correctly for this option to work"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "--keep",
+      "d": "Don't delete the Samba configuration file created during tool run after enumeration (useful with -v)"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-L",
+      "d": "Get additional domain info via LDAP/LDAPS (for DCs only)"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "--local-auth",
+      "d": "Authenticate locally to target"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-N",
+      "d": "Do an NetBIOS names lookup (similar to nbtstat) and try to retrieve workgroup from output"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-O",
+      "d": "Get OS information via RPC"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-oA",
+      "d": "Writes output to YAML and JSON file (extensions are added automatically)"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-oJ",
+      "d": "Writes output to JSON file (extension is added automatically)"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-oY",
+      "d": "Writes output to YAML file (extension is added automatically)"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-p",
+      "d": "Specify password to use (default \"\")"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-P",
+      "d": "Get password policy information via RPC"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-r",
+      "d": "RID ranges to enumerate (default: 500-550,1000-1050)"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-R",
+      "d": "Enumerate users via RID cycling. Optionally specify the lookup request size (BULK_SIZE)."
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-s",
+      "d": "Brute force guessing for shares"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-S",
+      "d": "Get shares via RPC"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-t",
+      "d": "Sets connection timeout in seconds (default: 10s)"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-u",
+      "d": "Specify username to use (default \"\")"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-U",
+      "d": "Get users via RPC"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-v",
+      "d": "Verbose, show full samba tools commands being run (net, rpcclient, etc.)"
+    },
+    {
+      "t": "enum4linux-ng",
+      "f": "-w",
+      "d": "Specify workgroup/domain manually (usually found automatically)"
     },
     {
       "t": "ffuf",
