@@ -47,7 +47,7 @@
       "name": "netexec",
       "category": "network",
       "summary": "Network execution across SMB, LDAP, WinRM, SSH, MSSQL and more: auth, enumeration, and running commands.",
-      "flagCount": 130
+      "flagCount": 144
     },
     {
       "id": "nikto",
@@ -83,6 +83,13 @@
       "category": "traffic",
       "summary": "Wireshark on the command line: capture packets, or read a capture and pull it apart.",
       "flagCount": 76
+    },
+    {
+      "id": "wget",
+      "name": "wget",
+      "category": "network",
+      "summary": "Non-interactive downloader: HTTP, HTTPS and FTP, recursive mirroring, resume.",
+      "flagCount": 150
     },
     {
       "id": "whatweb",
@@ -3223,7 +3230,7 @@
     {
       "t": "netexec",
       "f": "--computers",
-      "d": "Enumerate domain computers"
+      "d": "Enumerate computer users"
     },
     {
       "t": "netexec",
@@ -3239,6 +3246,11 @@
       "t": "netexec",
       "f": "-d",
       "d": "domain to authenticate to"
+    },
+    {
+      "t": "netexec",
+      "f": "--database",
+      "d": "list databases or list tables for NAME"
     },
     {
       "t": "netexec",
@@ -3272,6 +3284,11 @@
     },
     {
       "t": "netexec",
+      "f": "--dir",
+      "d": "List the content of a path (default path: '')"
+    },
+    {
+      "t": "netexec",
       "f": "--disks",
       "d": "Enumerate disks"
     },
@@ -3299,6 +3316,11 @@
       "t": "netexec",
       "f": "--enabled",
       "d": "Only dump enabled targets from DC (NTDS.dit)"
+    },
+    {
+      "t": "netexec",
+      "f": "--enum-shares",
+      "d": "Authenticate and enumerate exposed shares recursively (default depth: 3)"
     },
     {
       "t": "netexec",
@@ -3392,6 +3414,11 @@
     },
     {
       "t": "netexec",
+      "f": "--groups",
+      "d": "Enumerate domain groups, if a group is specified than its members are Enumerated"
+    },
+    {
+      "t": "netexec",
       "f": "-h, --help",
       "d": "show this help message and exit"
     },
@@ -3462,8 +3489,28 @@
     },
     {
       "t": "netexec",
+      "f": "-L, --list-modules",
+      "d": "list available modules"
+    },
+    {
+      "t": "netexec",
+      "f": "--laps",
+      "d": "LAPS authentification"
+    },
+    {
+      "t": "netexec",
+      "f": "--list-snapshots",
+      "d": "Lists the VSS snapshots (default: ADMIN$)"
+    },
+    {
+      "t": "netexec",
       "f": "--local-auth",
       "d": "authenticate locally to each target"
+    },
+    {
+      "t": "netexec",
+      "f": "--local-groups",
+      "d": "Enumerate local groups, if a group is specified then its members are Enumerated"
     },
     {
       "t": "netexec",
@@ -3472,8 +3519,18 @@
     },
     {
       "t": "netexec",
+      "f": "--loggedon-users",
+      "d": "Enumerate logged on users, if a user is specified than a regex filter is applied."
+    },
+    {
+      "t": "netexec",
       "f": "--loggedon-users-filter",
       "d": "only search for specific user, works with regex"
+    },
+    {
+      "t": "netexec",
+      "f": "--ls",
+      "d": "List files in the specified NFS share. Example: --ls /"
     },
     {
       "t": "netexec",
@@ -3632,8 +3689,18 @@
     },
     {
       "t": "netexec",
+      "f": "--qwinsta",
+      "d": "Enumerate user sessions. If a username is given, filter for it; if a file is given, filter for listed usernames. If no value is given, list all."
+    },
+    {
+      "t": "netexec",
       "f": "--rdp-timeout",
       "d": "RDP timeout on socket connection (default: 5)"
+    },
+    {
+      "t": "netexec",
+      "f": "--reg-sessions",
+      "d": "Enumerate users sessions using the Remote Registry. If a username is given, filter for it. If a file is given, filter for listed usernames. If no value is given, list all."
     },
     {
       "t": "netexec",
@@ -3644,6 +3711,11 @@
       "t": "netexec",
       "f": "--res",
       "d": "Resolution in WIDTHxHEIGHT format (default: 1024x768)"
+    },
+    {
+      "t": "netexec",
+      "f": "--rid-brute",
+      "d": "Enumerate users by bruteforcing RIDs"
     },
     {
       "t": "netexec",
@@ -3678,7 +3750,7 @@
     {
       "t": "netexec",
       "f": "--shares",
-      "d": "List NFS shares"
+      "d": "Enumerate shares and access, filter on specified argument (read ; write ; read,write)"
     },
     {
       "t": "netexec",
@@ -3734,6 +3806,11 @@
       "t": "netexec",
       "f": "--taskkill",
       "d": "Kills a specific PID or a proces name's PID's"
+    },
+    {
+      "t": "netexec",
+      "f": "--tasklist",
+      "d": "Enumerate running processes and filter for the specified one if specified"
     },
     {
       "t": "netexec",
@@ -7449,6 +7526,756 @@
       "t": "tshark",
       "f": "-Y, --display-filter",
       "d": "packet displaY filter in Wireshark display filter"
+    },
+    {
+      "t": "wget",
+      "f": "-A, --accept",
+      "d": "comma-separated list of accepted extensions"
+    },
+    {
+      "t": "wget",
+      "f": "--accept-regex",
+      "d": "regex matching accepted URLs"
+    },
+    {
+      "t": "wget",
+      "f": "-E, --adjust-extension",
+      "d": "save HTML/CSS documents with proper extensions"
+    },
+    {
+      "t": "wget",
+      "f": "-a, --append-output",
+      "d": "append messages to FILE"
+    },
+    {
+      "t": "wget",
+      "f": "--ask-password",
+      "d": "prompt for passwords"
+    },
+    {
+      "t": "wget",
+      "f": "--auth-no-challenge",
+      "d": "send Basic HTTP authentication information without first waiting for the server's challenge"
+    },
+    {
+      "t": "wget",
+      "f": "-b, --background",
+      "d": "go to background after startup"
+    },
+    {
+      "t": "wget",
+      "f": "-K, --backup-converted",
+      "d": "before converting file X, back up as X.orig"
+    },
+    {
+      "t": "wget",
+      "f": "--backups",
+      "d": "before writing file X, rotate up to N backup files"
+    },
+    {
+      "t": "wget",
+      "f": "-B, --base",
+      "d": "resolves HTML input-file links (-i -F) relative to URL"
+    },
+    {
+      "t": "wget",
+      "f": "--bind-address",
+      "d": "bind to ADDRESS (hostname or IP) on local host"
+    },
+    {
+      "t": "wget",
+      "f": "--body-data",
+      "d": "send STRING as data. --method MUST be set"
+    },
+    {
+      "t": "wget",
+      "f": "--body-file",
+      "d": "send contents of FILE. --method MUST be set"
+    },
+    {
+      "t": "wget",
+      "f": "--ca-certificate",
+      "d": "file with the bundle of CAs"
+    },
+    {
+      "t": "wget",
+      "f": "--ca-directory",
+      "d": "directory where hash list of CAs is stored"
+    },
+    {
+      "t": "wget",
+      "f": "--certificate",
+      "d": "client certificate file"
+    },
+    {
+      "t": "wget",
+      "f": "--certificate-type",
+      "d": "client certificate type, PEM or DER"
+    },
+    {
+      "t": "wget",
+      "f": "--ciphers",
+      "d": "Set the priority string (GnuTLS) or cipher list string (OpenSSL) directly. Use with care. This option overrides --secure-protocol. The format and syntax of this string depend on the specific SSL/TLS engine."
+    },
+    {
+      "t": "wget",
+      "f": "--compression",
+      "d": "choose compression, one of auto, gzip and none. (default: none)"
+    },
+    {
+      "t": "wget",
+      "f": "--config",
+      "d": "specify config file to use"
+    },
+    {
+      "t": "wget",
+      "f": "--connect-timeout",
+      "d": "set the connect timeout to SECS"
+    },
+    {
+      "t": "wget",
+      "f": "--content-disposition",
+      "d": "honor the Content-Disposition header when choosing local file names (EXPERIMENTAL)"
+    },
+    {
+      "t": "wget",
+      "f": "--content-on-error",
+      "d": "output the received content on server errors"
+    },
+    {
+      "t": "wget",
+      "f": "-c, --continue",
+      "d": "resume getting a partially-downloaded file"
+    },
+    {
+      "t": "wget",
+      "f": "--convert-file-only",
+      "d": "convert the file part of the URLs only (usually known as the basename)"
+    },
+    {
+      "t": "wget",
+      "f": "-k, --convert-links",
+      "d": "make links in downloaded HTML or CSS point to local files"
+    },
+    {
+      "t": "wget",
+      "f": "--crl-file",
+      "d": "file with bundle of CRLs"
+    },
+    {
+      "t": "wget",
+      "f": "--cut-dirs",
+      "d": "ignore NUMBER remote directory components"
+    },
+    {
+      "t": "wget",
+      "f": "-d, --debug",
+      "d": "print lots of debugging information"
+    },
+    {
+      "t": "wget",
+      "f": "--default-page",
+      "d": "change the default page name (normally this is 'index.html'.)"
+    },
+    {
+      "t": "wget",
+      "f": "--delete-after",
+      "d": "delete files locally after downloading them"
+    },
+    {
+      "t": "wget",
+      "f": "-P, --directory-prefix",
+      "d": "save files to PREFIX/.."
+    },
+    {
+      "t": "wget",
+      "f": "--dns-timeout",
+      "d": "set the DNS lookup timeout to SECS"
+    },
+    {
+      "t": "wget",
+      "f": "-D, --domains",
+      "d": "comma-separated list of accepted domains"
+    },
+    {
+      "t": "wget",
+      "f": "-X, --exclude-directories",
+      "d": "list of excluded directories"
+    },
+    {
+      "t": "wget",
+      "f": "--exclude-domains",
+      "d": "comma-separated list of rejected domains"
+    },
+    {
+      "t": "wget",
+      "f": "-e, --execute",
+      "d": "execute a `.wgetrc'-style command"
+    },
+    {
+      "t": "wget",
+      "f": "--follow-ftp",
+      "d": "follow FTP links from HTML documents"
+    },
+    {
+      "t": "wget",
+      "f": "--follow-tags",
+      "d": "comma-separated list of followed HTML tags"
+    },
+    {
+      "t": "wget",
+      "f": "-x, --force-directories",
+      "d": "force creation of directories"
+    },
+    {
+      "t": "wget",
+      "f": "-F, --force-html",
+      "d": "treat input file as HTML"
+    },
+    {
+      "t": "wget",
+      "f": "--ftp-password",
+      "d": "set ftp password to PASS"
+    },
+    {
+      "t": "wget",
+      "f": "--ftp-user",
+      "d": "set ftp user to USER"
+    },
+    {
+      "t": "wget",
+      "f": "--ftps-clear-data-connection",
+      "d": "cipher the control channel only; all the data will be in plaintext"
+    },
+    {
+      "t": "wget",
+      "f": "--ftps-fallback-to-ftp",
+      "d": "fall back to FTP if FTPS is not supported in the target server"
+    },
+    {
+      "t": "wget",
+      "f": "--ftps-implicit",
+      "d": "use implicit FTPS (default port is 990)"
+    },
+    {
+      "t": "wget",
+      "f": "--ftps-resume-ssl",
+      "d": "resume the SSL/TLS session started in the control connection when opening a data connection"
+    },
+    {
+      "t": "wget",
+      "f": "--header",
+      "d": "insert STRING among the headers"
+    },
+    {
+      "t": "wget",
+      "f": "--hsts-file",
+      "d": "path of HSTS database (will override default)"
+    },
+    {
+      "t": "wget",
+      "f": "--http-password",
+      "d": "set http password to PASS"
+    },
+    {
+      "t": "wget",
+      "f": "--http-user",
+      "d": "set http user to USER"
+    },
+    {
+      "t": "wget",
+      "f": "--https-only",
+      "d": "only follow secure HTTPS links"
+    },
+    {
+      "t": "wget",
+      "f": "--ignore-case",
+      "d": "ignore case when matching files/directories"
+    },
+    {
+      "t": "wget",
+      "f": "--ignore-length",
+      "d": "ignore 'Content-Length' header field"
+    },
+    {
+      "t": "wget",
+      "f": "--ignore-tags",
+      "d": "comma-separated list of ignored HTML tags"
+    },
+    {
+      "t": "wget",
+      "f": "-I, --include-directories",
+      "d": "list of allowed directories"
+    },
+    {
+      "t": "wget",
+      "f": "-4, --inet4-only",
+      "d": "connect only to IPv4 addresses"
+    },
+    {
+      "t": "wget",
+      "f": "-6, --inet6-only",
+      "d": "connect only to IPv6 addresses"
+    },
+    {
+      "t": "wget",
+      "f": "-i, --input-file",
+      "d": "download URLs found in local or external FILE"
+    },
+    {
+      "t": "wget",
+      "f": "--keep-session-cookies",
+      "d": "load and save session (non-permanent) cookies"
+    },
+    {
+      "t": "wget",
+      "f": "-l, --level",
+      "d": "maximum recursion depth (inf or 0 for infinite)"
+    },
+    {
+      "t": "wget",
+      "f": "--limit-rate",
+      "d": "limit download rate to RATE"
+    },
+    {
+      "t": "wget",
+      "f": "--load-cookies",
+      "d": "load cookies from FILE before session"
+    },
+    {
+      "t": "wget",
+      "f": "--local-encoding",
+      "d": "use ENC as the local encoding for IRIs"
+    },
+    {
+      "t": "wget",
+      "f": "--max-redirect",
+      "d": "maximum redirections allowed per page"
+    },
+    {
+      "t": "wget",
+      "f": "-m, --mirror",
+      "d": "shortcut for -N -r -l inf --no-remove-listing"
+    },
+    {
+      "t": "wget",
+      "f": "--no-cache",
+      "d": "disallow server-cached data"
+    },
+    {
+      "t": "wget",
+      "f": "--no-check-certificate",
+      "d": "don't validate the server's certificate"
+    },
+    {
+      "t": "wget",
+      "f": "-nc, --no-clobber",
+      "d": "skip downloads that would download to existing files (overwriting them)"
+    },
+    {
+      "t": "wget",
+      "f": "--no-config",
+      "d": "do not read any config file"
+    },
+    {
+      "t": "wget",
+      "f": "--no-cookies",
+      "d": "don't use cookies"
+    },
+    {
+      "t": "wget",
+      "f": "-nd, --no-directories",
+      "d": "don't create directories"
+    },
+    {
+      "t": "wget",
+      "f": "--no-dns-cache",
+      "d": "disable caching DNS lookups"
+    },
+    {
+      "t": "wget",
+      "f": "--no-glob",
+      "d": "turn off FTP file name globbing"
+    },
+    {
+      "t": "wget",
+      "f": "-nH, --no-host-directories",
+      "d": "don't create host directories"
+    },
+    {
+      "t": "wget",
+      "f": "--no-hsts",
+      "d": "disable HSTS"
+    },
+    {
+      "t": "wget",
+      "f": "--no-http-keep-alive",
+      "d": "disable HTTP keep-alive (persistent connections)"
+    },
+    {
+      "t": "wget",
+      "f": "--no-if-modified-since",
+      "d": "don't use conditional if-modified-since get requests in timestamping mode"
+    },
+    {
+      "t": "wget",
+      "f": "--no-iri",
+      "d": "turn off IRI support"
+    },
+    {
+      "t": "wget",
+      "f": "--no-netrc",
+      "d": "don't try to obtain credentials from .netrc"
+    },
+    {
+      "t": "wget",
+      "f": "-np, --no-parent",
+      "d": "don't ascend to the parent directory"
+    },
+    {
+      "t": "wget",
+      "f": "--no-passive-ftp",
+      "d": "disable the \"passive\" transfer mode"
+    },
+    {
+      "t": "wget",
+      "f": "--no-proxy",
+      "d": "explicitly turn off proxy"
+    },
+    {
+      "t": "wget",
+      "f": "--no-remove-listing",
+      "d": "don't remove '.listing' files"
+    },
+    {
+      "t": "wget",
+      "f": "--no-use-server-timestamps",
+      "d": "don't set the local file's timestamp by the one on the server"
+    },
+    {
+      "t": "wget",
+      "f": "-nv, --no-verbose",
+      "d": "turn off verboseness, without being quiet"
+    },
+    {
+      "t": "wget",
+      "f": "--no-warc-compression",
+      "d": "do not compress WARC files with GZIP"
+    },
+    {
+      "t": "wget",
+      "f": "--no-warc-digests",
+      "d": "do not calculate SHA1 digests"
+    },
+    {
+      "t": "wget",
+      "f": "--no-warc-keep-log",
+      "d": "do not store the log file in a WARC record"
+    },
+    {
+      "t": "wget",
+      "f": "-O, --output-document",
+      "d": "write documents to FILE"
+    },
+    {
+      "t": "wget",
+      "f": "-o, --output-file",
+      "d": "log messages to FILE"
+    },
+    {
+      "t": "wget",
+      "f": "-p, --page-requisites",
+      "d": "get all images, etc. needed to display HTML page"
+    },
+    {
+      "t": "wget",
+      "f": "--password",
+      "d": "set both ftp and http password to PASS"
+    },
+    {
+      "t": "wget",
+      "f": "--post-data",
+      "d": "use the POST method; send STRING as the data"
+    },
+    {
+      "t": "wget",
+      "f": "--post-file",
+      "d": "use the POST method; send contents of FILE"
+    },
+    {
+      "t": "wget",
+      "f": "--prefer-family",
+      "d": "connect first to addresses of specified family, one of IPv6, IPv4, or none"
+    },
+    {
+      "t": "wget",
+      "f": "--preserve-permissions",
+      "d": "preserve remote file permissions"
+    },
+    {
+      "t": "wget",
+      "f": "--private-key",
+      "d": "private key file"
+    },
+    {
+      "t": "wget",
+      "f": "--private-key-type",
+      "d": "private key type, PEM or DER"
+    },
+    {
+      "t": "wget",
+      "f": "--progress",
+      "d": "select progress gauge type"
+    },
+    {
+      "t": "wget",
+      "f": "--protocol-directories",
+      "d": "use protocol name in directories"
+    },
+    {
+      "t": "wget",
+      "f": "--proxy-password",
+      "d": "set PASS as proxy password"
+    },
+    {
+      "t": "wget",
+      "f": "--proxy-user",
+      "d": "set USER as proxy username"
+    },
+    {
+      "t": "wget",
+      "f": "-q, --quiet",
+      "d": "quiet (no output)"
+    },
+    {
+      "t": "wget",
+      "f": "-Q, --quota",
+      "d": "set retrieval quota to NUMBER"
+    },
+    {
+      "t": "wget",
+      "f": "--random-file",
+      "d": "file with random data for seeding the SSL PRNG"
+    },
+    {
+      "t": "wget",
+      "f": "--random-wait",
+      "d": "wait from 0.5*WAIT...1.5*WAIT secs between retrievals (applies if more then 1 URL is to be retrieved)"
+    },
+    {
+      "t": "wget",
+      "f": "--read-timeout",
+      "d": "set the read timeout to SECS"
+    },
+    {
+      "t": "wget",
+      "f": "-r, --recursive",
+      "d": "specify recursive download"
+    },
+    {
+      "t": "wget",
+      "f": "--referer",
+      "d": "include 'Referer: URL' header in HTTP request"
+    },
+    {
+      "t": "wget",
+      "f": "--regex-type",
+      "d": "regex type (posix)"
+    },
+    {
+      "t": "wget",
+      "f": "-R, --reject",
+      "d": "comma-separated list of rejected extensions"
+    },
+    {
+      "t": "wget",
+      "f": "--reject-regex",
+      "d": "regex matching rejected URLs"
+    },
+    {
+      "t": "wget",
+      "f": "--rejected-log",
+      "d": "log reasons for URL rejection to FILE"
+    },
+    {
+      "t": "wget",
+      "f": "-L, --relative",
+      "d": "follow relative links only"
+    },
+    {
+      "t": "wget",
+      "f": "--remote-encoding",
+      "d": "use ENC as the default remote encoding"
+    },
+    {
+      "t": "wget",
+      "f": "--report-speed",
+      "d": "output bandwidth as TYPE. TYPE can be bits"
+    },
+    {
+      "t": "wget",
+      "f": "--restrict-file-names",
+      "d": "restrict chars in file names to ones OS allows"
+    },
+    {
+      "t": "wget",
+      "f": "--retr-symlinks",
+      "d": "when recursing, get linked-to files (not dir)"
+    },
+    {
+      "t": "wget",
+      "f": "--retry-connrefused",
+      "d": "retry even if connection is refused"
+    },
+    {
+      "t": "wget",
+      "f": "--retry-on-host-error",
+      "d": "consider host errors as non-fatal, transient errors"
+    },
+    {
+      "t": "wget",
+      "f": "--retry-on-http-error",
+      "d": "comma-separated list of HTTP errors to retry"
+    },
+    {
+      "t": "wget",
+      "f": "--save-cookies",
+      "d": "save cookies to FILE after session"
+    },
+    {
+      "t": "wget",
+      "f": "--save-headers",
+      "d": "save the HTTP headers to file"
+    },
+    {
+      "t": "wget",
+      "f": "--secure-protocol",
+      "d": "choose secure protocol, one of auto, SSLv2, SSLv3, TLSv1, TLSv1_1, TLSv1_2, TLSv1_3 and PFS"
+    },
+    {
+      "t": "wget",
+      "f": "-S, --server-response",
+      "d": "print server response"
+    },
+    {
+      "t": "wget",
+      "f": "--show-progress",
+      "d": "display the progress bar in any verbosity mode"
+    },
+    {
+      "t": "wget",
+      "f": "-H, --span-hosts",
+      "d": "go to foreign hosts when recursive"
+    },
+    {
+      "t": "wget",
+      "f": "--spider",
+      "d": "don't download anything"
+    },
+    {
+      "t": "wget",
+      "f": "--start-pos",
+      "d": "start downloading from zero-based position OFFSET"
+    },
+    {
+      "t": "wget",
+      "f": "--strict-comments",
+      "d": "turn on strict (SGML) handling of HTML comments"
+    },
+    {
+      "t": "wget",
+      "f": "-T, --timeout",
+      "d": "set all timeout values to SECONDS"
+    },
+    {
+      "t": "wget",
+      "f": "-N, --timestamping",
+      "d": "don't re-retrieve files unless newer than local"
+    },
+    {
+      "t": "wget",
+      "f": "-t, --tries",
+      "d": "set number of retries to NUMBER (0 unlimits)"
+    },
+    {
+      "t": "wget",
+      "f": "--trust-server-names",
+      "d": "use the name specified by the redirection URL's last component"
+    },
+    {
+      "t": "wget",
+      "f": "--unlink",
+      "d": "remove file before clobber"
+    },
+    {
+      "t": "wget",
+      "f": "--use-askpass",
+      "d": "specify credential handler for requesting username and password. If no COMMAND is specified the WGET_ASKPASS or the SSH_ASKPASS environment variable is used."
+    },
+    {
+      "t": "wget",
+      "f": "--user",
+      "d": "set both ftp and http user to USER"
+    },
+    {
+      "t": "wget",
+      "f": "-U, --user-agent",
+      "d": "identify as AGENT instead of Wget/VERSION"
+    },
+    {
+      "t": "wget",
+      "f": "-v, --verbose",
+      "d": "be verbose (this is the default)"
+    },
+    {
+      "t": "wget",
+      "f": "-V, --version",
+      "d": "display the version of Wget and exit"
+    },
+    {
+      "t": "wget",
+      "f": "-w, --wait",
+      "d": "wait SECONDS between retrievals (applies if more then 1 URL is to be retrieved)"
+    },
+    {
+      "t": "wget",
+      "f": "--waitretry",
+      "d": "wait 1..SECONDS between retries of a retrieval (applies if more then 1 URL is to be retrieved)"
+    },
+    {
+      "t": "wget",
+      "f": "--warc-cdx",
+      "d": "write CDX index files"
+    },
+    {
+      "t": "wget",
+      "f": "--warc-dedup",
+      "d": "do not store records listed in this CDX file"
+    },
+    {
+      "t": "wget",
+      "f": "--warc-file",
+      "d": "save request/response data to a .warc.gz file"
+    },
+    {
+      "t": "wget",
+      "f": "--warc-header",
+      "d": "insert STRING into the warcinfo record"
+    },
+    {
+      "t": "wget",
+      "f": "--warc-max-size",
+      "d": "set maximum size of WARC files to NUMBER"
+    },
+    {
+      "t": "wget",
+      "f": "--warc-tempdir",
+      "d": "location for temporary files created by the WARC writer"
+    },
+    {
+      "t": "wget",
+      "f": "--xattr",
+      "d": "turn on storage of metadata in extended file attributes"
     },
     {
       "t": "whatweb",

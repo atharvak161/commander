@@ -198,6 +198,11 @@ const SIDE_EFFECTS_ONLY = new Set([
      siblings -tags and -templates verify fine. Membership is by declaration. */
   'include-tags', 'include-templates', 'stream', 'automatic-scan', 'as',
   'new-templates', 'nt', 'headless', 'system-resolvers',
+  /* wget: -i/--input-file reads URLs from a file and fetches them, which with
+     the verifier's sample file means an outbound request; --retry-on-host-error
+     then retries. Both reach the network. Membership is proved by the singles
+     pass; neither runs live. */
+  'input-file', 'i', 'retry-on-host-error',
   /* docker: flags that would make the daemon act even with the positional
      withheld, or that wait for input. */
   'detach-keys', 'sig-proxy',
