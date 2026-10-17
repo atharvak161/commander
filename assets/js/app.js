@@ -12,7 +12,7 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
 
   /* Written by tools/stamp.mjs from a hash of data/. Appended to every data
      fetch so a deploy cannot be served stale JSON from a browser cache. */
-  var ASSET_V = '8df8539352';
+  var ASSET_V = '9fb3506023';
   function dataUrl(path) { return ASSET_V ? path + '?v=' + ASSET_V : path; }
 
   var manifest = null;          // data/manifest.json

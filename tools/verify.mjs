@@ -260,12 +260,28 @@ function stripPlaceholders(argv) {
 const FORCED = {
   tshark: () => ['-r', SAMPLE_PCAP],
   nuclei: () => ['-duc'],
+};
+/* Appended AFTER the flags, for tools whose target is a positional that must
+   follow the protocol/flags: a benign loopback host (and a short timeout) so
+   argparse rejects bad flags at parse time and a good flag refuses instantly. */
+const FORCED_TAIL = {
   'enum4linux-ng': () => ['-t', '1', '127.0.0.1'],
+};
+/* netexec is `nxc <protocol> <target> [flags]`: the target must sit right after
+   the protocol (argv[0] here), because a repeatable flag like -p would otherwise
+   swallow an appended host. Inserted after the mode. */
+const FORCED_AFTER_MODE = {
+  netexec: () => ['127.0.0.1', '--timeout', '2'],
 };
 
 function run(argv) {
   const forced = FORCED[tool.id] ? FORCED[tool.id]() : [];
-  const safe = [...forced, ...stripPlaceholders(argv)];
+  const tail = FORCED_TAIL[tool.id] ? FORCED_TAIL[tool.id]() : [];
+  const afterMode = FORCED_AFTER_MODE[tool.id] ? FORCED_AFTER_MODE[tool.id]() : [];
+  const stripped = stripPlaceholders(argv);
+  const safe = afterMode.length && stripped.length
+    ? [stripped[0], ...afterMode, ...stripped.slice(1), ...tail]
+    : [...forced, ...stripped, ...tail];
   return new Promise(resolve => {
     /* Container probes run through `timeout` INSIDE the container. Killing the
        host-side `docker exec` on our own timeout leaves the tool process

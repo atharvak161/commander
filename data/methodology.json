@@ -884,6 +884,7 @@
                   "text": "enum4linux-ng -A 10.0.0.5"
                 },
                 {
+                  "tool": "netexec",
                   "text": "netexec smb 10.0.0.0/24 --shares"
                 }
               ]
@@ -952,6 +953,7 @@
               "why": "Spraying one password across many accounts avoids lockout better than many passwords on one.",
               "cmds": [
                 {
+                  "tool": "netexec",
                   "text": "netexec smb 10.0.0.0/24 -u users.txt -p 'Spring2026!' --continue-on-success"
                 },
                 {

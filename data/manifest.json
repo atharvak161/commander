@@ -43,6 +43,13 @@
       "flagCount": 59
     },
     {
+      "id": "netexec",
+      "name": "netexec",
+      "category": "network",
+      "summary": "Network execution across SMB, LDAP, WinRM, SSH, MSSQL and more: auth, enumeration, and running commands.",
+      "flagCount": 130
+    },
+    {
       "id": "nikto",
       "name": "nikto",
       "category": "web",
@@ -3147,6 +3154,656 @@
       "t": "gobuster",
       "f": "--wordlist-offset, --wo",
       "d": "Resume from a given position in the wordlist"
+    },
+    {
+      "t": "netexec",
+      "f": "--admin-count",
+      "d": "Get user that had the value adminCount=1"
+    },
+    {
+      "t": "netexec",
+      "f": "--aesKey",
+      "d": "AES key to use for Kerberos Authentication (128 or 256 bits)"
+    },
+    {
+      "t": "netexec",
+      "f": "--amsi-bypass",
+      "d": "File with a custom AMSI bypass"
+    },
+    {
+      "t": "netexec",
+      "f": "--append-host",
+      "d": "append the host to the get-file filename"
+    },
+    {
+      "t": "netexec",
+      "f": "--asreproast",
+      "d": "Output AS_REP response to crack with hashcat to file"
+    },
+    {
+      "t": "netexec",
+      "f": "--base-dn",
+      "d": "base DN for search queries"
+    },
+    {
+      "t": "netexec",
+      "f": "--bloodhound",
+      "d": "Perform a Bloodhound scan"
+    },
+    {
+      "t": "netexec",
+      "f": "-c, --collection",
+      "d": "Which information to collect. Supported: Group, LocalAdmin, Session, Trusts, Default, DCOnly, DCOM, RDP, PSRemote, LoggedOn, Container, ObjectProps, ACL, All. You can specify more than one by separating them with a comma (default: Default)"
+    },
+    {
+      "t": "netexec",
+      "f": "--check-proto",
+      "d": "Choose what protocol you want to check - format: 'http https' (with space separated) or 'single-protocol' (default: ['http', 'https'])"
+    },
+    {
+      "t": "netexec",
+      "f": "--clear-obfscripts",
+      "d": "Clear all cached obfuscated PowerShell scripts"
+    },
+    {
+      "t": "netexec",
+      "f": "--clipboard-delay",
+      "d": "Maximum time to wait for clipboard initialization (seconds) (default: 30)"
+    },
+    {
+      "t": "netexec",
+      "f": "--cmd-delay",
+      "d": "Sleep time before executing command (default: 5)"
+    },
+    {
+      "t": "netexec",
+      "f": "--codec",
+      "d": "Set encoding used (codec) from the target's output. If errors are detected, run chcp.com at the target & map the result with https://docs.python.org/3/library/code cs.html#standard-encodings and then execute again with --codec and the corresponding codec (default: utf-8)"
+    },
+    {
+      "t": "netexec",
+      "f": "--computers",
+      "d": "Enumerate domain computers"
+    },
+    {
+      "t": "netexec",
+      "f": "--content",
+      "d": "enable file content searching"
+    },
+    {
+      "t": "netexec",
+      "f": "--continue-on-success",
+      "d": "continues authentication attempts even after successes"
+    },
+    {
+      "t": "netexec",
+      "f": "-d",
+      "d": "domain to authenticate to"
+    },
+    {
+      "t": "netexec",
+      "f": "--dc-list",
+      "d": "Enumerate Domain Controllers"
+    },
+    {
+      "t": "netexec",
+      "f": "--dcom-timeout",
+      "d": "DCOM connection timeout (default: 5)"
+    },
+    {
+      "t": "netexec",
+      "f": "--debug",
+      "d": "enable debug level information"
+    },
+    {
+      "t": "netexec",
+      "f": "--delegate",
+      "d": "Impersonate user with S4U2Self + S4U2Proxy"
+    },
+    {
+      "t": "netexec",
+      "f": "--delegate-spn",
+      "d": "SPN to use for S4U2Proxy, if not specified the SPN used will be cifs/<target>"
+    },
+    {
+      "t": "netexec",
+      "f": "--depth",
+      "d": "max spider recursion depth"
+    },
+    {
+      "t": "netexec",
+      "f": "--disks",
+      "d": "Enumerate disks"
+    },
+    {
+      "t": "netexec",
+      "f": "--dns-server",
+      "d": "Specify DNS server (default: Use hosts file & System DNS)"
+    },
+    {
+      "t": "netexec",
+      "f": "--dns-tcp",
+      "d": "Use TCP instead of UDP for DNS queries"
+    },
+    {
+      "t": "netexec",
+      "f": "--dns-timeout",
+      "d": "DNS query timeout in seconds (default: 3)"
+    },
+    {
+      "t": "netexec",
+      "f": "--dpapi",
+      "d": "dump user's Credential Manager secrets from target systems"
+    },
+    {
+      "t": "netexec",
+      "f": "--enabled",
+      "d": "Only dump enabled targets from DC (NTDS.dit)"
+    },
+    {
+      "t": "netexec",
+      "f": "--exclude-dirs",
+      "d": "directories to exclude from spidering"
+    },
+    {
+      "t": "netexec",
+      "f": "--exclude-shares",
+      "d": "List of shares to exclude from enumeration (e.g., C$ Admin$ IPC$)"
+    },
+    {
+      "t": "netexec",
+      "f": "--fail-limit",
+      "d": "max number of failed login attempts per host"
+    },
+    {
+      "t": "netexec",
+      "f": "--filter-shares",
+      "d": "Filter share by access, option 'READ' 'WRITE' or 'READ,WRITE'"
+    },
+    {
+      "t": "netexec",
+      "f": "--find-delegation",
+      "d": "Finds delegation relationships within an Active Directory domain. (Enabled Accounts only)"
+    },
+    {
+      "t": "netexec",
+      "f": "--force-ps32",
+      "d": "force PowerShell commands to run in a 32-bit process (may not apply to modules)"
+    },
+    {
+      "t": "netexec",
+      "f": "--gen-relay-list",
+      "d": "outputs all hosts that don't require SMB signing to the specified file"
+    },
+    {
+      "t": "netexec",
+      "f": "--generate-hosts-file",
+      "d": "Generate a hosts file like from a range of IP"
+    },
+    {
+      "t": "netexec",
+      "f": "--generate-krb5-file",
+      "d": "Generate a krb5 file like from a range of IP"
+    },
+    {
+      "t": "netexec",
+      "f": "--generate-st",
+      "d": "Store the S4U Service Ticket in the specified file"
+    },
+    {
+      "t": "netexec",
+      "f": "--generate-tgt",
+      "d": "Generate a tgt ticket"
+    },
+    {
+      "t": "netexec",
+      "f": "--get",
+      "d": "Download a file"
+    },
+    {
+      "t": "netexec",
+      "f": "--get-output-tries",
+      "d": "Number of times atexec/smbexec/mmcexec tries to get results (default: 10)"
+    },
+    {
+      "t": "netexec",
+      "f": "--get-sid",
+      "d": "Get domain sid"
+    },
+    {
+      "t": "netexec",
+      "f": "--gfail-limit",
+      "d": "max number of global failed login attempts"
+    },
+    {
+      "t": "netexec",
+      "f": "--gmsa",
+      "d": "Enumerate GMSA passwords"
+    },
+    {
+      "t": "netexec",
+      "f": "--gmsa-convert-id",
+      "d": "Get the secret name of specific gmsa or all gmsa if no gmsa provided"
+    },
+    {
+      "t": "netexec",
+      "f": "--gmsa-decrypt-lsa",
+      "d": "Decrypt the gmsa encrypted value from LSA"
+    },
+    {
+      "t": "netexec",
+      "f": "-h, --help",
+      "d": "show this help message and exit"
+    },
+    {
+      "t": "netexec",
+      "f": "-H, --hash",
+      "d": "NTLM hash(es) or file(s) containing NTLM hashes"
+    },
+    {
+      "t": "netexec",
+      "f": "--history",
+      "d": "Also retrieve password history from target DC (NTDS.dit)"
+    },
+    {
+      "t": "netexec",
+      "f": "--http-timeout",
+      "d": "HTTP timeout for WinRM connections (default: 10)"
+    },
+    {
+      "t": "netexec",
+      "f": "-id",
+      "d": "database credential ID(s) to use for authentication"
+    },
+    {
+      "t": "netexec",
+      "f": "--ignore-pw-decoding",
+      "d": "Ignore non UTF-8 characters when decoding the password file"
+    },
+    {
+      "t": "netexec",
+      "f": "--interfaces",
+      "d": "Enumerate network interfaces"
+    },
+    {
+      "t": "netexec",
+      "f": "--jitter",
+      "d": "sets a random delay between each authentication"
+    },
+    {
+      "t": "netexec",
+      "f": "-k, --kerberos",
+      "d": "Use Kerberos authentication"
+    },
+    {
+      "t": "netexec",
+      "f": "--kdcHost",
+      "d": "FQDN of the domain controller. If omitted it will use the domain part (FQDN) specified in the target parameter"
+    },
+    {
+      "t": "netexec",
+      "f": "--kerberoast",
+      "d": "Output TGS ticket to crack with hashcat to file"
+    },
+    {
+      "t": "netexec",
+      "f": "--kerberoast-account",
+      "d": "Target specific accounts for kerberoasting (sAMAccountNames or file containing sAMAccountNames)"
+    },
+    {
+      "t": "netexec",
+      "f": "--kerberos-keys",
+      "d": "Also dump Kerberos AES and DES keys from target DC (NTDS.dit)"
+    },
+    {
+      "t": "netexec",
+      "f": "--key-file",
+      "d": "Authenticate using the specified private key. Treats the password parameter as the key's passphrase."
+    },
+    {
+      "t": "netexec",
+      "f": "--local-auth",
+      "d": "authenticate locally to each target"
+    },
+    {
+      "t": "netexec",
+      "f": "--log",
+      "d": "export result into a custom file"
+    },
+    {
+      "t": "netexec",
+      "f": "--loggedon-users-filter",
+      "d": "only search for specific user, works with regex"
+    },
+    {
+      "t": "netexec",
+      "f": "--lsa",
+      "d": "dump LSA secrets from target systems"
+    },
+    {
+      "t": "netexec",
+      "f": "-M, --module",
+      "d": "module to use"
+    },
+    {
+      "t": "netexec",
+      "f": "--mkfile",
+      "d": "DPAPI option. File with masterkeys in form of {GUID}:SHA1"
+    },
+    {
+      "t": "netexec",
+      "f": "--mssql-timeout",
+      "d": "SQL server connection timeout (default: 5)"
+    },
+    {
+      "t": "netexec",
+      "f": "--nfs-timeout",
+      "d": "NFS connection timeout (default: 5s)"
+    },
+    {
+      "t": "netexec",
+      "f": "--nla-screenshot",
+      "d": "Screenshot RDP login prompt if NLA is disabled"
+    },
+    {
+      "t": "netexec",
+      "f": "--no-admin-check",
+      "d": "Avoid checking admin which queries the Service Control Manager"
+    },
+    {
+      "t": "netexec",
+      "f": "--no-bruteforce",
+      "d": "No spray when using file for username and password (user1 => password1, user2 => password2)"
+    },
+    {
+      "t": "netexec",
+      "f": "--no-encode",
+      "d": "Do not encode the PowerShell command ran on target"
+    },
+    {
+      "t": "netexec",
+      "f": "--no-output",
+      "d": "do not retrieve command output"
+    },
+    {
+      "t": "netexec",
+      "f": "--no-preauth-targets",
+      "d": "Targeted kerberoastable users"
+    },
+    {
+      "t": "netexec",
+      "f": "--no-progress",
+      "d": "do not displaying progress bar during scan"
+    },
+    {
+      "t": "netexec",
+      "f": "--no-smbv1",
+      "d": "Force to disable SMBv1 in connection"
+    },
+    {
+      "t": "netexec",
+      "f": "--no-write-check",
+      "d": "Skip write check on shares (avoid leaving traces when missing delete permissions)"
+    },
+    {
+      "t": "netexec",
+      "f": "-o",
+      "d": "module options"
+    },
+    {
+      "t": "netexec",
+      "f": "--obfs",
+      "d": "Obfuscate PowerShell scripts"
+    },
+    {
+      "t": "netexec",
+      "f": "--only-files",
+      "d": "only spider files"
+    },
+    {
+      "t": "netexec",
+      "f": "--options",
+      "d": "display module options"
+    },
+    {
+      "t": "netexec",
+      "f": "-p, --password",
+      "d": "password(s) or file(s) containing passwords"
+    },
+    {
+      "t": "netexec",
+      "f": "--pass-pol",
+      "d": "dump password policy"
+    },
+    {
+      "t": "netexec",
+      "f": "--password-not-required",
+      "d": "Get the list of users with flag PASSWD_NOTREQD"
+    },
+    {
+      "t": "netexec",
+      "f": "--pattern",
+      "d": "pattern(s) to search for in folders, filenames and file content"
+    },
+    {
+      "t": "netexec",
+      "f": "--pem-cert",
+      "d": "Use certificate authentication from PEM file"
+    },
+    {
+      "t": "netexec",
+      "f": "--pem-key",
+      "d": "Private key for the PEM format"
+    },
+    {
+      "t": "netexec",
+      "f": "--pfx-base64",
+      "d": "Use certificate authentication from pfx file encoded in base64"
+    },
+    {
+      "t": "netexec",
+      "f": "--pfx-cert",
+      "d": "Use certificate authentication from pfx file .pfx"
+    },
+    {
+      "t": "netexec",
+      "f": "--pfx-pass",
+      "d": "Password of the pfx certificate"
+    },
+    {
+      "t": "netexec",
+      "f": "--port",
+      "d": "SMB port (default: 445)"
+    },
+    {
+      "t": "netexec",
+      "f": "--pso",
+      "d": "Get Fine Grained Password Policy/PSOs"
+    },
+    {
+      "t": "netexec",
+      "f": "--pvk",
+      "d": "DPAPI option. File with domain backupkey"
+    },
+    {
+      "t": "netexec",
+      "f": "-q, --query",
+      "d": "execute the specified query against the mssql db"
+    },
+    {
+      "t": "netexec",
+      "f": "--rdp-timeout",
+      "d": "RDP timeout on socket connection (default: 5)"
+    },
+    {
+      "t": "netexec",
+      "f": "--regex",
+      "d": "regex(s) to search for in folders, filenames and file content"
+    },
+    {
+      "t": "netexec",
+      "f": "--res",
+      "d": "Resolution in WIDTHxHEIGHT format (default: 1024x768)"
+    },
+    {
+      "t": "netexec",
+      "f": "--rpc-timeout",
+      "d": "RPC/DCOM(WMI) connection timeout, default is 2 seconds"
+    },
+    {
+      "t": "netexec",
+      "f": "--sam",
+      "d": "dump SAM hashes from target systems"
+    },
+    {
+      "t": "netexec",
+      "f": "--screenshot",
+      "d": "Screenshot VNC if connection success"
+    },
+    {
+      "t": "netexec",
+      "f": "--screentime",
+      "d": "Time to wait for desktop image (default: 5)"
+    },
+    {
+      "t": "netexec",
+      "f": "--self",
+      "d": "Only do S4U2Self, no S4U2Proxy (use with delegate)"
+    },
+    {
+      "t": "netexec",
+      "f": "--share",
+      "d": "specify a share (default: C$)"
+    },
+    {
+      "t": "netexec",
+      "f": "--shares",
+      "d": "List NFS shares"
+    },
+    {
+      "t": "netexec",
+      "f": "--silent",
+      "d": "Do not print found files/directories"
+    },
+    {
+      "t": "netexec",
+      "f": "--simple-bind",
+      "d": "Use simple bind authentication (no signing/sealing)"
+    },
+    {
+      "t": "netexec",
+      "f": "--smb-server-port",
+      "d": "specify a server port for SMB (default: 445)"
+    },
+    {
+      "t": "netexec",
+      "f": "--smb-sessions",
+      "d": "Enumerate active smb sessions"
+    },
+    {
+      "t": "netexec",
+      "f": "--smb-timeout",
+      "d": "SMB connection timeout (default: 2)"
+    },
+    {
+      "t": "netexec",
+      "f": "--spider",
+      "d": "share to spider"
+    },
+    {
+      "t": "netexec",
+      "f": "--spider-folder",
+      "d": "folder to spider (default: .)"
+    },
+    {
+      "t": "netexec",
+      "f": "--ssh-timeout",
+      "d": "SSH connection timeout (default: 15)"
+    },
+    {
+      "t": "netexec",
+      "f": "--sudo-check",
+      "d": "Check user privilege with sudo"
+    },
+    {
+      "t": "netexec",
+      "f": "-t, --threads",
+      "d": "set how many concurrent threads to use (default: 256)"
+    },
+    {
+      "t": "netexec",
+      "f": "--taskkill",
+      "d": "Kills a specific PID or a proces name's PID's"
+    },
+    {
+      "t": "netexec",
+      "f": "--timeout",
+      "d": "max timeout in seconds of each thread"
+    },
+    {
+      "t": "netexec",
+      "f": "--trusted-for-delegation",
+      "d": "Get the list of users and computers with flag TRUSTED_FOR_DELEGATION"
+    },
+    {
+      "t": "netexec",
+      "f": "-u, --username",
+      "d": "username(s) or file(s) containing usernames"
+    },
+    {
+      "t": "netexec",
+      "f": "--ufail-limit",
+      "d": "max number of failed login attempts per username"
+    },
+    {
+      "t": "netexec",
+      "f": "--use-kcache",
+      "d": "Use Kerberos authentication from ccache file (KRB5CCNAME)"
+    },
+    {
+      "t": "netexec",
+      "f": "--user",
+      "d": "Dump selected user from DC (NTDS.dit)"
+    },
+    {
+      "t": "netexec",
+      "f": "--users-export",
+      "d": "Enumerate domain users and export them to the specified file"
+    },
+    {
+      "t": "netexec",
+      "f": "--verbose",
+      "d": "enable verbose output"
+    },
+    {
+      "t": "netexec",
+      "f": "--version",
+      "d": "Display nxc version"
+    },
+    {
+      "t": "netexec",
+      "f": "--vnc-sleep",
+      "d": "VNC Sleep on socket connection to avoid rate limit (default: 5)"
+    },
+    {
+      "t": "netexec",
+      "f": "--wmi-namespace",
+      "d": "WMI Namespace (default: root\\cimv2)"
+    },
+    {
+      "t": "netexec",
+      "f": "--wmi-query",
+      "d": "Issues the specified WMI query"
+    },
+    {
+      "t": "netexec",
+      "f": "-x",
+      "d": "execute the specified command"
+    },
+    {
+      "t": "netexec",
+      "f": "-X",
+      "d": "execute the specified PowerShell command"
     },
     {
       "t": "nikto",
