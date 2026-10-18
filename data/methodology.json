@@ -311,6 +311,7 @@
                   "text": "amass enum -passive -d target.example.com"
                 },
                 {
+                  "tool": "dig",
                   "text": "dig +short any target.example.com"
                 }
               ]
@@ -1238,6 +1239,7 @@
               "why": "DNS, certificate transparency and reverse lookups reveal the cloud estate.",
               "cmds": [
                 {
+                  "tool": "dig",
                   "text": "dig +short CNAME <host>   (points at cloudfront, azureedge, etc.)"
                 },
                 {

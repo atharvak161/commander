@@ -8,6 +8,13 @@
       "flagCount": 257
     },
     {
+      "id": "dig",
+      "name": "dig",
+      "category": "network",
+      "summary": "DNS lookup: records of any type, zone transfers, DNSSEC, trace, reverse lookups.",
+      "flagCount": 70
+    },
+    {
       "id": "dnsrecon",
       "name": "dnsrecon",
       "category": "network",
@@ -1405,6 +1412,356 @@
       "t": "curl",
       "f": "--xattr",
       "d": "Store metadata in extended file attributes"
+    },
+    {
+      "t": "dig",
+      "f": "-4",
+      "d": "use IPv4 query transport only"
+    },
+    {
+      "t": "dig",
+      "f": "-6",
+      "d": "use IPv6 query transport only"
+    },
+    {
+      "t": "dig",
+      "f": "+aaflag",
+      "d": "A synonym for +[no]aaonly. (+noaaflag to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+aaonly",
+      "d": "Sets the \"aa\" flag in the query. (+noaaonly to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+additional",
+      "d": "Display [do not display] the additional section of a reply. The default is to display it. (+noadditional to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+adflag",
+      "d": "Set [do not set] the AD (authentic data) bit in the query. This requests the server to return whether all of the answer and authority sections have all been validated as secure according to the security policy of the server. AD=1 indicates  (+noadflag to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+all",
+      "d": "Set or clear all display flags. (+noall to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+answer",
+      "d": "Display [do not display] the answer section of a reply. The default is to display it. (+noanswer to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+authority",
+      "d": "Display [do not display] the authority section of a reply. The default is to display it. (+noauthority to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "-b",
+      "d": "bind to source address/port"
+    },
+    {
+      "t": "dig",
+      "f": "+besteffort",
+      "d": "Attempt to display the contents of messages which are malformed. The default is to not display malformed answers. (+nobesteffort to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+bufsize",
+      "d": "Set the UDP message buffer size advertised using EDNS0 to B bytes. The maximum and minimum sizes of this buffer are 65535 and 0 respectively. Values outside this range are rounded up or down appropriately. Values other than zero will cause "
+    },
+    {
+      "t": "dig",
+      "f": "-c",
+      "d": "specify query class"
+    },
+    {
+      "t": "dig",
+      "f": "+cdflag",
+      "d": "Set [do not set] the CD (checking disabled) bit in the query. This requests the server to not perform DNSSEC validation of responses. (+nocdflag to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+class",
+      "d": "Display [do not display] the CLASS when printing the record. (+noclass to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+cmd",
+      "d": "Toggles the printing of the initial comment in the output identifying the version of dig and the query options that have been applied. This comment is printed by default. (+nocmd to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+comments",
+      "d": "Toggle the display of comment lines in the output. The default is to print comments. (+nocomments to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+cookie",
+      "d": "Send an COOKIE EDNS option, containing an optional value. Replaying a COOKIE from a previous response will allow the server to identify a previous client. The default is +nocookie. (+nocookie to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+crypto",
+      "d": "Toggle the display of cryptographic fields in DNSSEC records. The contents of these field are unnecessary to debug most DNSSEC validation failures and removing them makes it easier to see the common failures. The default is to display the f (+nocrypto to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+defname",
+      "d": "Deprecated, treated as a synonym for +[no]search (+nodefname to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+dnssec",
+      "d": "Requests DNSSEC records be sent by setting the DNSSEC OK bit (DO) in the OPT record in the additional section of the query. (+nodnssec to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+domain",
+      "d": "Set the search list to contain the single domain somename, as if specified in a domain directive in /etc/resolv.conf, and enable search list processing as if the +search option were given."
+    },
+    {
+      "t": "dig",
+      "f": "+edns",
+      "d": "Specify the EDNS version to query with. Valid values are 0 to 255. Setting the EDNS version will cause a EDNS query to be sent. +noedns clears the remembered EDNS version. EDNS is set to 0 by default. (+noedns to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+ednsflags",
+      "d": "Set the must-be-zero EDNS flags bits (Z bits) to the specified value. Decimal, hex and octal encodings are accepted. Setting a named flag (e.g. DO) will silently be ignored. By default, no Z bits are set. (+noednsflags to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+ednsnegotiation",
+      "d": "Enable / disable EDNS version negotiation. By default EDNS version negotiation is enabled. (+noednsnegotiation to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+ednsopt",
+      "d": "Specify EDNS option with code point code and optionally payload of value as a hexadecimal string. code can be either an EDNS option name (for example, NSID or ECS), or an arbitrary numeric value. +noednsopt clears the EDNS options to be sen (+noednsopt to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+expire",
+      "d": "Send an EDNS Expire option. (+noexpire to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "-f",
+      "d": "batch mode"
+    },
+    {
+      "t": "dig",
+      "f": "+fail",
+      "d": "Do not try the next server if you receive a SERVFAIL. The default is to not try the next server which is the reverse of normal stub resolver behavior. (+nofail to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "-i",
+      "d": "use IP6.INT for IPv6 reverse lookups"
+    },
+    {
+      "t": "dig",
+      "f": "+identify",
+      "d": "Show [or do not show] the IP address and port number that supplied the answer when the +short option is enabled. If short form answers are requested, the default is not to show the source address and port number of the server that provided  (+noidentify to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+idnout",
+      "d": "Convert [do not convert] puny code on output. This requires IDN SUPPORT to have been enabled at compile time. The default is to convert output. (+noidnout to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+ignore",
+      "d": "Ignore truncation in UDP responses instead of retrying with TCP. By default, TCP retries are performed. (+noignore to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "-k",
+      "d": "specify tsig key file"
+    },
+    {
+      "t": "dig",
+      "f": "+keepopen",
+      "d": "Keep the TCP socket open between queries and reuse it rather than creating a new TCP socket for each lookup. The default is +nokeepopen. (+nokeepopen to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "-m",
+      "d": "enable memory usage debugging"
+    },
+    {
+      "t": "dig",
+      "f": "+multiline",
+      "d": "Print records like the SOA records in a verbose multi-line format with human-readable comments. The default is to print each record on a single line, to facilitate machine parsing of the dig output. (+nomultiline to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+ndots",
+      "d": "Set the number of dots that have to appear in name to D for it to be considered absolute. The default value is that defined using the ndots statement in /etc/resolv.conf, or 1 if no ndots statement is present. Names with fewer dots are inte"
+    },
+    {
+      "t": "dig",
+      "f": "+nsid",
+      "d": "Include an EDNS name server ID request when sending a query. (+nonsid to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+nssearch",
+      "d": "When this option is set, dig attempts to find the authoritative name servers for the zone containing the name being looked up and display the SOA record that each name server has for the zone. (+nonssearch to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+onesoa",
+      "d": "Print only one (starting) SOA record when performing an AXFR. The default is to print both the starting and ending SOA records. (+noonesoa to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+opcode",
+      "d": "Set [restore] the DNS message opcode to the specified value. The default value is QUERY (0). (+noopcode to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "-p",
+      "d": "specify port number"
+    },
+    {
+      "t": "dig",
+      "f": "-q",
+      "d": "specify query name"
+    },
+    {
+      "t": "dig",
+      "f": "+qr",
+      "d": "Print [do not print] the query as it is sent. By default, the query is not printed. (+noqr to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+question",
+      "d": "Print [do not print] the question section of a query when an answer is returned. The default is to print the question section as a comment. (+noquestion to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+rdflag",
+      "d": "A synonym for +[no]recurse. (+nordflag to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+recurse",
+      "d": "Toggle the setting of the RD (recursion desired) bit in the query. This bit is set by default, which means dig normally sends recursive queries. Recursion is automatically disabled when the +nssearch or +trace query options are used. (+norecurse to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+retry",
+      "d": "Sets the number of times to retry UDP queries to server to T instead of the default, 2. Unlike +tries, this does not include the initial query."
+    },
+    {
+      "t": "dig",
+      "f": "+rrcomments",
+      "d": "Toggle the display of per-record comments in the output (for example, human-readable key information about DNSKEY records). The default is not to print record comments unless multiline mode is active. (+norrcomments to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+search",
+      "d": "Use [do not use] the search list defined by the searchlist or domain directive in resolv.conf (if any). The search list is not used by default. (+nosearch to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+short",
+      "d": "Provide a terse answer. The default is to print the answer in a verbose form. (+noshort to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+showsearch",
+      "d": "Perform [do not perform] a search showing intermediate results. (+noshowsearch to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+sigchase",
+      "d": "Chase DNSSEC signature chains. Requires dig be compiled with -DDIG_SIGCHASE. This feature is deprecated. Use delv instead. (+nosigchase to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+sit",
+      "d": "This option is a synonym for +[no]cookie. (+nosit to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+split",
+      "d": "Split long hex- or base64-formatted fields in resource records into chunks of W characters (where W is rounded up to the nearest multiple of 4). +nosplit or +split=0 causes fields not to be split at all. The default is 56 characters, or 44 "
+    },
+    {
+      "t": "dig",
+      "f": "+stats",
+      "d": "This query option toggles the printing of statistics: when the query was made, the size of the reply and so on. The default behavior is to print the query statistics. (+nostats to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+subnet",
+      "d": "Send (don't send) an EDNS Client Subnet option with the specified IP address or network prefix. (+nosubnet to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "-t",
+      "d": "specify query type"
+    },
+    {
+      "t": "dig",
+      "f": "+tcp",
+      "d": "Use [do not use] TCP when querying name servers. The default behavior is to use UDP unless an ixfr=N query is requested, in which case the default is TCP. AXFR queries always use TCP. (+notcp to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+time",
+      "d": "Sets the timeout for a query to T seconds. The default timeout is 5 seconds. An attempt to set T to less than 1 will result in a query timeout of 1 second being applied."
+    },
+    {
+      "t": "dig",
+      "f": "+topdown",
+      "d": "When chasing DNSSEC signature chains perform a top-down validation. Requires dig be compiled with -DDIG_SIGCHASE. This feature is deprecated. Use delv instead. (+notopdown to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+trace",
+      "d": "Toggle tracing of the delegation path from the root name servers for the name being looked up. Tracing is disabled by default. When tracing is enabled, dig makes iterative queries to resolve the name being looked up. It will follow referral (+notrace to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "+tries",
+      "d": "Sets the number of times to try UDP queries to server to T instead of the default, 3. If T is less than or equal to zero, the number of tries is silently rounded up to 1."
+    },
+    {
+      "t": "dig",
+      "f": "+trusted-key",
+      "d": "Specifies a file containing trusted keys to be used with +sigchase. Each DNSKEY record must be on its own line."
+    },
+    {
+      "t": "dig",
+      "f": "+ttlid",
+      "d": "Display [do not display] the TTL when printing the record. (+nottlid to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "-u",
+      "d": "display times in usec instead of msec"
+    },
+    {
+      "t": "dig",
+      "f": "+vc",
+      "d": "Use [do not use] TCP when querying name servers. This alternate syntax to +[no]tcp is provided for backwards compatibility. The \"vc\" stands for \"virtual circuit\". (+novc to disable)"
+    },
+    {
+      "t": "dig",
+      "f": "-x",
+      "d": "shortcut for reverse lookups"
+    },
+    {
+      "t": "dig",
+      "f": "-y",
+      "d": "specify named base64 tsig key"
     },
     {
       "t": "dnsrecon",

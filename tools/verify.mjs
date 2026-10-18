@@ -279,6 +279,11 @@ function stripPlaceholders(argv) {
 const FORCED = {
   tshark: () => ['-r', SAMPLE_PCAP],
   nuclei: () => ['-duc'],
+  /* dig queries even with no name, so force it at loopback on a dead port with
+     a one-second, one-try timeout: a good option still parses and queries (so
+     it is proved valid), a bad one is rejected at parse time, and no packet
+     leaves the machine. */
+  dig: () => ['@127.0.0.1', '-p', '59', '+time=1', '+tries=1'],
 };
 /* Appended AFTER the flags, for tools whose target is a positional that must
    follow the protocol/flags: a benign loopback host (and a short timeout) so
