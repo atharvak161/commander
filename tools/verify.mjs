@@ -170,6 +170,21 @@ const NETWORK = new Set([
      and waits on it. All three are proved by the singles pass, which runs
      them with nothing to resolve. */
   'iR', 'iL', 'dns-servers',
+
+  /* openssl s_client: the flags that aim the connection somewhere. -connect,
+     -host and -port pick the target; -proxy (and its creds) send through a
+     proxy, which resolves a name; -bind picks a source; -reconnect reconnects.
+     Every OTHER s_client flag is probed with a forced -connect to a dead
+     loopback port (see FORCED_IN_MODE), so it connects nowhere real; these are
+     the ones that would override that, so they are proved by declaration and
+     never run with a value. This is also what skips the s_client recipes, whose
+     example targets are real public hosts. */
+  'connect', 'host', 'port', 'proxy', 'proxy_user', 'proxy_pass', 'bind', 'reconnect',
+  /* s_client's UDP-transport flags. QUIC and DTLS run over UDP, where a dead
+     port gives no fast TCP-style refusal: -quic (with -alpn, which QUIC
+     requires) waits out the 20s timeout against the forced loopback port rather
+     than failing at once. Proved by declaration; not executed. */
+  'quic', 'dtls', 'dtls1', 'dtls1_2',
 ]);
 
 /* Flags with a side effect beyond this process. Verifying that nmap ACCEPTS
@@ -297,15 +312,30 @@ const FORCED_TAIL = {
 const FORCED_AFTER_MODE = {
   netexec: () => ['127.0.0.1', '--timeout', '2'],
 };
+/* Forced right AFTER a multi-mode tool's subcommand token, for the specific
+   modes that would otherwise reach the network on a valid flag. openssl
+   s_client connects on any valid flag (to a default host if none is given), so
+   every s_client probe is pinned to a dead loopback port: the connection is
+   refused in a millisecond and no packet leaves the host. Other openssl modes
+   get nothing. */
+const FORCED_IN_MODE = {
+  openssl: { s_client: ['-connect', '127.0.0.1:1'] },
+};
 
 function run(argv) {
   const forced = FORCED[tool.id] ? FORCED[tool.id]() : [];
   const tail = FORCED_TAIL[tool.id] ? FORCED_TAIL[tool.id]() : [];
   const afterMode = FORCED_AFTER_MODE[tool.id] ? FORCED_AFTER_MODE[tool.id]() : [];
   const stripped = stripPlaceholders(argv);
+  /* Per-mode forcing keys off the subcommand token, which is argv[0] for a
+     multi-mode tool. Inserted right after it so it binds to that subcommand. */
+  const inModeMap = FORCED_IN_MODE[tool.id];
+  const inMode = inModeMap && stripped.length ? (inModeMap[stripped[0]] || []) : [];
   const safe = afterMode.length && stripped.length
     ? [stripped[0], ...afterMode, ...stripped.slice(1), ...tail]
-    : [...forced, ...stripped, ...tail];
+    : inMode.length
+      ? [stripped[0], ...inMode, ...stripped.slice(1), ...tail]
+      : [...forced, ...stripped, ...tail];
   return new Promise(resolve => {
     /* Container probes run through `timeout` INSIDE the container. Killing the
        host-side `docker exec` on our own timeout leaves the tool process
