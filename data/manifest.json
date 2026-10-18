@@ -106,6 +106,13 @@
       "flagCount": 271
     },
     {
+      "id": "ssh",
+      "name": "ssh",
+      "category": "network",
+      "summary": "OpenSSH client: log in, run a command, tunnel a port, or pivot through a jump host.",
+      "flagCount": 45
+    },
+    {
       "id": "tshark",
       "name": "tshark",
       "category": "traffic",
@@ -9959,6 +9966,231 @@
       "t": "sqlmap",
       "f": "--database",
       "d": "SUPPRESSHELP"
+    },
+    {
+      "t": "ssh",
+      "f": "-4",
+      "d": "Forces ssh to use IPv4 addresses only."
+    },
+    {
+      "t": "ssh",
+      "f": "-6",
+      "d": "Forces ssh to use IPv6 addresses only."
+    },
+    {
+      "t": "ssh",
+      "f": "-a",
+      "d": "Disables forwarding of the authentication agent connection."
+    },
+    {
+      "t": "ssh",
+      "f": "-A",
+      "d": "Enables forwarding of connections from an authentication agent"
+    },
+    {
+      "t": "ssh",
+      "f": "-b",
+      "d": "-b"
+    },
+    {
+      "t": "ssh",
+      "f": "-B",
+      "d": "-B"
+    },
+    {
+      "t": "ssh",
+      "f": "-c",
+      "d": "-c"
+    },
+    {
+      "t": "ssh",
+      "f": "-C",
+      "d": "Requests compression of all data (including stdin, stdout,"
+    },
+    {
+      "t": "ssh",
+      "f": "-D",
+      "d": "-D"
+    },
+    {
+      "t": "ssh",
+      "f": "-e",
+      "d": "-e"
+    },
+    {
+      "t": "ssh",
+      "f": "-E",
+      "d": "-E"
+    },
+    {
+      "t": "ssh",
+      "f": "-f",
+      "d": "Requests ssh to go to background just before command execution."
+    },
+    {
+      "t": "ssh",
+      "f": "-F",
+      "d": "-F"
+    },
+    {
+      "t": "ssh",
+      "f": "-g",
+      "d": "Allows remote hosts to connect to local forwarded ports. If used"
+    },
+    {
+      "t": "ssh",
+      "f": "-G",
+      "d": "Causes ssh to print its configuration after evaluating Host and"
+    },
+    {
+      "t": "ssh",
+      "f": "-i",
+      "d": "-i"
+    },
+    {
+      "t": "ssh",
+      "f": "-I",
+      "d": "-I"
+    },
+    {
+      "t": "ssh",
+      "f": "-J",
+      "d": "-J"
+    },
+    {
+      "t": "ssh",
+      "f": "-k",
+      "d": "Disables forwarding (delegation) of GSSAPI credentials to the"
+    },
+    {
+      "t": "ssh",
+      "f": "-K",
+      "d": "Enables GSSAPI-based authentication and forwarding (delegation)"
+    },
+    {
+      "t": "ssh",
+      "f": "-l",
+      "d": "-l"
+    },
+    {
+      "t": "ssh",
+      "f": "-L",
+      "d": "-L"
+    },
+    {
+      "t": "ssh",
+      "f": "-m",
+      "d": "-m"
+    },
+    {
+      "t": "ssh",
+      "f": "-M",
+      "d": "Places the ssh client into “master” mode for connection sharing."
+    },
+    {
+      "t": "ssh",
+      "f": "-n",
+      "d": "Redirects stdin from /dev/null (actually, prevents reading from"
+    },
+    {
+      "t": "ssh",
+      "f": "-N",
+      "d": "Do not execute a remote command. This is useful for just"
+    },
+    {
+      "t": "ssh",
+      "f": "-o",
+      "d": "-o"
+    },
+    {
+      "t": "ssh",
+      "f": "-O",
+      "d": "-O"
+    },
+    {
+      "t": "ssh",
+      "f": "-p",
+      "d": "-p"
+    },
+    {
+      "t": "ssh",
+      "f": "-P",
+      "d": "-P"
+    },
+    {
+      "t": "ssh",
+      "f": "-q",
+      "d": "Quiet mode. Causes most warning and diagnostic messages to be"
+    },
+    {
+      "t": "ssh",
+      "f": "-Q",
+      "d": "-Q"
+    },
+    {
+      "t": "ssh",
+      "f": "-R",
+      "d": "-R"
+    },
+    {
+      "t": "ssh",
+      "f": "-s",
+      "d": "May be used to request invocation of a subsystem on the remote"
+    },
+    {
+      "t": "ssh",
+      "f": "-S",
+      "d": "-S"
+    },
+    {
+      "t": "ssh",
+      "f": "-t",
+      "d": "Force pseudo-terminal allocation. This can be used to execute"
+    },
+    {
+      "t": "ssh",
+      "f": "-T",
+      "d": "Disable pseudo-terminal allocation."
+    },
+    {
+      "t": "ssh",
+      "f": "-v",
+      "d": "Verbose mode. Causes ssh to print debugging messages about its"
+    },
+    {
+      "t": "ssh",
+      "f": "-V",
+      "d": "Display the version number and exit."
+    },
+    {
+      "t": "ssh",
+      "f": "-w",
+      "d": "-w"
+    },
+    {
+      "t": "ssh",
+      "f": "-W",
+      "d": "-W"
+    },
+    {
+      "t": "ssh",
+      "f": "-x",
+      "d": "Disables X11 forwarding."
+    },
+    {
+      "t": "ssh",
+      "f": "-X",
+      "d": "Enables X11 forwarding. This can also be specified on a per-host"
+    },
+    {
+      "t": "ssh",
+      "f": "-y",
+      "d": "Send log information using the syslog(3) system module. By"
+    },
+    {
+      "t": "ssh",
+      "f": "-Y",
+      "d": "Enables trusted X11 forwarding. Trusted X11 forwardings are not"
     },
     {
       "t": "tshark",

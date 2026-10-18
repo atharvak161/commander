@@ -121,7 +121,7 @@ const AWKWARD = ['a b', "it's", 'a$b', 'a\\b', 'a"b', 'a;b'];
    and "Invalid options combination" when the flag IS valid and only the value
    or the pairing is wrong — those are not flag rejections. So the pattern
    requires the colon-and-name form, and excludes "parameter"/"combination". */
-const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized (?:option|argument)|invalid option(?::| --)|invalid choice|not defined:|no such option|Scan Aborted: invalid option/i;
+const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized (?:option|argument)|invalid option(?::| --)|illegal option(?::| --)|invalid choice|not defined:|no such option|Scan Aborted: invalid option/i;
 
 function valueFor(f) {
   if (f.takes === 'none') return null;
@@ -259,6 +259,32 @@ const SLOW_BY_DESIGN = new Set(['T0', 'T1', 'T']);
 
 /* Everything the verifier refuses to run, for either reason. */
 const SIDE_EFFECTS = new Set([...SIDE_EFFECTS_ONLY, ...NETWORK]);
+
+/* The exclusion sets above are keyed by bare flag id, but ids are shared across
+   tools: dnsrecon's -b queries Bing, ssh's -b is a bind address and dig's -b a
+   source address. A global set wrongly excludes the innocent namesake, so the
+   flag is never put to its binary. This lists, per tool, the ids that collide
+   with a global exclusion but are NOT a side effect for THIS tool, so they
+   verify normally. Each pair was confirmed safe: ssh/nmap/ffuf open no socket
+   without a target, dig/enum4linux-ng/netexec are pinned to loopback, tshark is
+   forced to read a file rather than capture, and openssl runs with stdin closed.
+   It only ever un-excludes a confirmed-benign flag; it can never make a real
+   side-effect flag run. */
+const NOT_SIDE_EFFECT = {
+  ssh:   ['b', 'g', 'i', 'k', 'w', 'y', 'T'],
+  dig:   ['b', 'i', 'k', 'y'],
+  tshark:['b', 'i', 'y', 'g', 'w', 'T'],
+  openssl:['i', 'k'],
+  nmap:  ['b', 'g'],
+  ffuf:  ['b', 'w'],
+  'enum4linux-ng': ['k', 'w'],
+  netexec: ['k'],
+};
+const NOT_SE = new Set(NOT_SIDE_EFFECT[id] || []);
+/* a flag is a side effect for THIS tool only if excluded globally AND not on
+   this tool's not-a-side-effect list; same for the slow-by-design (pairs) set. */
+const isSideEffect = fid => SIDE_EFFECTS.has(fid) && !NOT_SE.has(fid);
+const isSlow = fid => SLOW_BY_DESIGN.has(fid) && !NOT_SE.has(fid);
 
 /* A placeholder is not a value. buildCommand emits "<Target>" when a required
    input is empty, and for nmap that string would be passed as a hostname — it
@@ -400,7 +426,7 @@ for (const mode of tool.modes) {
   const allowed = new Set(mode.flags);
   for (const f of tool.flags) {
     if (!allowed.has(f.id)) continue;
-    if (SIDE_EFFECTS.has(f.id)) { skipped++; continue; }
+    if (isSideEffect(f.id)) { skipped++; continue; }
     const picked = {};
     required.forEach(r => { picked[r.id] = true; });
     picked[f.id] = true;
@@ -410,7 +436,7 @@ for (const mode of tool.modes) {
 const afterSingles = jobs.length;
 
 /* pass 3 — awkward values on every flag that takes a path */
-for (const f of tool.flags.filter(f => f.takes === 'path' && !SIDE_EFFECTS.has(f.id))) {
+for (const f of tool.flags.filter(f => f.takes === 'path' && !isSideEffect(f.id))) {
   for (const v of AWKWARD) {
     const picked = {};
     required.forEach(r => { picked[r.id] = true; });
@@ -429,7 +455,7 @@ for (const r of tool.recipes || []) {
   /* A recipe built on a side-effect flag cannot be run to completion: nc's
      listen recipes open a socket and wait forever. Those flags are proved by
      the singles pass; the recipe is skipped here rather than stalled. */
-  if (Object.keys(r.flags || {}).some(id => SIDE_EFFECTS.has(id))) continue;
+  if (Object.keys(r.flags || {}).some(id => isSideEffect(id))) continue;
   /* WITHOUT the examples. A recipe's example target is a real host, and
      building one as a visitor sees it would have the verifier scan
      scanme.nmap.org and a /24 subnet, once per recipe. */
@@ -448,7 +474,7 @@ if (doPairs) {
      loop used to run over every flag of the tool regardless of mode, so for
      gobuster it combined dns flags with s3 flags — commands no mode accepts. */
   for (const mode of tool.modes) {
-    const list = tool.flags.filter(f => mode.flags.includes(f.id) && !SIDE_EFFECTS.has(f.id) && !SLOW_BY_DESIGN.has(f.id));
+    const list = tool.flags.filter(f => mode.flags.includes(f.id) && !isSideEffect(f.id) && !isSlow(f.id));
     for (let i = 0; i < list.length; i++) {
       for (let j = i + 1; j < list.length; j++) {
         const a = list[i], b = list[j];
