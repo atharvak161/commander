@@ -43,6 +43,13 @@
       "flagCount": 59
     },
     {
+      "id": "netcat",
+      "name": "nc",
+      "category": "network",
+      "summary": "The network Swiss army knife: connect, listen, scan ports, move data over TCP or UDP.",
+      "flagCount": 20
+    },
+    {
       "id": "netexec",
       "name": "netexec",
       "category": "network",
@@ -3161,6 +3168,106 @@
       "t": "gobuster",
       "f": "--wordlist-offset, --wo",
       "d": "Resume from a given position in the wordlist"
+    },
+    {
+      "t": "netcat",
+      "f": "-c, --close",
+      "d": "close connection on EOF from stdin"
+    },
+    {
+      "t": "netcat",
+      "f": "-n, --dont-resolve",
+      "d": "numeric-only IP addresses, no DNS"
+    },
+    {
+      "t": "netcat",
+      "f": "-e, --exec",
+      "d": "program to exec after connect"
+    },
+    {
+      "t": "netcat",
+      "f": "-g, --gateway",
+      "d": "source-routing hop point[s], up to 8"
+    },
+    {
+      "t": "netcat",
+      "f": "-x, --hexdump",
+      "d": "hexdump incoming and outgoing traffic"
+    },
+    {
+      "t": "netcat",
+      "f": "-i, --interval",
+      "d": "delay interval for lines sent, ports scanned"
+    },
+    {
+      "t": "netcat",
+      "f": "-l, --listen",
+      "d": "listen mode, for inbound connects"
+    },
+    {
+      "t": "netcat",
+      "f": "-p, --local-port",
+      "d": "local port number"
+    },
+    {
+      "t": "netcat",
+      "f": "-o, --output",
+      "d": "output hexdump traffic to FILE (implies -x)"
+    },
+    {
+      "t": "netcat",
+      "f": "-G, --pointer",
+      "d": "source-routing pointer: 4, 8, 12, ..."
+    },
+    {
+      "t": "netcat",
+      "f": "-r, --randomize",
+      "d": "randomize local and remote ports"
+    },
+    {
+      "t": "netcat",
+      "f": "-s, --source",
+      "d": "local source address (ip or hostname)"
+    },
+    {
+      "t": "netcat",
+      "f": "-t, --tcp",
+      "d": "TCP mode (default)"
+    },
+    {
+      "t": "netcat",
+      "f": "-T, --telnet",
+      "d": "answer using TELNET negotiation"
+    },
+    {
+      "t": "netcat",
+      "f": "-L, --tunnel",
+      "d": "forward local port to remote address"
+    },
+    {
+      "t": "netcat",
+      "f": "-u, --udp",
+      "d": "UDP mode"
+    },
+    {
+      "t": "netcat",
+      "f": "-v, --verbose",
+      "d": "verbose (use twice to be more verbose)"
+    },
+    {
+      "t": "netcat",
+      "f": "-V, --version",
+      "d": "output version information and exit"
+    },
+    {
+      "t": "netcat",
+      "f": "-w, --wait",
+      "d": "timeout for connects and final net reads"
+    },
+    {
+      "t": "netcat",
+      "f": "-z, --zero",
+      "d": "zero-I/O mode (used for scanning)"
     },
     {
       "t": "netexec",

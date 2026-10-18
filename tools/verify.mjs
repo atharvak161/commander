@@ -203,6 +203,10 @@ const SIDE_EFFECTS_ONLY = new Set([
      then retries. Both reach the network. Membership is proved by the singles
      pass; neither runs live. */
   'input-file', 'i', 'retry-on-host-error',
+  /* nc: -l/--listen opens a socket and waits, -L/--tunnel forwards a port, and
+     -e/--exec runs a program on connect. None may run live; the singles pass
+     proves each is a valid flag. */
+  'listen', 'tunnel', 'exec',
   /* docker: flags that would make the daemon act even with the positional
      withheld, or that wait for input. */
   'detach-keys', 'sig-proxy',
@@ -377,6 +381,10 @@ const afterAwkward = jobs.length;
    visitor sees before typing anything. */
 let recipeCount = 0;
 for (const r of tool.recipes || []) {
+  /* A recipe built on a side-effect flag cannot be run to completion: nc's
+     listen recipes open a socket and wait forever. Those flags are proved by
+     the singles pass; the recipe is skipped here rather than stalled. */
+  if (Object.keys(r.flags || {}).some(id => SIDE_EFFECTS.has(id))) continue;
   /* WITHOUT the examples. A recipe's example target is a real host, and
      building one as a visitor sees it would have the verifier scan
      scanme.nmap.org and a /24 subnet, once per recipe. */
