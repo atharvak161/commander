@@ -116,17 +116,28 @@ export function buildCommand(tool, modeId, picked, slots, adhoc) {
       : [val];
 
     for (const v of (values.length ? values : [val])) {
-      argv.push(tok);
-      if (v) argv.push(v);
-      pieces.push({
-        tok: tok + (v ? ' ' + shellQuote(v) : ''),
-        label: f.desc,
-        help: f.help || '',
-        warn: f.warn,
-        kind: 'flag',
-        missing,
-        note: f.note || null,
-      });
+      /* Most tools take "flag value" as two arguments. Some join the value to
+         the flag with a character: john and dig want "--format=raw-md5" and
+         "+bufsize=1232", and emitting them as two arguments makes the tool read
+         the value as a separate positional. A flag's `glue` (e.g. "=") says to
+         join them into one argument. */
+      if (f.glue && v) {
+        argv.push(tok + f.glue + v);
+        pieces.push({ tok: tok + f.glue + shellQuote(v), label: f.desc, help: f.help || '',
+          warn: f.warn, kind: 'flag', missing, note: f.note || null });
+      } else {
+        argv.push(tok);
+        if (v) argv.push(v);
+        pieces.push({
+          tok: tok + (v ? ' ' + shellQuote(v) : ''),
+          label: f.desc,
+          help: f.help || '',
+          warn: f.warn,
+          kind: 'flag',
+          missing,
+          note: f.note || null,
+        });
+      }
     }
   }
 

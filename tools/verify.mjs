@@ -116,7 +116,12 @@ const AWKWARD = ['a b', "it's", 'a$b', 'a\\b', 'a"b', 'a;b'];
    curl bug, where "option --x: is unknown" matched nothing and every probe
    passed by default. Every new tool's exact rejection wording is confirmed
    against the binary before it ships. */
-const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized (?:option|argument)|invalid (?:option|choice)|not defined:|no such option|Scan Aborted: invalid option/i;
+/* "invalid option" must mean the OPTION is invalid, not its value. dig says
+   "Invalid option: +x" (reject); john says "Invalid option parameter: --fork=x"
+   and "Invalid options combination" when the flag IS valid and only the value
+   or the pairing is wrong — those are not flag rejections. So the pattern
+   requires the colon-and-name form, and excludes "parameter"/"combination". */
+const REJECT = /flag provided but not defined|unknown (?:flag|option|shorthand)|option .*?: is unknown|unrecognized (?:option|argument)|invalid option(?::| --)|invalid choice|not defined:|no such option|Scan Aborted: invalid option/i;
 
 function valueFor(f) {
   if (f.takes === 'none') return null;
@@ -207,6 +212,11 @@ const SIDE_EFFECTS_ONLY = new Set([
      -e/--exec runs a program on connect. None may run live; the singles pass
      proves each is a valid flag. */
   'listen', 'tunnel', 'exec',
+  /* john: --stdout prints generated candidates forever without needing a hash
+     file; the mode flags that drive it (--incremental, --markov, --prince,
+     --subsets) can run open-endedly. Membership is proved by the singles pass
+     against a withheld hash file; none runs live. */
+  'stdout', 'incremental', 'markov', 'prince', 'subsets',
   /* docker: flags that would make the daemon act even with the positional
      withheld, or that wait for input. */
   'detach-keys', 'sig-proxy',

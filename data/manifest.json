@@ -43,6 +43,13 @@
       "flagCount": 59
     },
     {
+      "id": "john",
+      "name": "john",
+      "category": "credentials",
+      "summary": "John the Ripper: offline password cracking across hundreds of hash formats.",
+      "flagCount": 33
+    },
+    {
       "id": "netcat",
       "name": "nc",
       "category": "network",
@@ -3168,6 +3175,171 @@
       "t": "gobuster",
       "f": "--wordlist-offset, --wo",
       "d": "Resume from a given position in the wordlist"
+    },
+    {
+      "t": "john",
+      "f": "--costs",
+      "d": "load salts with[out] cost value Cn [to Mn]. For tunable cost parameters, see doc/OPTIONS"
+    },
+    {
+      "t": "john",
+      "f": "--devices",
+      "d": "set OpenCL device(s) (see --list=opencl-devices)"
+    },
+    {
+      "t": "john",
+      "f": "--dupe-suppression",
+      "d": "suppress all dupes in wordlist (and force preload)"
+    },
+    {
+      "t": "john",
+      "f": "--encoding",
+      "d": "input encoding (eg. UTF-8, ISO-8859-1). See also doc/ENCODINGS and --list=hidden-options."
+    },
+    {
+      "t": "john",
+      "f": "--external",
+      "d": "external mode or word filter"
+    },
+    {
+      "t": "john",
+      "f": "--fork",
+      "d": "fork N processes"
+    },
+    {
+      "t": "john",
+      "f": "--format",
+      "d": "force hash of type NAME. The supported formats can be seen with --list=formats and --list=subformats"
+    },
+    {
+      "t": "john",
+      "f": "--groups",
+      "d": "load users [not] of this (these) group(s) only"
+    },
+    {
+      "t": "john",
+      "f": "--incremental",
+      "d": "\"incremental\" mode [using section MODE]"
+    },
+    {
+      "t": "john",
+      "f": "--list",
+      "d": "list capabilities, see --list=help or doc/OPTIONS"
+    },
+    {
+      "t": "john",
+      "f": "--loopback",
+      "d": "like --wordlist, but extract words from a .pot file"
+    },
+    {
+      "t": "john",
+      "f": "--make-charset",
+      "d": "make a charset file. It will be overwritten"
+    },
+    {
+      "t": "john",
+      "f": "--markov",
+      "d": "\"Markov\" mode (see doc/MARKOV)"
+    },
+    {
+      "t": "john",
+      "f": "--mask",
+      "d": "mask mode using MASK (or default from john.conf)"
+    },
+    {
+      "t": "john",
+      "f": "--node",
+      "d": "this node's number range out of TOTAL count"
+    },
+    {
+      "t": "john",
+      "f": "--pot",
+      "d": "pot file to use"
+    },
+    {
+      "t": "john",
+      "f": "--prince",
+      "d": "PRINCE mode, read words from FILE"
+    },
+    {
+      "t": "john",
+      "f": "--restore",
+      "d": "restore an interrupted session [called NAME]"
+    },
+    {
+      "t": "john",
+      "f": "--rules",
+      "d": "enable word mangling rules (for wordlist or PRINCE modes), using default or named rules"
+    },
+    {
+      "t": "john",
+      "f": "--rules-stack",
+      "d": "same, using \"immediate\" rule(s)"
+    },
+    {
+      "t": "john",
+      "f": "--salts",
+      "d": "load salts with[out] COUNT [to MAX] hashes"
+    },
+    {
+      "t": "john",
+      "f": "--save-memory",
+      "d": "enable memory saving, at LEVEL 1..3"
+    },
+    {
+      "t": "john",
+      "f": "--session",
+      "d": "give a new session the NAME"
+    },
+    {
+      "t": "john",
+      "f": "--shells",
+      "d": "load users with[out] this (these) shell(s) only"
+    },
+    {
+      "t": "john",
+      "f": "--show",
+      "d": "show cracked passwords [if =left, then uncracked]"
+    },
+    {
+      "t": "john",
+      "f": "--single",
+      "d": "\"single crack\" mode, using default or named rules"
+    },
+    {
+      "t": "john",
+      "f": "--status",
+      "d": "print status of a session [called NAME]"
+    },
+    {
+      "t": "john",
+      "f": "--stdin",
+      "d": "wordlist mode, read words from FILE or stdin"
+    },
+    {
+      "t": "john",
+      "f": "--stdout",
+      "d": "just output candidate passwords [cut at LENGTH]"
+    },
+    {
+      "t": "john",
+      "f": "--subsets",
+      "d": "\"subsets\" mode (see doc/SUBSETS)"
+    },
+    {
+      "t": "john",
+      "f": "--test",
+      "d": "run tests and benchmarks for TIME seconds each"
+    },
+    {
+      "t": "john",
+      "f": "--users",
+      "d": "[do not] load this (these) user(s) only"
+    },
+    {
+      "t": "john",
+      "f": "--wordlist",
+      "d": "wordlist mode, read words from FILE or stdin"
     },
     {
       "t": "netcat",

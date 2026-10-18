@@ -5,14 +5,14 @@
    the verifier imports the same module, so the command the tests prove valid
    is byte-for-byte the command shown here. */
 import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
-         buildRecipe, alternativesFor } from './command.js?v=aa98b59808';
+         buildRecipe, alternativesFor } from './command.js?v=8abdfb665b';
 
 (function () {
   'use strict';
 
   /* Written by tools/stamp.mjs from a hash of data/. Appended to every data
      fetch so a deploy cannot be served stale JSON from a browser cache. */
-  var ASSET_V = 'e5bcb94ea9';
+  var ASSET_V = 'b8ef49d2a9';
   function dataUrl(path) { return ASSET_V ? path + '?v=' + ASSET_V : path; }
 
   var manifest = null;          // data/manifest.json
