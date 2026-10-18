@@ -1204,10 +1204,18 @@ import { buildCommand as build, blockedBy as blocked, shellQuote, resolveFlag,
   function activeSlots() {
     var need = {};
     modeFlags().forEach(function (f) { if (picked[f.id] && f.binds) need[f.binds] = true; });
-    /* A trailing input is always shown. It belongs to no flag — nmap takes its
-       target as a bare argument — so waiting for a flag to bind it would hide
-       the one box the tool cannot run without. */
-    return (tool.inputs || []).filter(function (i) { return need[i.id] || i.trailing; });
+    /* A trailing input is shown even though no flag binds it — nmap takes its
+       target as a bare argument, so waiting for a flag would hide the one box
+       the tool cannot run without. trailing:true means every mode; a trailing
+       ARRAY names the modes it belongs to (openssl's numbits is genrsa-only,
+       docker's image belongs to run/pull/... not logs), so outside those modes
+       it is neither shown nor appended. */
+    return (tool.inputs || []).filter(function (i) {
+      if (need[i.id]) return true;
+      if (i.trailing === true) return true;
+      if (Array.isArray(i.trailing)) return i.trailing.indexOf(mode) !== -1;
+      return false;
+    });
   }
 
   /* A picked enum flag with no value would emit a bare "-mode" and break the
